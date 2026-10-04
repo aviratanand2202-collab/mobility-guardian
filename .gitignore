@@ -1,13 +1,46 @@
-# Environments
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
 .venv/
 venv/
-__pycache__/
-*.pyc
-node_modules/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+*.egg-info/
+build/
+dist/
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# =========================
+# Environment / Secrets
+# =========================
 .env
 .env.local
+.envrc
 
-# ML artifacts (hand off separately, don't bloat the repo)
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+frontend/dist/
+frontend/build/
+
+# =========================
+# ML artifacts
+# =========================
 ml/data/raw/
 ml/data/processed/
 ml/models/*.pkl
@@ -15,11 +48,25 @@ ml/models/*.onnx
 ml/models/*.joblib
 *.ckpt
 
-# Build output
-frontend/dist/
-frontend/build/
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
 
-# OS / editor
-.DS_Store
+# =========================
+# Editors / IDEs
+# =========================
 .vscode/
 .idea/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+
+# =========================
+# Logs / databases
+# =========================
+*.log
+db.sqlite3
+db.sqlite3-journal
