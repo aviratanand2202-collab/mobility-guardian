@@ -1,0 +1,25 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+.env
+.env.local
+
+# ML artifacts (hand off separately, don't bloat the repo)
+ml/data/raw/
+ml/data/processed/
+ml/models/*.pkl
+ml/models/*.onnx
+ml/models/*.joblib
+*.ckpt
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

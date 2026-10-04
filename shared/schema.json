@@ -1,0 +1,339 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Predictive Geofencing System - Data Contract",
+  "description": "Shared schema contract between ML/Geospatial (Person A) and Backend/UI (Person B). All field names and types here are binding. Do not change without updating both sides.",
+  "definitions": {
+
+    "TelemetryPayload": {
+      "type": "object",
+      "description": "One GPS/sensor reading sent from mobile client to backend. Owned by Person B (client emits this), consumed by Person A's feature extractor.",
+      "required": ["user_id", "timestamp", "location", "sensor_metrics", "signal_status"],
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "description": "Unique patient/user identifier, e.g. 'patient_042'."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp, e.g. '2026-09-17T08:30:00Z'."
+        },
+        "location": {
+          "type": "object",
+          "required": ["lat", "lng"],
+          "properties": {
+            "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+            "lng": { "type": "number", "minimum": -180, "maximum": 180 },
+            "altitude_m": { "type": ["number", "null"] }
+          }
+        },
+        "sensor_metrics": {
+          "type": "object",
+          "required": ["horizontal_accuracy_m", "speed_mps", "heading_deg", "battery_pct"],
+          "properties": {
+            "horizontal_accuracy_m": {
+              "type": "number",
+              "description": "HDOP-derived horizontal accuracy in meters. > 20m triggers DEGRADED_SIGNAL per §2.5."
+            },
+            "speed_mps": { "type": "number", "minimum": 0 },
+            "heading_deg": { "type": "number", "minimum": 0, "maximum": 360 },
+            "activity_type": {
+              "type": "string",
+              "enum": ["STATIONARY", "WALKING", "IN_VEHICLE", "UNKNOWN"]
+            },
+            "battery_pct": { "type": "integer", "minimum": 0, "maximum": 100 }
+          }
+        },
+        "imu_metrics": {
+          "type": ["object", "null"],
+          "description": "Present only when signal_status.state == 'DEGRADED_SIGNAL'. Drives PDR fallback per §2.5.",
+          "properties": {
+            "step_count_since_last_gps": { "type": "integer", "minimum": 0 },
+            "net_displacement_m": {
+              "type": "number",
+              "description": "Fused accelerometer + gyroscope Net Spatial Displacement |d_vec| since GPS was last valid."
+            },
+            "pdr_tier_state": {
+              "type": "string",
+              "enum": ["INDOOR_PACING", "ZONE_TRANSITION", "UNTRACKED_DISPLACEMENT"],
+              "description": "Current Schmitt-trigger hysteresis state per §2.5 thresholds (27m/23m/52m/48m)."
+            }
+          }
+        },
+        "signal_status": {
+          "type": "object",
+          "required": ["state"],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": ["VALID", "DEGRADED_SIGNAL"],
+              "description": "VALID = normal GPS ingestion. DEGRADED_SIGNAL = HDOP > 20m, ML risk score frozen, PDR fallback active (max 15 min blind spot)."
+            },
+            "degraded_since": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "Timestamp signal degradation began. Null if state == VALID."
+            }
+          }
+        }
+      }
+    },
+
+    "MobilityProfile": {
+      "type": "object",
+      "description": "Per-user learned baseline. Owned by Person A (ML side computes/updates it), read by Person B's backend for state-machine decisions and by the dashboard for display.",
+      "required": ["user_id", "cold_start_status", "anchor_clusters", "trip_stats", "baseline_distribution"],
+      "properties": {
+        "user_id": { "type": "string" },
+
+        "cold_start_status": {
+          "type": "object",
+          "description": "Governs Rule-Based vs ML-Driven mode per §2.3.",
+          "required": ["mode", "trip_count", "delta_cv"],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": ["RULE_BASED_FALLBACK", "ML_DRIVEN"],
+              "description": "RULE_BASED_FALLBACK until activation criteria met: trip_count >= 7 AND delta_cv < 0.05 for 3 consecutive trips."
+            },
+            "trip_count": { "type": "integer", "minimum": 0 },
+            "delta_cv": {
+              "type": ["number", "null"],
+              "description": "Most recent |CV_N - CV_(N-1)| / CV_(N-1). Null until trip_count >= 2."
+            },
+            "consecutive_stable_trips": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Count of consecutive trips with delta_cv < 0.05. Mode flips to ML_DRIVEN at 3."
+            }
+          }
+        },
+
+        "anchor_clusters": {
+          "type": "array",
+          "description": "DBSCAN-derived dense location clusters (e.g. Home, Daycare).",
+          "items": {
+            "type": "object",
+            "required": ["name", "center", "radius_m"],
+            "properties": {
+              "name": { "type": "string" },
+              "center": {
+                "type": "array",
+                "items": { "type": "number" },
+                "minItems": 2,
+                "maxItems": 2,
+                "description": "[lat, lng]"
+              },
+              "radius_m": { "type": "number", "minimum": 0 },
+              "typical_hours": {
+                "type": "array",
+                "items": { "type": "integer", "minimum": 0, "maximum": 23 },
+                "minItems": 2,
+                "maxItems": 2,
+                "description": "[start_hour, end_hour] in 24h local time."
+              },
+              "status": {
+                "type": "string",
+                "enum": ["CONFIRMED", "PENDING_CAREGIVER_REVIEW"],
+                "description": "PENDING when auto-proposed after >3hrs repeated dwell (§2.7 anchor lifecycle workflow)."
+              }
+            }
+          }
+        },
+
+        "trip_stats": {
+          "type": "object",
+          "properties": {
+            "avg_return_trip_distance_m": { "type": "number" },
+            "cv_return_trip_distance": { "type": "number" },
+            "avg_step_speed_mps": { "type": "number" },
+            "speed_std_dev": { "type": "number" },
+            "max_historical_radius_m": { "type": "number" }
+          }
+        },
+
+        "baseline_distribution": {
+          "type": "object",
+          "description": "Entropy/tortuosity baseline used for P95/P99 thresholds per §2.4.",
+          "required": ["estimator_type", "sample_size"],
+          "properties": {
+            "estimator_type": {
+              "type": "string",
+              "enum": ["GAMMA_PARAMETRIC", "EMPIRICAL_QUANTILE"],
+              "description": "GAMMA_PARAMETRIC while sample_size < 30, EMPIRICAL_QUANTILE thereafter."
+            },
+            "sample_size": {
+              "type": "integer",
+              "description": "Count of non-quarantined trips contributing to this baseline."
+            },
+            "gamma_shape_k": { "type": ["number", "null"] },
+            "gamma_scale_theta": { "type": ["number", "null"] },
+            "p95_entropy": { "type": "number" },
+            "p99_entropy": { "type": "number" },
+            "mad": { "type": "number", "description": "Median Absolute Deviation, robust dispersion anchor per §2.6." },
+            "last_updated": { "type": "string", "format": "date-time" }
+          }
+        }
+      }
+    },
+
+    "RiskScoreOutput": {
+      "type": "object",
+      "description": "Output of the ML risk engine for a given evaluation window. Owned by Person A (produced), consumed by Person B (backend state machine + dashboard).",
+      "required": ["user_id", "timestamp", "risk_tier", "risk_score", "polling_tier"],
+      "properties": {
+        "user_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+
+        "risk_tier": {
+          "type": "string",
+          "enum": ["QUIESCENT", "NORMAL_TRANSIT", "SUSPICIOUS", "CRITICAL"],
+          "description": "Maps to polling Tier 0-3 per §2.6 battery/polling table."
+        },
+        "risk_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "0-100 continuous score. Tier 1 boundary ~35, Tier 2 ~65."
+        },
+
+        "kinematic_features": {
+          "type": "object",
+          "properties": {
+            "tortuosity_index": { "type": "number", "description": "Actual path distance / straight-line distance." },
+            "entropy_value": { "type": "number" },
+            "distance_from_anchor_m": { "type": "number" },
+            "step_speed_variance": { "type": "number" }
+          }
+        },
+
+        "trigger_state": {
+          "type": "object",
+          "description": "Non-overlapping window k-trigger state per §2.4.",
+          "properties": {
+            "window_seconds": { "type": "integer", "const": 120 },
+            "consecutive_anomalous_windows": { "type": "integer", "minimum": 0 },
+            "required_k": {
+              "type": "integer",
+              "enum": [2, 3],
+              "description": "2 for entropy >= P99 (high tortuosity), 3 for entropy >= P95 (borderline)."
+            },
+            "percentile_bound_crossed": {
+              "type": ["string", "null"],
+              "enum": ["P95", "P99", null]
+            }
+          }
+        },
+
+        "predicted_lead_time_sec": {
+          "type": ["number", "null"],
+          "description": "Estimated seconds until boundary breach if alert fires. Null if not currently tracking a breach trajectory."
+        },
+
+        "explainability": {
+          "type": "object",
+          "description": "TreeSHAP output per §2.2.",
+          "properties": {
+            "top_features": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["feature", "shap_value", "human_readable"],
+                "properties": {
+                  "feature": { "type": "string" },
+                  "shap_value": { "type": "number" },
+                  "human_readable": {
+                    "type": "string",
+                    "description": "e.g. 'Erratic turning pattern detected'"
+                  }
+                }
+              },
+              "maxItems": 3
+            }
+          }
+        },
+
+        "polling_tier": {
+          "type": "integer",
+          "enum": [0, 1, 2, 3],
+          "description": "Drives client GPS polling interval per §2.6 table (15min/2min/15s/3-5s)."
+        },
+
+        "battery_override_active": {
+          "type": "boolean",
+          "description": "True when battery < 15% and Tier 2 low-battery pulse logic (§2.6) is in effect. Tier 3 always overrides this."
+        }
+      }
+    },
+
+    "AlertRecord": {
+      "type": "object",
+      "description": "Emitted when risk_tier reaches SUSPICIOUS or CRITICAL, or a caregiver interacts with an alert. Owned jointly - Person A defines trigger, Person B persists/displays.",
+      "required": ["alert_id", "user_id", "grid_cell_id", "timestamp", "alert_tier", "status"],
+      "properties": {
+        "alert_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "grid_cell_id": {
+          "type": "string",
+          "description": "H3 hexagon identifier (resolution 9) for MAD quarantine / dismissal tracking per §2.6."
+        },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "alert_tier": { "type": "integer", "enum": [2, 3] },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "ACKNOWLEDGED", "DISMISSED_SAFE", "ESCALATED", "AUTO_RESOLVED"]
+        },
+        "dismissal": {
+          "type": ["object", "null"],
+          "properties": {
+            "dismissed_at": { "type": "string", "format": "date-time" },
+            "decay_clock_start": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Fixed on FIRST dismissal in a 30-day window; does not reset on subsequent dismissals (§2.6)."
+            },
+            "dismissal_count_in_window": {
+              "type": "integer",
+              "maximum": 3,
+              "description": "4th dismissal forces formal safe-zone recalibration UI flow instead of quick-dismiss."
+            }
+          }
+        }
+      }
+    },
+
+    "ConsentRecord": {
+      "type": "object",
+      "description": "Per §2.7 dual-consent workflow. Required before any telemetry ingestion begins.",
+      "required": ["user_id", "guardian_consent", "end_user_consent_applicable"],
+      "properties": {
+        "user_id": { "type": "string" },
+        "guardian_consent": {
+          "type": "object",
+          "required": ["granted", "granted_at", "guardian_id"],
+          "properties": {
+            "granted": { "type": "boolean" },
+            "granted_at": { "type": "string", "format": "date-time" },
+            "guardian_id": { "type": "string" }
+          }
+        },
+        "end_user_consent_applicable": {
+          "type": "boolean",
+          "description": "True if end-user retains legal/cognitive capacity to consent, per clinical/caregiver assessment."
+        },
+        "end_user_consent": {
+          "type": ["object", "null"],
+          "description": "Required if end_user_consent_applicable == true, else null.",
+          "properties": {
+            "granted": { "type": "boolean" },
+            "granted_at": { "type": "string", "format": "date-time" }
+          }
+        },
+        "data_retention_ack": {
+          "type": "boolean",
+          "description": "Confirms guardian acknowledges 30-day raw-coordinate deletion / H3 aggregation policy."
+        }
+      }
+    }
+  }
+}
