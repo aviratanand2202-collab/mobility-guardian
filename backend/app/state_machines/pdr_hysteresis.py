@@ -22,6 +22,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from sqlalchemy import select
+
+from app.db import async_session, PDRStateRow
+
 
 class PDRTier(str, Enum):
     INDOOR_PACING = "INDOOR_PACING"
@@ -69,12 +73,22 @@ class PDRState:
         return self.tier == PDRTier.UNTRACKED_DISPLACEMENT
 
 
-# Per-user state registry. Replace with a real store (Redis / DB) before
-# production - this in-memory dict is only for local dev / Sprint 1-2.
-_user_states: dict[str, PDRState] = {}
+async def get_or_create_state(user_id: str) -> PDRState:
+    """Load a PDRState from the DB, or create a fresh one."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(PDRStateRow).where(PDRStateRow.user_id == user_id)
+        )
+        row = result.scalar_one_or_none()
+    if row is None:
+        return PDRState()
+    return PDRState(tier=PDRTier(row.tier))
 
 
-def get_or_create_state(user_id: str) -> PDRState:
-    if user_id not in _user_states:
-        _user_states[user_id] = PDRState()
-    return _user_states[user_id]
+async def save_state(user_id: str, state: PDRState) -> None:
+    """Persist a PDRState back to the DB."""
+    async with async_session() as session:
+        row = PDRStateRow(user_id=user_id, tier=state.tier.value)
+        await session.merge(row)
+        await session.commit()
+

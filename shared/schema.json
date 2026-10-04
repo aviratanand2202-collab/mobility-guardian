@@ -259,9 +259,21 @@
           "description": "Drives client GPS polling interval per §2.6 table (15min/2min/15s/3-5s)."
         },
 
+        "polling_instruction": {
+          "type": "object",
+          "description": "Client polling behavior for the next cycle. Mode CONTINUOUS uses the base risk-tier polling table. PULSE and LAST_GASP are issued only when battery < 15% per §2.6.",
+          "properties": {
+            "mode": { "type": "string", "enum": ["CONTINUOUS", "PULSE", "LAST_GASP"] },
+            "burst_seconds": { "type": ["integer", "null"] },
+            "burst_hz": { "type": ["integer", "null"] },
+            "sleep_seconds": { "type": ["integer", "null"] }
+          },
+          "required": ["mode"]
+        },
+
         "battery_override_active": {
           "type": "boolean",
-          "description": "True when battery < 15% and Tier 2 low-battery pulse logic (§2.6) is in effect. Tier 3 always overrides this."
+          "description": "DEPRECATED: Use polling_instruction.mode != 'CONTINUOUS' instead. True when battery < 15% and Tier 2 low-battery pulse logic (§2.6) is in effect. Tier 3 always overrides this."
         }
       }
     },

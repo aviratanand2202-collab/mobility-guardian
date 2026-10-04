@@ -70,3 +70,4 @@ ml/models/*.joblib
 *.log
 db.sqlite3
 db.sqlite3-journal
+backend/app/data/

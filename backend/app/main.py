@@ -3,16 +3,28 @@ FastAPI entrypoint.
 
 Run with: uvicorn app.main:app --reload
 """
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
+from app.db import init_db, dispose_engine
 from app.routers import telemetry, consent, alerts
 from app.websocket import risk_stream
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+    await dispose_engine()
+
 
 app = FastAPI(
     title="Predictive Geofencing Backend",
     description="Ingests telemetry, runs state machines (PDR hysteresis, "
                  "battery pulse), and streams risk updates to the dashboard.",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"])

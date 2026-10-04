@@ -76,6 +76,19 @@ class RiskTier(str, Enum):
     CRITICAL = "CRITICAL"
 
 
+class PollingMode(str, Enum):
+    CONTINUOUS = "CONTINUOUS"
+    PULSE = "PULSE"
+    LAST_GASP = "LAST_GASP"
+
+
+class PollingInstruction(BaseModel):
+    mode: PollingMode
+    burst_seconds: Optional[int] = None
+    burst_hz: Optional[int] = None
+    sleep_seconds: Optional[int] = None
+
+
 class RiskScoreOutput(BaseModel):
     user_id: str
     timestamp: datetime
@@ -84,6 +97,7 @@ class RiskScoreOutput(BaseModel):
     polling_tier: int = Field(..., ge=0, le=3)
     predicted_lead_time_sec: Optional[float] = None
     battery_override_active: bool = False
+    polling_instruction: Optional[PollingInstruction] = None
     # kinematic_features, trigger_state, explainability intentionally loose
     # here (dict passthrough) since Person A owns their internal shape -
     # backend only needs to read risk_tier / risk_score / polling_tier to

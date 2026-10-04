@@ -20,8 +20,13 @@ Two separate mechanisms, both scoped per H3 grid cell (resolution 9):
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+from sqlalchemy import select
+
+from app.db import async_session, CellDismissalStateRow
 
 DECAY_WINDOW_DAYS = 30
 MAX_DISMISSALS_PER_WINDOW = 3
@@ -75,11 +80,47 @@ class CellDismissalState:
         return 1.0 - suppression
 
 
-# Per-cell state registry. Replace with Redis/DB before production.
-_cell_states: dict[str, CellDismissalState] = {}
+async def get_or_create_cell_state(grid_cell_id: str) -> CellDismissalState:
+    """Load a CellDismissalState from the DB, or create a fresh one."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(CellDismissalStateRow).where(
+                CellDismissalStateRow.grid_cell_id == grid_cell_id
+            )
+        )
+        row = result.scalar_one_or_none()
+    if row is None:
+        return CellDismissalState(grid_cell_id=grid_cell_id)
+    # Deserialize dismissal_timestamps from JSON into real datetime objects.
+    timestamps = []
+    for ts in json.loads(row.dismissal_timestamps):
+        dt = datetime.fromisoformat(ts)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        timestamps.append(dt)
+    # SQLite does not persist timezone info. All timestamps in this system
+    # are UTC, so re-attach timezone.utc if the value came back naive.
+    clock_start = row.decay_clock_start
+    if clock_start is not None and clock_start.tzinfo is None:
+        clock_start = clock_start.replace(tzinfo=timezone.utc)
+    return CellDismissalState(
+        grid_cell_id=row.grid_cell_id,
+        decay_clock_start=clock_start,
+        dismissal_timestamps=timestamps,
+    )
 
 
-def get_or_create_cell_state(grid_cell_id: str) -> CellDismissalState:
-    if grid_cell_id not in _cell_states:
-        _cell_states[grid_cell_id] = CellDismissalState(grid_cell_id=grid_cell_id)
-    return _cell_states[grid_cell_id]
+async def save_cell_state(state: CellDismissalState) -> None:
+    """Persist a CellDismissalState back to the DB."""
+    timestamps_json = json.dumps(
+        [ts.isoformat() for ts in state.dismissal_timestamps]
+    )
+    async with async_session() as session:
+        row = CellDismissalStateRow(
+            grid_cell_id=state.grid_cell_id,
+            decay_clock_start=state.decay_clock_start,
+            dismissal_timestamps=timestamps_json,
+        )
+        await session.merge(row)
+        await session.commit()
+

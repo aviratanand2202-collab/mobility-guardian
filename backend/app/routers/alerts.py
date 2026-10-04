@@ -7,7 +7,10 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException
 
 from app.models import AlertRecord, AlertStatus
-from app.state_machines.dismissal_quarantine import get_or_create_cell_state
+from app.state_machines.dismissal_quarantine import (
+    get_or_create_cell_state,
+    save_cell_state,
+)
 
 router = APIRouter()
 
@@ -24,14 +27,15 @@ def get_alert(alert_id: str):
 
 
 @router.post("/{alert_id}/dismiss")
-def dismiss_alert(alert_id: str):
+async def dismiss_alert(alert_id: str):
     alert = _alerts.get(alert_id)
     if alert is None:
         raise HTTPException(status_code=404, detail="alert not found")
 
-    cell_state = get_or_create_cell_state(alert.grid_cell_id)
+    cell_state = await get_or_create_cell_state(alert.grid_cell_id)
     now = datetime.now(timezone.utc)
     allowed, count = cell_state.register_dismissal(now)
+    await save_cell_state(cell_state)
 
     if not allowed:
         # 4th+ dismissal in window - force formal recalibration instead
@@ -48,3 +52,4 @@ def dismiss_alert(alert_id: str):
         "dismissal_count_in_window": count,
         "cell_sensitivity_multiplier": cell_state.sensitivity_multiplier(),
     }
+
