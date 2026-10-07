@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.db import async_session, RiskScoreHistoryRow
+from app.models import Location
 
 router = APIRouter()
 
@@ -26,6 +27,34 @@ class RiskHistoryEntry(BaseModel):
     risk_score: float
     polling_tier: int
     grid_cell_id: Optional[str] = None
+    location: Optional[Location] = None
+
+
+def _extract_location(raw_json: Optional[str]) -> Optional[Location]:
+    """
+    Extract Location model from raw_output_json if present.
+    Returns None gracefully if raw_json is missing, invalid JSON,
+    or predates the addition of the location field.
+    """
+    if not raw_json:
+        return None
+    try:
+        data = json.loads(raw_json)
+        if not isinstance(data, dict):
+            return None
+        loc_data = data.get("location")
+        if loc_data and isinstance(loc_data, dict):
+            lat = loc_data.get("lat")
+            lng = loc_data.get("lng")
+            if lat is not None and lng is not None:
+                return Location(
+                    lat=lat,
+                    lng=lng,
+                    altitude_m=loc_data.get("altitude_m"),
+                )
+    except Exception:
+        return None
+    return None
 
 
 def _parse_datetime(val: Optional[str], default: datetime) -> datetime:
@@ -89,6 +118,7 @@ async def get_user_risk_history(
             risk_score=row.risk_score,
             polling_tier=row.polling_tier,
             grid_cell_id=row.grid_cell_id,
+            location=_extract_location(row.raw_output_json),
         )
         for row in rows
     ]

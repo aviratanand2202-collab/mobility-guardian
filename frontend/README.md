@@ -1,8 +1,31 @@
-# Predictive Geofencing Dashboard - Stage 7 Diagnostic Skeleton
+# Predictive Geofencing - Operator Dashboard
 
-This is the Stage 7 diagnostic skeleton designed to verify end-to-end WebSocket streaming and REST communication between the FastAPI backend and a React browser client.
+Live operator dashboard for monitoring wandering risk, geospatial trajectories, TreeSHAP kinematic explainability, and caregiver quarantine alert workflows.
 
-> **Note**: This is **not** the final dashboard UI. Stage 8+ will introduce the interactive geospatial map, TreeSHAP explainability panels, and formal alert interaction workflows.
+---
+
+## Features
+
+### 1. Spatial Tracking & Trajectory Map (`MapPanel`)
+- Leaflet-based geospatial map rendering current coordinates and movement breadcrumbs.
+- Dynamic user marker with risk-tier colored pulsing aura (`QUIESCENT`, `NORMAL_TRANSIT`, `SUSPICIOUS`, `CRITICAL`).
+- Auto-centering map controller tracking new location points.
+- Historical trail polyline seeded from prior risk evaluations and extended by live updates.
+
+### 2. Risk Engine & Explainability (`RiskPanel`)
+- Current risk score card (0–100) with battery-constrained polling mode indicators (`CONTINUOUS`, `PULSE`, `LAST_GASP`).
+- Estimated wandering breach lead time predictions.
+- Dynamic SVG trendline chart displaying historical evaluations with reference threshold lines at 35, 65, and 85.
+- TreeSHAP feature importance ranking displaying human-readable kinematic flags and numeric SHAP values.
+
+### 3. Active Alerts & Quarantine Suppression (`AlertPanel`)
+- Real-time alert cards fanned out via `/ws/alerts/{user_id}` when risk escalates to Tier 2 or Tier 3.
+- Optimistic caregiver dismissal ("Mark User Safe") with automatic rollback on network failure.
+- Stage 4 H3 cell sensitivity suppression multiplier indicators.
+- 4th dismissal recalibration prompt banner triggering safe mobility profile routine-update flow.
+
+### 4. Historical Risk Records Table
+- REST-queried historical evaluations (`GET /api/risk-history/{user_id}`) displaying evaluation timestamps, risk tiers, scores, and H3 grid cell IDs.
 
 ---
 
@@ -26,11 +49,11 @@ The application will launch on [http://localhost:5173](http://localhost:5173).
 
 ### Dual WebSocket Architecture
 On clicking **Connect**, the frontend opens two independent WebSocket connections:
-- `/ws/risk/{user_id}`: Receives live computed `RiskScoreOutput` messages (risk tier, risk score, polling mode) fanned out on every ingested telemetry reading.
+- `/ws/risk/{user_id}`: Receives live computed `RiskScoreOutput` messages (coordinates, risk tier, score, polling mode, TreeSHAP explainability).
 - `/ws/alerts/{user_id}`: Receives live `AlertRecord` notifications whenever a user escalates into `SUSPICIOUS` (Tier 2) or `CRITICAL` (Tier 3).
 
-### REST Baseline Verification
-Upon connection, the client also executes `GET /api/risk-history/{user_id}?limit=10` to verify that persisted history in the SQLite database can be queried alongside active WebSocket streams.
+### REST Baseline & Trail Seeding
+Upon connection, the client executes `GET /api/risk-history/{user_id}?limit=20` to populate the historical table and immediately seed the map's breadcrumb trail with prior known locations before live streaming begins.
 
 ### Dev Proxy vs. Production CORS
 - During local development, `frontend/vite.config.js` proxies `/api` and `/ws` to `http://localhost:8000`, enabling seamless development without browser CORS restrictions.

@@ -141,22 +141,17 @@ export default function App() {
       const data = await res.json()
       setHistoryEntries(data)
 
-      // Seed location history from historical raw_output_json if empty
+      // Seed location history from historical location data if empty
       setLocationHistory((prev) => {
         if (prev.length > 0) return prev
         const seeded = []
-        // data is newest first, reverse so oldest first for chronological trail
-        const chronological = [...data].reverse()
+        // Ensure chronological order (oldest first -> newest last)
+        const chronological = [...data].sort(
+          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+        )
         for (const entry of chronological) {
-          if (entry.raw_output_json) {
-            try {
-              const raw = JSON.parse(entry.raw_output_json)
-              if (raw.location && raw.location.lat != null && raw.location.lng != null) {
-                seeded.push([raw.location.lat, raw.location.lng])
-              }
-            } catch {
-              // ignore parse errors
-            }
+          if (entry.location && entry.location.lat != null && entry.location.lng != null) {
+            seeded.push([entry.location.lat, entry.location.lng])
           }
         }
         if (seeded.length > 0) {

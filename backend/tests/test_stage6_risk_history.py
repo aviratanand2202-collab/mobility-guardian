@@ -261,3 +261,69 @@ def test_risk_history_limit_capping(client: TestClient):
     assert resp_large.status_code == 200
     # We only have 10 records, but the request was capped and succeeded
     assert len(resp_large.json()) == 10
+
+
+def test_risk_history_list_includes_location(client: TestClient):
+    """
+    Test 5: Verify that GET /api/risk-history/{user_id} includes the location
+    field extracted from the stored raw_output_json when present, and returns
+    None gracefully when a historical row predates the location field addition.
+    """
+    user_id = "user_hist_loc_01"
+    _grant_consent(client, user_id)
+
+    ts = datetime.now(timezone.utc) - timedelta(minutes=5)
+    telemetry = _make_telemetry(user_id, ts, lat=37.7749, lng=-122.4194)
+    resp = client.post("/api/telemetry/ingest", json=telemetry)
+    assert resp.status_code == 200
+
+    hist_resp = client.get(f"/api/risk-history/{user_id}")
+    assert hist_resp.status_code == 200
+    entries = hist_resp.json()
+    assert len(entries) == 1
+    assert "location" in entries[0]
+    loc = entries[0]["location"]
+    assert loc is not None
+    assert loc["lat"] == 37.7749
+    assert loc["lng"] == -122.4194
+    assert loc["altitude_m"] == 10.0
+
+    # Also simulate a legacy pre-Stage-8 historical row with no location key
+    import json
+    from app.db import async_session, RiskScoreHistoryRow
+
+    legacy_raw = json.dumps({
+        "user_id": user_id,
+        "timestamp": ts.isoformat(),
+        "risk_tier": "QUIESCENT",
+        "risk_score": 10.0,
+        "polling_tier": 0,
+        # note: NO location key at all
+    })
+
+    async def _insert_legacy():
+        async with async_session() as session:
+            session.add(
+                RiskScoreHistoryRow(
+                    user_id=user_id,
+                    timestamp=ts + timedelta(seconds=1),
+                    risk_tier="QUIESCENT",
+                    risk_score=10.0,
+                    polling_tier=0,
+                    grid_cell_id="8928308280fffff",
+                    raw_output_json=legacy_raw,
+                )
+            )
+            await session.commit()
+
+    asyncio.run(_insert_legacy())
+
+    hist_resp2 = client.get(f"/api/risk-history/{user_id}")
+    assert hist_resp2.status_code == 200
+    entries2 = hist_resp2.json()
+    assert len(entries2) == 2
+    # First entry has location
+    assert entries2[0]["location"] is not None
+    # Legacy entry gracefully has null location without raising any error
+    assert entries2[1]["location"] is None
+
