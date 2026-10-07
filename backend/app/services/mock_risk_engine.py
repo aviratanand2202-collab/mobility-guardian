@@ -21,6 +21,7 @@ from app.models import (
     TelemetryPayload,
 )
 from app.state_machines.battery_pulse import compute_polling_instruction
+from app.state_machines.dismissal_quarantine import CellDismissalState
 
 
 # ---------- Nested schema structures strictly matching /shared/schema.json ----------
@@ -81,12 +82,15 @@ def _normalize_utc(dt: datetime) -> datetime:
 def compute_risk(
     telemetry: TelemetryPayload,
     pdr_tier: PDRTierState | None = None,
+    cell_dismissal_state: CellDismissalState | None = None,
 ) -> RiskScoreOutput:
     """
     Deterministic mock risk engine.
 
     Derives risk from PDR state during degraded signal, or from a deterministic
-    speed + pseudo-random tortuosity heuristic during valid signal.
+    speed + pseudo-random tortuosity heuristic during valid signal. Applies
+    sensitivity multiplier from the cell dismissal quarantine state machine
+    to suppress risk score in previously-dismissed cells.
     """
     ts_utc = _normalize_utc(telemetry.timestamp)
 
@@ -108,17 +112,13 @@ def compute_risk(
     # risk_tier is derived directly from the PDR state machine.
     if telemetry.signal_status.state == SignalState.DEGRADED_SIGNAL or pdr_val is not None:
         if pdr_val == "INDOOR_PACING":
-            risk_tier = RiskTier.QUIESCENT
-            risk_score = 15.0
+            raw_score = 15.0
         elif pdr_val == "ZONE_TRANSITION":
-            risk_tier = RiskTier.NORMAL_TRANSIT
-            risk_score = 50.0
+            raw_score = 50.0
         elif pdr_val == "UNTRACKED_DISPLACEMENT":
-            risk_tier = RiskTier.SUSPICIOUS
-            risk_score = 75.0
+            raw_score = 75.0
         else:
-            risk_tier = RiskTier.QUIESCENT
-            risk_score = 15.0
+            raw_score = 15.0
         pdr_tier_str = pdr_val
 
     # Branch B: VALID signal
@@ -130,19 +130,26 @@ def compute_risk(
         speed_comp = min(60.0, speed * 12.0)
         # Tortuosity contribution up to 40 points
         tortuosity_comp = pseudo_rand * 40.0
-        raw_score = speed_comp + tortuosity_comp
-        risk_score = round(min(100.0, max(0.0, raw_score)), 1)
+        raw_score = min(100.0, max(0.0, speed_comp + tortuosity_comp))
 
-        # Map to risk_tier per specification boundaries:
-        # 0-34: QUIESCENT, 35-64: NORMAL_TRANSIT, 65-84: SUSPICIOUS, 85-100: CRITICAL
-        if risk_score <= 34.0:
-            risk_tier = RiskTier.QUIESCENT
-        elif risk_score <= 64.0:
-            risk_tier = RiskTier.NORMAL_TRANSIT
-        elif risk_score <= 84.0:
-            risk_tier = RiskTier.SUSPICIOUS
-        else:
-            risk_tier = RiskTier.CRITICAL
+    # Apply sensitivity suppression multiplier (floored at 0.70 inside CellDismissalState)
+    multiplier = (
+        cell_dismissal_state.sensitivity_multiplier()
+        if cell_dismissal_state is not None
+        else 1.0
+    )
+    risk_score = round(min(100.0, max(0.0, raw_score * multiplier)), 1)
+
+    # Map to risk_tier per specification boundaries:
+    # 0-34: QUIESCENT, 35-64: NORMAL_TRANSIT, 65-84: SUSPICIOUS, 85-100: CRITICAL
+    if risk_score <= 34.0:
+        risk_tier = RiskTier.QUIESCENT
+    elif risk_score <= 64.0:
+        risk_tier = RiskTier.NORMAL_TRANSIT
+    elif risk_score <= 84.0:
+        risk_tier = RiskTier.SUSPICIOUS
+    else:
+        risk_tier = RiskTier.CRITICAL
 
     # Map risk_tier -> polling_tier (0-3)
     polling_tier = _RISK_TO_POLLING_TIER[risk_tier]
@@ -209,6 +216,7 @@ def compute_risk(
         predicted_lead_time_sec=predicted_lead_time_sec,
         battery_override_active=battery_override_active,
         polling_instruction=polling_instruction,
+        location=telemetry.location,
         pdr_tier=pdr_tier_str,
         kinematic_features=kinematic_features,
         trigger_state=trigger_state,

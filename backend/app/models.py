@@ -98,6 +98,7 @@ class RiskScoreOutput(BaseModel):
     predicted_lead_time_sec: Optional[float] = None
     battery_override_active: bool = False
     polling_instruction: Optional[PollingInstruction] = None
+    location: Optional[Location] = None
     # kinematic_features, trigger_state, explainability intentionally loose
     # here (dict passthrough) since Person A owns their internal shape -
     # backend only needs to read risk_tier / risk_score / polling_tier to

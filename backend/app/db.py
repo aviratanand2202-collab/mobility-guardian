@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sqlalchemy import Boolean, Column, DateTime, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -72,6 +72,76 @@ class PDRStateRow(Base):
 
     user_id = Column(String, primary_key=True)
     tier = Column(String, nullable=False, default="INDOOR_PACING")
+
+
+# ---------- Alert records table ----------
+
+class AlertRecordRow(Base):
+    """Mirrors the AlertRecord Pydantic model (flattened Dismissal)."""
+    __tablename__ = "alert_records"
+
+    alert_id = Column(String, primary_key=True)
+    user_id = Column(String, nullable=False, index=True)
+    grid_cell_id = Column(String, nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False)
+    alert_tier = Column(Integer, nullable=False)
+    status = Column(String, nullable=False, default="PENDING")
+    dismissed_at = Column(DateTime(timezone=True), nullable=True)
+    dismissal_decay_clock_start = Column(DateTime(timezone=True), nullable=True)
+    dismissal_count_in_window = Column(Integer, nullable=True)
+
+
+# ---------- Risk score history table ----------
+
+class RiskScoreHistoryRow(Base):
+    """
+    Persisted evaluation history for computed RiskScoreOutput instances.
+
+    NOTE on Data Hygiene / Retention (per docs/limitations.md):
+    This table currently has no automated retention, TTL, or pruning policy
+    and will grow unbounded in long-running production environments.
+    Automated background pruning and H3 rollup aggregations are flagged
+    as a known system limitation for future development phases.
+    """
+    __tablename__ = "risk_score_history"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    risk_tier = Column(String, nullable=False)
+    risk_score = Column(Float, nullable=False)
+    polling_tier = Column(Integer, nullable=False)
+    grid_cell_id = Column(String, nullable=True)
+    raw_output_json = Column(Text, nullable=False)
+
+    __table_args__ = (
+        Index("ix_risk_score_history_user_timestamp", "user_id", "timestamp"),
+    )
+
+
+async def save_risk_history(
+    user_id: str,
+    timestamp: DateTime,
+    risk_tier: str,
+    risk_score: float,
+    polling_tier: int,
+    grid_cell_id: str | None,
+    raw_output_json: str,
+) -> RiskScoreHistoryRow:
+    """Persist a single computed risk output record to the history table."""
+    async with async_session() as session:
+        row = RiskScoreHistoryRow(
+            user_id=user_id,
+            timestamp=timestamp,
+            risk_tier=risk_tier,
+            risk_score=risk_score,
+            polling_tier=polling_tier,
+            grid_cell_id=grid_cell_id,
+            raw_output_json=raw_output_json,
+        )
+        session.add(row)
+        await session.commit()
+        return row
 
 
 # ---------- Lifecycle ----------

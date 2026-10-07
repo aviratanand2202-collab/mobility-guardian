@@ -184,6 +184,15 @@
       "properties": {
         "user_id": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" },
+        "location": {
+          "type": ["object", "null"],
+          "description": "Latest geographic coordinates corresponding to this risk evaluation window for live UI map tracking.",
+          "properties": {
+            "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+            "lng": { "type": "number", "minimum": -180, "maximum": 180 },
+            "altitude_m": { "type": ["number", "null"] }
+          }
+        },
 
         "risk_tier": {
           "type": "string",

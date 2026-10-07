@@ -25,6 +25,7 @@ from app.db import (
     ConsentRecordRow,
     CellDismissalStateRow,
     PDRStateRow,
+    AlertRecordRow,
 )
 from app.models import (
     TelemetryPayload,
@@ -54,6 +55,7 @@ def _clean_tables():
             await session.execute(delete(ConsentRecordRow))
             await session.execute(delete(CellDismissalStateRow))
             await session.execute(delete(PDRStateRow))
+            await session.execute(delete(AlertRecordRow))
             await session.commit()
     asyncio.run(_clean())
     yield
@@ -371,3 +373,21 @@ def test_utc_normalization_determinism():
     # Identical seed -> identical score and tier
     assert out1.risk_score == out2.risk_score
     assert out1.risk_tier == out2.risk_tier
+
+
+def test_risk_score_output_includes_location():
+    """Verify additive location field is populated on RiskScoreOutput."""
+    loc = Location(lat=37.7749, lng=-122.4194, altitude_m=12.5)
+    metrics = SensorMetrics(horizontal_accuracy_m=2.0, speed_mps=1.2, heading_deg=45.0, battery_pct=90)
+    t = TelemetryPayload(
+        user_id="u_loc_test",
+        timestamp=datetime.now(timezone.utc),
+        location=loc,
+        sensor_metrics=metrics,
+        signal_status=SignalStatus(state=SignalState.VALID),
+    )
+    out = compute_risk(t, None)
+    assert out.location is not None
+    assert out.location.lat == 37.7749
+    assert out.location.lng == -122.4194
+    assert out.location.altitude_m == 12.5

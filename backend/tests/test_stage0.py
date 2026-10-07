@@ -25,6 +25,7 @@ from app.db import (
     ConsentRecordRow,
     CellDismissalStateRow,
     PDRStateRow,
+    AlertRecordRow,
 )
 
 
@@ -44,6 +45,7 @@ def _clean_tables():
             await session.execute(delete(ConsentRecordRow))
             await session.execute(delete(CellDismissalStateRow))
             await session.execute(delete(PDRStateRow))
+            await session.execute(delete(AlertRecordRow))
             await session.commit()
     asyncio.run(_clean())
     yield

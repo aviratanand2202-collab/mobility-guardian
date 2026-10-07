@@ -33,6 +33,27 @@ full project spec, limitations, and roadmap.
 
 ## Getting started
 
+### Fast Path (Single Command)
+
+To launch both the backend (FastAPI) and frontend (React/Vite) development servers together with color-coded interleaved logs, automatic health check polling, and graceful cleanup:
+
+```bash
+# On Linux, macOS, or Git Bash:
+./dev_up.sh
+
+# On Windows PowerShell:
+./dev_up.ps1
+
+# On Windows Command Prompt:
+dev_up.bat
+```
+
+> **Note**: Run the GPS trajectory simulator (`backend/scripts/trajectory_simulator.py`) separately in its own terminal to feed simulated movement to the running backend.
+
+### Manual Setup & Individual Services
+
+If you prefer to run services individually or debug a single component:
+
 ```bash
 # ML side
 cd ml && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
@@ -41,7 +62,7 @@ cd ml && python -m venv .venv && source .venv/bin/activate && pip install -r req
 cd backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
 uvicorn app.main:app --reload
 
-# Frontend
+# Frontend side
 cd frontend && npm install && npm run dev
 ```
 
