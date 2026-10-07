@@ -164,6 +164,7 @@ export default function AlertPanel({ alerts, onAlertUpdate }) {
         <div className="alerts-list">
           {alerts.map((alert) => {
             const isDismissing = dismissingIds.has(alert.alert_id)
+            const isRecalibrating = recalibrationPrompt?.alertId === alert.alert_id
             const errorMsg = dismissErrors[alert.alert_id]
             const isPending = alert.status === 'PENDING'
             const isDismissed = alert.status === 'DISMISSED_SAFE'
@@ -220,10 +221,14 @@ export default function AlertPanel({ alerts, onAlertUpdate }) {
                   {isPending ? (
                     <button
                       className="btn btn-primary btn-sm"
-                      disabled={isDismissing}
+                      disabled={isDismissing || isRecalibrating}
                       onClick={() => handleDismiss(alert)}
                     >
-                      {isDismissing ? 'Updating Suppression...' : 'Mark User Safe'}
+                      {isDismissing
+                        ? 'Updating Suppression...'
+                        : isRecalibrating
+                        ? 'Recalibration Pending'
+                        : 'Mark User Safe'}
                     </button>
                   ) : isDismissed ? (
                     <span className="dismissed-label">

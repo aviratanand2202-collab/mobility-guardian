@@ -10,9 +10,9 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
   // Extract explainability top features
   const topFeatures = currentRisk?.explainability?.top_features || []
 
-  // Prepare trend data: reverse historyEntries so oldest is first, plus include currentRisk if newer
-  // Limit to last 15 points
-  const points = [...historyEntries].reverse().slice(-15)
+  // Prepare trend data: take the most recent 15 points (oldest first -> newest last),
+  // plus include currentRisk if newer / not already represented
+  const points = [...historyEntries].slice(-15)
   if (currentRisk && (points.length === 0 || points[points.length - 1].timestamp !== currentRisk.timestamp)) {
     points.push({
       timestamp: currentRisk.timestamp,
