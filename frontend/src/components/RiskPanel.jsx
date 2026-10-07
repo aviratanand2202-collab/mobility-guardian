@@ -1,15 +1,22 @@
 import React from 'react'
 
 export default function RiskPanel({ currentRisk, historyEntries }) {
-  const riskTier = currentRisk?.risk_tier || 'QUIESCENT'
-  const riskScore = currentRisk?.risk_score != null ? Number(currentRisk.risk_score) : null
+  // Derive effective risk evaluation: prefer live WebSocket currentRisk;
+  // fall back to the most recent record from historyEntries when connected with existing history
+  const latestHistory = historyEntries && historyEntries.length > 0
+    ? historyEntries[historyEntries.length - 1]
+    : null
+  const effectiveRisk = currentRisk || latestHistory
+
+  const riskTier = effectiveRisk?.risk_tier || 'QUIESCENT'
+  const riskScore = effectiveRisk?.risk_score != null ? Number(effectiveRisk.risk_score) : null
   const hasValidScore = typeof riskScore === 'number' && Number.isFinite(riskScore)
-  const pollingMode = currentRisk?.polling_instruction?.mode || 'CONTINUOUS'
-  const pollingTier = currentRisk?.polling_tier != null ? currentRisk.polling_tier : '-'
-  const leadTimeSec = currentRisk?.predicted_lead_time_sec
+  const pollingMode = effectiveRisk?.polling_instruction?.mode || 'CONTINUOUS'
+  const pollingTier = effectiveRisk?.polling_tier != null ? effectiveRisk.polling_tier : '-'
+  const leadTimeSec = effectiveRisk?.predicted_lead_time_sec
 
   // Extract explainability top features
-  const topFeatures = currentRisk?.explainability?.top_features || []
+  const topFeatures = effectiveRisk?.explainability?.top_features || []
 
   // Prepare trend data: take the most recent 15 points (oldest first -> newest last),
   // plus include currentRisk if newer / not already represented
@@ -100,7 +107,7 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
           </div>
           <div className="detail-item">
             <span className="detail-label">Battery Override:</span>
-            <span className="detail-val mono">{currentRisk?.battery_override_active ? 'Active' : 'Normal'}</span>
+            <span className="detail-val mono">{effectiveRisk?.battery_override_active ? 'Active' : 'Normal'}</span>
           </div>
         </div>
       </div>

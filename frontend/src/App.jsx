@@ -207,6 +207,8 @@ export default function App() {
   }
 
   const latestRisk = riskMessages.length > 0 ? riskMessages[0] : null
+  const latestHistory = historyEntries.length > 0 ? historyEntries[historyEntries.length - 1] : null
+  const activeRisk = latestRisk || latestHistory
 
   return (
     <div className="container">
@@ -268,8 +270,8 @@ export default function App() {
           <MapPanel
             currentLocation={currentLocation}
             locationHistory={locationHistory}
-            currentRiskTier={latestRisk?.risk_tier}
-            currentRiskScore={latestRisk?.risk_score}
+            currentRiskTier={activeRisk?.risk_tier}
+            currentRiskScore={activeRisk?.risk_score}
             userId={userId}
           />
         </div>
