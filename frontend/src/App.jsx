@@ -36,6 +36,7 @@ export default function App() {
   }, [])
 
   const disconnectSockets = () => {
+    console.info('[Dashboard] disconnectSockets() executing: closing sockets and setting isConnected=false')
     if (riskSocketRef.current) {
       riskSocketRef.current.onclose = null
       riskSocketRef.current.close()
@@ -49,6 +50,7 @@ export default function App() {
     setRiskWsStatus('disconnected')
     setAlertWsStatus('disconnected')
     setIsConnected(false)
+    console.info('[Dashboard] disconnectSockets() complete.')
   }
 
   const connectSockets = (targetUserId) => {
@@ -175,15 +177,32 @@ export default function App() {
   }
 
   const handleConnectClick = (e) => {
-    e.preventDefault()
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    console.info('[Dashboard] handleConnectClick() fired. Current isConnected state:', isConnected)
+    if (isConnected) {
+      console.warn('[Dashboard] handleConnectClick() suppressed: already connected (prevented form resubmission).')
+      return
+    }
     connectSockets(userId)
   }
 
-  const handleDisconnectClick = () => {
+  const handleDisconnectClick = (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    console.info('[Dashboard] handleDisconnectClick() fired: calling disconnectSockets()')
     disconnectSockets()
   }
 
-  const handleReconnectClick = () => {
+  const handleReconnectClick = (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     connectSockets(userId)
   }
 
@@ -207,6 +226,7 @@ export default function App() {
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             placeholder="e.g. sim_stage6"
+            disabled={isConnected}
           />
           {!isConnected ? (
             <button type="submit" className="btn btn-primary">

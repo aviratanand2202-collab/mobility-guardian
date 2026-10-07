@@ -3,6 +3,7 @@ import React from 'react'
 export default function RiskPanel({ currentRisk, historyEntries }) {
   const riskTier = currentRisk?.risk_tier || 'QUIESCENT'
   const riskScore = currentRisk?.risk_score != null ? Number(currentRisk.risk_score) : null
+  const hasValidScore = typeof riskScore === 'number' && Number.isFinite(riskScore)
   const pollingMode = currentRisk?.polling_instruction?.mode || 'CONTINUOUS'
   const pollingTier = currentRisk?.polling_tier != null ? currentRisk.polling_tier : '-'
   const leadTimeSec = currentRisk?.predicted_lead_time_sec
@@ -62,10 +63,24 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
         <div className="metric-score-block">
           <div className="metric-label">Current Risk Score</div>
           <div className="metric-value-row">
-            <span className={`metric-value tier-text-${riskTier}`}>
-              {riskScore != null ? riskScore.toFixed(1) : '--'}
-            </span>
-            <span className="metric-scale">/ 100</span>
+            {hasValidScore ? (
+              <>
+                <span className={`metric-value tier-text-${riskTier}`}>
+                  {riskScore.toFixed(1)}
+                </span>
+                <span className="metric-scale">/ 100</span>
+              </>
+            ) : (
+              <>
+                <span
+                  className="metric-value metric-placeholder"
+                  style={{ fontWeight: 500, color: '#9ca3af', letterSpacing: '2px' }}
+                >
+                  --
+                </span>
+                <span className="metric-scale">/ 100</span>
+              </>
+            )}
           </div>
           {leadTimeSec != null && (
             <div className="lead-time-notice">
