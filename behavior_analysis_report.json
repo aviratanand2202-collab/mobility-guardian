@@ -1,0 +1,535 @@
+{
+  "dataset_name": "GeoLife 120-Second Analysis Window Behavioral Classification (Chunk 4)",
+  "output_file": "C:\\Projects\\mobility-guardian\\ml\\data\\processed\\behavior_windows.parquet",
+  "total_windows": 676697,
+  "runtime_seconds": 2.766881227493286,
+  "config": {
+    "min_eval_points": 3,
+    "min_eval_span_sec": 10.0,
+    "min_movement_path_m": 10.0,
+    "min_movement_extent_m": 10.0,
+    "min_pacing_closure": 0.6,
+    "min_pacing_expansion": 1.8,
+    "min_pacing_backtracking": 0.01,
+    "max_pacing_entropy": 0.7,
+    "min_lapping_closure": 0.6,
+    "min_lapping_aspect_ratio": 0.2,
+    "min_lapping_loop_metric": 0.45,
+    "max_lapping_backtracking": 0.05,
+    "max_lapping_heading_change_mean": 60.0,
+    "min_random_entropy": 0.7,
+    "min_random_heading_var": 0.5,
+    "min_random_turn_frequency": 5.0,
+    "min_random_heading_change_mean": 45.0,
+    "max_random_loop_metric": 1.0
+  },
+  "class_counts": {
+    "NORMAL": 497759,
+    "RANDOM_DRIFT": 80776,
+    "INSUFFICIENT_EVIDENCE": 75681,
+    "LAPPING": 11964,
+    "PACING": 10517
+  },
+  "class_percentages": {
+    "NORMAL": 73.55714596045202,
+    "RANDOM_DRIFT": 11.936804803331476,
+    "INSUFFICIENT_EVIDENCE": 11.183882889978824,
+    "LAPPING": 1.7679995625811846,
+    "PACING": 1.554166783656496
+  },
+  "grouped_feature_stats": {
+    "NORMAL": {
+      "count": 497759,
+      "percentage": 73.55714596045202,
+      "path_distance_m": {
+        "mean": 841.4205953098419,
+        "median": 389.1595302646327,
+        "p25": 139.54294795816787,
+        "p75": 981.8881701659814
+      },
+      "straight_line_displacement_m": {
+        "mean": 783.8150968659241,
+        "median": 330.85717928424685,
+        "p25": 106.09060317468894,
+        "p75": 881.3637888519625
+      },
+      "path_closure_ratio": {
+        "mean": 0.15402087841525922,
+        "median": 0.07869701246730398,
+        "p25": 0.013667206899347084,
+        "p75": 0.2401611578849579
+      },
+      "loop_metric": {
+        "mean": 0.07106703611339213,
+        "median": 0.019101727583854828,
+        "p25": 0.0018875493237118651,
+        "p75": 0.10014608775263041
+      },
+      "pacing_tendency": {
+        "mean": 0.008148429396609029,
+        "median": 0.0,
+        "p25": 0.0,
+        "p75": 0.0008765922242902496
+      },
+      "heading_variability": {
+        "mean": 0.19204518704961254,
+        "median": 0.12701025665558868,
+        "p25": 0.02043306756793134,
+        "p75": 0.30206811876198925
+      },
+      "entropy_directional": {
+        "mean": 0.4307567864353891,
+        "median": 0.4498890810783261,
+        "p25": 0.2922869071293833,
+        "p75": 0.6141236643923694
+      },
+      "turn_frequency": {
+        "mean": 2.5751905864738047,
+        "median": 1.5652173913043477,
+        "p25": 0.0,
+        "p75": 3.652173913043478
+      },
+      "mean_speed_mps": {
+        "mean": 7.98990355077053,
+        "median": 4.1115591743829505,
+        "p25": 1.4858787077640923,
+        "p75": 9.886070996320456
+      }
+    },
+    "PACING": {
+      "count": 10517,
+      "percentage": 1.554166783656496,
+      "path_distance_m": {
+        "mean": 1470.022427990938,
+        "median": 143.40648982617802,
+        "p25": 63.39165338834841,
+        "p75": 302.45129143103526
+      },
+      "straight_line_displacement_m": {
+        "mean": 55.32784358203653,
+        "median": 20.876743203050633,
+        "p25": 9.374515482528718,
+        "p75": 50.84509179421716
+      },
+      "path_closure_ratio": {
+        "mean": 0.8084046231521267,
+        "median": 0.8220920057815782,
+        "p25": 0.7204585611677274,
+        "p75": 0.8988424144502243
+      },
+      "loop_metric": {
+        "mean": 0.315819253870772,
+        "median": 0.30092224047139166,
+        "p25": 0.18224939815163416,
+        "p75": 0.4341602439015192
+      },
+      "pacing_tendency": {
+        "mean": 0.16056138553506005,
+        "median": 0.12784394669538138,
+        "p25": 0.0736772416653602,
+        "p75": 0.21120228648261907
+      },
+      "heading_variability": {
+        "mean": 0.6991258922468281,
+        "median": 0.7416467583271629,
+        "p25": 0.5866511259973982,
+        "p75": 0.84750144832676
+      },
+      "entropy_directional": {
+        "mean": 0.5981910769583956,
+        "median": 0.6283643818569654,
+        "p25": 0.5576351984400187,
+        "p75": 0.6675684939759813
+      },
+      "turn_frequency": {
+        "mean": 7.373768185015083,
+        "median": 4.067796610169491,
+        "p25": 2.608695652173913,
+        "p75": 5.538461538461539
+      },
+      "mean_speed_mps": {
+        "mean": 3.2225243309679743,
+        "median": 1.7515599513709887,
+        "p25": 0.747201725904616,
+        "p75": 3.854141420290969
+      }
+    },
+    "LAPPING": {
+      "count": 11964,
+      "percentage": 1.7679995625811846,
+      "path_distance_m": {
+        "mean": 209.25108220243544,
+        "median": 127.77570629127041,
+        "p25": 79.15822895038835,
+        "p75": 217.77638199779074
+      },
+      "straight_line_displacement_m": {
+        "mean": 50.62234950017809,
+        "median": 26.65614610392327,
+        "p25": 13.59720832644821,
+        "p75": 52.83790000036087
+      },
+      "path_closure_ratio": {
+        "mean": 0.769977985042789,
+        "median": 0.7649438298628546,
+        "p25": 0.6868687166771483,
+        "p75": 0.8498646368064978
+      },
+      "loop_metric": {
+        "mean": 0.5956797218396623,
+        "median": 0.5794808869568941,
+        "p25": 0.5156140783866583,
+        "p75": 0.6581327768757149
+      },
+      "pacing_tendency": {
+        "mean": 0.014878034127501685,
+        "median": 0.0,
+        "p25": 0.0,
+        "p75": 0.03169616790228487
+      },
+      "heading_variability": {
+        "mean": 0.731630180970281,
+        "median": 0.7433921821236041,
+        "p25": 0.6464019069195008,
+        "p75": 0.8354257226148203
+      },
+      "entropy_directional": {
+        "mean": 0.8306255015681548,
+        "median": 0.8486663990427141,
+        "p25": 0.780120642768523,
+        "p75": 0.9001380096597513
+      },
+      "turn_frequency": {
+        "mean": 5.870290878373678,
+        "median": 5.546218487394958,
+        "p25": 4.067796610169491,
+        "p75": 7.118644067796611
+      },
+      "mean_speed_mps": {
+        "mean": 2.118443972713743,
+        "median": 1.2629360246030925,
+        "p25": 0.7676006659944818,
+        "p75": 2.2937006687304433
+      }
+    },
+    "RANDOM_DRIFT": {
+      "count": 80776,
+      "percentage": 11.936804803331476,
+      "path_distance_m": {
+        "mean": 174.2493547409027,
+        "median": 108.60636454721981,
+        "p25": 64.56070046696205,
+        "p75": 189.54165905835563
+      },
+      "straight_line_displacement_m": {
+        "mean": 71.62113376952283,
+        "median": 32.95167718793154,
+        "p25": 16.049989609649938,
+        "p75": 68.07313317660822
+      },
+      "path_closure_ratio": {
+        "mean": 0.6425437356763783,
+        "median": 0.6545319992615648,
+        "p25": 0.5105296441570225,
+        "p75": 0.7975440800261464
+      },
+      "loop_metric": {
+        "mean": 0.31770500786128864,
+        "median": 0.305487252626753,
+        "p25": 0.18573495423023367,
+        "p75": 0.4304946519728098
+      },
+      "pacing_tendency": {
+        "mean": 0.08616223182079584,
+        "median": 0.07000592990231992,
+        "p25": 0.03497688849810986,
+        "p75": 0.11807511285130454
+      },
+      "heading_variability": {
+        "mean": 0.7258403631527242,
+        "median": 0.7272265051960354,
+        "p25": 0.6177542048471554,
+        "p75": 0.8295187206859785
+      },
+      "entropy_directional": {
+        "mean": 0.8370704472203636,
+        "median": 0.839204822245024,
+        "p25": 0.7874019715545897,
+        "p75": 0.8878442516014182
+      },
+      "turn_frequency": {
+        "mean": 7.969386843155068,
+        "median": 6.315789473684211,
+        "p25": 5.217391304347826,
+        "p75": 8.048780487804878
+      },
+      "mean_speed_mps": {
+        "mean": 1.6593169332085156,
+        "median": 1.079744362326247,
+        "p25": 0.6139279460453715,
+        "p75": 1.9549935286558036
+      }
+    },
+    "INSUFFICIENT_EVIDENCE": {
+      "count": 75681,
+      "percentage": 11.183882889978824,
+      "path_distance_m": {
+        "mean": 7304.5528014129495,
+        "median": 2.1289693204871902,
+        "p25": 0.0,
+        "p75": 10.967508318085933
+      },
+      "straight_line_displacement_m": {
+        "mean": 301.61866930634676,
+        "median": 1.3370584126354623,
+        "p25": 0.0,
+        "p75": 6.520869773794467
+      },
+      "path_closure_ratio": {
+        "mean": 0.488987196249266,
+        "median": 0.5637815982886645,
+        "p25": 0.16399611909256828,
+        "p75": 0.7643783693750187
+      },
+      "loop_metric": {
+        "mean": 0.23754217070844008,
+        "median": 0.21360443567269943,
+        "p25": 0.037333087005237534,
+        "p75": 0.3866062330590568
+      },
+      "pacing_tendency": {
+        "mean": 0.1046448173334742,
+        "median": 0.0617499066749395,
+        "p25": 0.0,
+        "p75": 0.1612095778931495
+      },
+      "heading_variability": {
+        "mean": 0.37863903719777375,
+        "median": 0.3734012051821851,
+        "p25": 0.03218806012123698,
+        "p75": 0.6659107264253603
+      },
+      "entropy_directional": {
+        "mean": 0.4769109382558414,
+        "median": 0.5,
+        "p25": 0.3060986113514965,
+        "p75": 0.6500706883049155
+      },
+      "turn_frequency": {
+        "mean": 3.88851644916697,
+        "median": 2.0338983050847457,
+        "p25": 0.0,
+        "p75": 4.8979591836734695
+      },
+      "mean_speed_mps": {
+        "mean": 95.10855039060053,
+        "median": 0.1628689386130441,
+        "p25": 0.017254638357584964,
+        "p75": 0.968299710324535
+      }
+    }
+  },
+  "synthetic_benchmark": {
+    "total_synthetic_windows": 150,
+    "classification_report": {
+      "NORMAL": {
+        "precision": 0.967741935483871,
+        "recall": 1.0,
+        "f1-score": 0.9836065573770492,
+        "support": 30.0
+      },
+      "PACING": {
+        "precision": 1.0,
+        "recall": 0.7666666666666667,
+        "f1-score": 0.8679245283018868,
+        "support": 30.0
+      },
+      "LAPPING": {
+        "precision": 0.967741935483871,
+        "recall": 1.0,
+        "f1-score": 0.9836065573770492,
+        "support": 30.0
+      },
+      "RANDOM_DRIFT": {
+        "precision": 0.8571428571428571,
+        "recall": 1.0,
+        "f1-score": 0.9230769230769231,
+        "support": 30.0
+      },
+      "INSUFFICIENT_EVIDENCE": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 30.0
+      },
+      "accuracy": 0.9533333333333334,
+      "macro avg": {
+        "precision": 0.9585253456221199,
+        "recall": 0.9533333333333334,
+        "f1-score": 0.9516429132265817,
+        "support": 150.0
+      },
+      "weighted avg": {
+        "precision": 0.9585253456221199,
+        "recall": 0.9533333333333334,
+        "f1-score": 0.9516429132265817,
+        "support": 150.0
+      }
+    },
+    "confusion_matrix": {
+      "NORMAL": {
+        "NORMAL": 30,
+        "PACING": 0,
+        "LAPPING": 0,
+        "RANDOM_DRIFT": 0,
+        "INSUFFICIENT_EVIDENCE": 0
+      },
+      "PACING": {
+        "NORMAL": 1,
+        "PACING": 23,
+        "LAPPING": 1,
+        "RANDOM_DRIFT": 5,
+        "INSUFFICIENT_EVIDENCE": 0
+      },
+      "LAPPING": {
+        "NORMAL": 0,
+        "PACING": 0,
+        "LAPPING": 30,
+        "RANDOM_DRIFT": 0,
+        "INSUFFICIENT_EVIDENCE": 0
+      },
+      "RANDOM_DRIFT": {
+        "NORMAL": 0,
+        "PACING": 0,
+        "LAPPING": 0,
+        "RANDOM_DRIFT": 30,
+        "INSUFFICIENT_EVIDENCE": 0
+      },
+      "INSUFFICIENT_EVIDENCE": {
+        "NORMAL": 0,
+        "PACING": 0,
+        "LAPPING": 0,
+        "RANDOM_DRIFT": 0,
+        "INSUFFICIENT_EVIDENCE": 30
+      }
+    },
+    "sample_mismatches": [
+      {
+        "window_id": "syn_pace_2",
+        "true_class": "PACING",
+        "predicted_class": "NORMAL",
+        "path_distance_m": 315.89165228978464,
+        "displacement_m": 103.91640889392103,
+        "closure": 0.6710378126782761,
+        "loop_metric": 0.3039826919045315,
+        "entropy": 0.3755079868319598
+      },
+      {
+        "window_id": "syn_pace_13",
+        "true_class": "PACING",
+        "predicted_class": "LAPPING",
+        "path_distance_m": 517.2387373978958,
+        "displacement_m": 0.8152817167350084,
+        "closure": 0.9984237806301274,
+        "loop_metric": 0.9775636365435107,
+        "entropy": 0.7267240113149865
+      },
+      {
+        "window_id": "syn_pace_15",
+        "true_class": "PACING",
+        "predicted_class": "RANDOM_DRIFT",
+        "path_distance_m": 174.06484532725227,
+        "displacement_m": 0.9718076668569529,
+        "closure": 0.9944169791147093,
+        "loop_metric": 0.15576636034901145,
+        "entropy": 0.7587597353083367
+      },
+      {
+        "window_id": "syn_pace_16",
+        "true_class": "PACING",
+        "predicted_class": "RANDOM_DRIFT",
+        "path_distance_m": 160.03092149253123,
+        "displacement_m": 50.125055496481835,
+        "closure": 0.6867789360394253,
+        "loop_metric": 0.1383128068918633,
+        "entropy": 0.7048793033461406
+      },
+      {
+        "window_id": "syn_pace_19",
+        "true_class": "PACING",
+        "predicted_class": "RANDOM_DRIFT",
+        "path_distance_m": 217.8067477345184,
+        "displacement_m": 0.6990681884359216,
+        "closure": 0.9967904199676678,
+        "loop_metric": 0.8582031948869797,
+        "entropy": 0.7159590784479355
+      },
+      {
+        "window_id": "syn_pace_20",
+        "true_class": "PACING",
+        "predicted_class": "RANDOM_DRIFT",
+        "path_distance_m": 276.84475452890746,
+        "displacement_m": 88.74766085520915,
+        "closure": 0.679431669181428,
+        "loop_metric": 0.03649358164925592,
+        "entropy": 0.7199961266692155
+      },
+      {
+        "window_id": "syn_pace_23",
+        "true_class": "PACING",
+        "predicted_class": "RANDOM_DRIFT",
+        "path_distance_m": 219.1495745433653,
+        "displacement_m": 41.23273284119738,
+        "closure": 0.8118511846207657,
+        "loop_metric": 0.051412539541717595,
+        "entropy": 0.7661486136625765
+      }
+    ]
+  },
+  "random_drift_regimes": {
+    "strongly_diffusive": {
+      "total_windows": 15,
+      "detected_random_drift": 13,
+      "classified_normal": 0,
+      "recall": 0.867,
+      "median_entropy": 0.968,
+      "median_heading_var": 0.895,
+      "median_turn_freq": 19.4,
+      "median_displacement_m": 7.2,
+      "median_path_distance_m": 79.3
+    },
+    "weakly_persistent": {
+      "total_windows": 15,
+      "detected_random_drift": 9,
+      "classified_normal": 0,
+      "recall": 0.6,
+      "median_entropy": 0.944,
+      "median_heading_var": 0.812,
+      "median_turn_freq": 15.9,
+      "median_displacement_m": 23.6,
+      "median_path_distance_m": 100.1
+    },
+    "high_turn": {
+      "total_windows": 15,
+      "detected_random_drift": 15,
+      "classified_normal": 0,
+      "recall": 1.0,
+      "median_entropy": 0.972,
+      "median_heading_var": 0.896,
+      "median_turn_freq": 22.4,
+      "median_displacement_m": 7.0,
+      "median_path_distance_m": 63.5
+    },
+    "spatially_dispersed": {
+      "total_windows": 15,
+      "detected_random_drift": 15,
+      "classified_normal": 0,
+      "recall": 1.0,
+      "median_entropy": 0.973,
+      "median_heading_var": 0.893,
+      "median_turn_freq": 23.9,
+      "median_displacement_m": 19.4,
+      "median_path_distance_m": 195.4
+    }
+  }
+}
