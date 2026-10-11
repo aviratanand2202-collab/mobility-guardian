@@ -8,7 +8,7 @@ if not defined BASH_PATH if exist "C:\Program Files (x86)\Git\bin\bash.exe" set 
 if not defined BASH_PATH if exist "%LOCALAPPDATA%\Programs\Git\bin\bash.exe" set "BASH_PATH=%LOCALAPPDATA%\Programs\Git\bin\bash.exe"
 
 if not defined BASH_PATH (
-    echo [ERROR] Git Bash (bash.exe) was not found. Please install Git for Windows or run dev_up.sh in Git Bash.
+    echo [ERROR] Git Bash ^(bash.exe^) was not found. Please install Git for Windows or run dev_up.sh in Git Bash.
     exit /b 1
 )
 

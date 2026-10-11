@@ -152,7 +152,7 @@ prefix_frontend() {
 echo -e "${YELLOW}Starting backend service (FastAPI on port 8000)...${NC}"
 (
     cd "$ROOT_DIR/backend" || exit 1
-    python -m uvicorn app.main:app --reload --port 8000 2>&1 | prefix_backend
+    python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 2>&1 | prefix_backend
 ) &
 BACKEND_PID=$!
 
