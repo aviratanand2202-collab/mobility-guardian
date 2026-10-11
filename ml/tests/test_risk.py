@@ -437,7 +437,15 @@ def test_risk_config_centralization_and_reproducibility():
     for rel_path, expected_hash in locked_hashes.items():
         p = Path(rel_path)
         assert p.exists(), f"Locked file {rel_path} does not exist"
-        h = hashlib.sha256(p.read_bytes()).hexdigest()
+        if rel_path.endswith(".py"):
+            raw_bytes = p.read_bytes().replace(b"\r\n", b"\n")
+            h = hashlib.sha256(raw_bytes).hexdigest()
+        else:
+            hasher = hashlib.sha256()
+            with open(p, "rb") as f:
+                while chunk := f.read(65536):
+                    hasher.update(chunk)
+            h = hasher.hexdigest()
         assert h == expected_hash, f"Locked file {rel_path} hash modified: {h} != {expected_hash}"
 
     # 5. Verify existing prediction and report files exist and were not altered

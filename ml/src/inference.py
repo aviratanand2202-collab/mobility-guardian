@@ -39,6 +39,7 @@ from ml.src.geofence import (
     evaluate_geospatial_context,
 )
 from ml.src.risk import RiskConfig, extract_prediction_features
+from ml.src.trajectory import SegmentationConfig
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,7 @@ class InferenceConfig:
     # Window parameters
     window_duration_sec: float = 120.0
     min_points_per_window: int = 3
+    max_gap_sec: float = SegmentationConfig.max_gap_seconds
 
     # Personalization thresholds
     min_warmup_trips: int = 7
@@ -109,6 +111,8 @@ class RiskInferenceEngine:
         self.window_histories: Dict[str, List[Dict[str, Any]]] = {}
         # Last known risk score output per user
         self.last_risk_outputs: Dict[str, Dict[str, Any]] = {}
+        # Active continuous segment index per user stream
+        self.user_segment_indices: Dict[str, int] = {}
         # Cached user baseline profiles: user_id -> baseline dict
         self.user_baselines: Dict[str, Dict[str, Any]] = {}
         # Cached full user profiles: user_id -> profile dict
@@ -361,10 +365,20 @@ class RiskInferenceEngine:
         u_ctx["cold_start_status"] = cold_start_status
         u_ctx["trip_count"] = trip_count
 
+        # Guard against cross-segment lag feature leakage if caller explicitly provides prev_window
+        effective_prev_win = prev_window
+        if (
+            prev_window is not None
+            and "segment_id" in curr_window
+            and "segment_id" in prev_window
+            and curr_window.get("segment_id") != prev_window.get("segment_id")
+        ):
+            effective_prev_win = None
+
         # 1. Extract exact 49 features matching training pipeline
         feats = extract_prediction_features(
             curr_window=curr_window,
-            prev_window=prev_window,
+            prev_window=effective_prev_win,
             baselines=baseline,
             user_context=u_ctx,
             config=self.risk_cfg,
@@ -472,6 +486,8 @@ class RiskInferenceEngine:
             },
             "metadata": {
                 "window_id": str(curr_window.get("window_id", "")),
+                "segment_id": str(curr_window.get("segment_id", "")),
+                "window_index": int(curr_window.get("window_index", 0)),
                 "start_time": window_start,
                 "end_time": window_end,
                 "profile_mode": profile_mode,
@@ -597,26 +613,82 @@ class RiskInferenceEngine:
         if user_id not in self.point_buffers:
             self.point_buffers[user_id] = []
         buf = self.point_buffers[user_id]
-        buf.append(point_record)
+
+        # Check temporal gap from preceding observation in buffer
+        if buf:
+            t_prev = buf[-1]["timestamp"]
+            t_curr = point_record["timestamp"]
+            if t_prev.tzinfo is not None and t_curr.tzinfo is None:
+                t_curr = t_curr.tz_localize(t_prev.tzinfo)
+            elif t_prev.tzinfo is None and t_curr.tzinfo is not None:
+                t_prev = t_prev.tz_localize(t_curr.tzinfo)
+            gap_sec = (t_curr - t_prev).total_seconds()
+            if gap_sec > self.config.max_gap_sec:
+                # Temporal gap exceeds canonical segmentation limit (300.0s):
+                # split continuous segment, reset buffer to latest point,
+                # clear pending last_risk_outputs, and advance segment index
+                buf = [point_record]
+                self.point_buffers[user_id] = buf
+                self.last_risk_outputs.pop(user_id, None)
+                self.user_segment_indices[user_id] = self.user_segment_indices.get(user_id, 0) + 1
+            else:
+                buf.append(point_record)
+        else:
+            buf.append(point_record)
 
         # Check if accumulated buffer duration >= window_duration_sec
         t_start = buf[0]["timestamp"]
         t_curr = buf[-1]["timestamp"]
+        if t_start.tzinfo is not None and t_curr.tzinfo is None:
+            t_curr = t_curr.tz_localize(t_start.tzinfo)
+        elif t_start.tzinfo is None and t_curr.tzinfo is not None:
+            t_start = t_start.tz_localize(t_curr.tzinfo)
         duration = (t_curr - t_start).total_seconds()
 
         if duration >= self.config.window_duration_sec and len(buf) >= self.config.min_points_per_window:
             pts_df = pd.DataFrame(buf)
-            win_features = compute_window_features_dict(pts_df, self.feature_cfg)
-            win_features["window_id"] = f"{user_id}_w_{len(self.window_histories.get(user_id, []))}"
-            win_features["user_id"] = user_id
+            user_hist = self.window_histories.setdefault(user_id, [])
+            global_w_idx = len(user_hist)
+            win_id = f"{user_id}_w_{global_w_idx}"
+            traj_id = f"{user_id}_stream"
+            seg_idx = self.user_segment_indices.get(user_id, 0)
+            seg_id = f"{traj_id}_s{seg_idx}"
+
+            # Canonical per-segment window_index: 0-based within the continuous segment
+            seg_w_idx = sum(1 for w in user_hist if w.get("segment_id") == seg_id)
+
+            dt_series = (pts_df["timestamp"] - pts_df["timestamp"].shift(1)).dt.total_seconds().fillna(0.0)
+            time_diffs = dt_series.to_numpy(dtype=np.float64)
+
+            win_features = compute_window_features_dict(
+                window_id=win_id,
+                user_id=user_id,
+                trajectory_id=traj_id,
+                segment_id=seg_id,
+                window_index=int(seg_w_idx),
+                is_full_window=True,
+                lats=pts_df["latitude"].to_numpy(dtype=np.float64),
+                lons=pts_df["longitude"].to_numpy(dtype=np.float64),
+                ts=pts_df["timestamp"].to_numpy(),
+                dts=time_diffs,
+                config=self.feature_cfg,
+            )
             win_features["start_time"] = t_start.isoformat()
             win_features["end_time"] = t_curr.isoformat()
             win_features["latitude"] = float(point_record["latitude"])
             win_features["longitude"] = float(point_record["longitude"])
 
-            # Previous window for lag features
-            user_hist = self.window_histories.setdefault(user_id, [])
-            prev_win = user_hist[-1] if user_hist else None
+            # Previous window for lag features (must belong to same continuous segment and be consecutive)
+            prev_candidate = user_hist[-1] if user_hist else None
+            prev_win = (
+                prev_candidate
+                if (
+                    prev_candidate
+                    and prev_candidate.get("segment_id") == seg_id
+                    and int(seg_w_idx) == int(prev_candidate.get("window_index", -1)) + 1
+                )
+                else None
+            )
 
             # User baseline: check stored profile or fallback to population baseline
             stored_prof = self.load_user_profile(user_id)
@@ -648,6 +720,10 @@ class RiskInferenceEngine:
                 latitude=win_features["latitude"],
                 longitude=win_features["longitude"],
             )
+            risk_out["location"] = {
+                "lat": float(point_record["latitude"]),
+                "lng": float(point_record["longitude"]),
+            }
 
             # Update histories and reset point buffer
             user_hist.append(win_features)
@@ -668,6 +744,7 @@ class RiskInferenceEngine:
             updated = {
                 **last_out,
                 "timestamp": timestamp_str,
+                "location": {"lat": lat_val, "lng": lon_val} if lat_val is not None and lon_val is not None else last_out.get("location"),
                 "safe_area_state": geo_ctx["safe_area_state"],
                 "familiarity_state": geo_ctx["familiarity_state"],
                 "geospatial_context": geo_ctx,
@@ -687,9 +764,25 @@ class RiskInferenceEngine:
             "polling_tier": 0,
             "predicted_lead_time_sec": None,
             "battery_override_active": False,
-            "kinematic_features": {"points_accumulated": len(buf), "buffer_duration_sec": round(duration, 1)},
-            "trigger_state": {"status": "ACCUMULATING_WINDOW"},
-            "explainability": {"status": "Accumulating 120s window telemetry."},
+            "location": {"lat": lat_val, "lng": lon_val} if lat_val is not None and lon_val is not None else None,
+            "kinematic_features": {
+                "status": "INSUFFICIENT_EVIDENCE",
+                "points_accumulated": len(buf),
+                "buffer_duration_sec": round(duration, 1),
+            },
+            "trigger_state": {
+                "status": "ACCUMULATING_WINDOW",
+                "reason": "INSUFFICIENT_EVIDENCE",
+                "calibrated_probability": None,
+                "raw_probability": None,
+            },
+            "explainability": {
+                "status": "INSUFFICIENT_EVIDENCE",
+                "message": (
+                    f"Accumulating 120s window telemetry ({len(buf)} points, {duration:.1f}s elapsed). "
+                    f"Kinematic risk calculation pending full window."
+                ),
+            },
             "safe_area_state": geo_ctx["safe_area_state"],
             "familiarity_state": geo_ctx["familiarity_state"],
             "geospatial_context": geo_ctx,
@@ -700,13 +793,28 @@ class RiskInferenceEngine:
                 "baseline_type": "POPULATION",
                 "safe_area_state": geo_ctx["safe_area_state"],
                 "familiarity_state": geo_ctx["familiarity_state"],
+                "evidence_status": "INSUFFICIENT_EVIDENCE",
+            },
+            "decision_state": "INSUFFICIENT_EVIDENCE",
+            "display_state": "ACCUMULATING WINDOW (INSUFFICIENT EVIDENCE)",
+            "human_readable_reason": (
+                f"Telemetry window is accumulating ({len(buf)} points, {duration:.1f}s / "
+                f"{self.config.window_duration_sec}s). Kinematic outlier evaluation has not yet executed."
+            ),
+            "decision": {
+                "decision_state": "INSUFFICIENT_EVIDENCE",
+                "display_state": "ACCUMULATING WINDOW (INSUFFICIENT EVIDENCE)",
+                "severity_level": "INFO",
+                "headline": "Awaiting Telemetry Window Accumulation",
+                "reason": (
+                    f"Telemetry window is accumulating ({len(buf)} points, {duration:.1f}s / "
+                    f"{self.config.window_duration_sec}s). Kinematic outlier evaluation has not yet executed."
+                ),
+                "behavioral_tier": "QUIESCENT",
+                "safe_area_state": geo_ctx["safe_area_state"],
+                "familiarity_state": geo_ctx["familiarity_state"],
             },
         }
-        dec = interpret_decision(accum_out, self.decision_cfg)
-        accum_out["decision_state"] = dec.decision_state
-        accum_out["display_state"] = dec.display_state
-        accum_out["human_readable_reason"] = dec.reason
-        accum_out["decision"] = dec.to_dict()
         return accum_out
 
     def predict_plt_trajectory(
@@ -727,34 +835,55 @@ class RiskInferenceEngine:
         df_pts["timestamp"] = pd.to_datetime(df_pts["timestamp"])
         df_pts = df_pts.sort_values("timestamp").reset_index(drop=True)
 
-        # Segment points into 120-second non-overlapping windows
-        t0 = df_pts["timestamp"].iloc[0]
-        elapsed_sec = (df_pts["timestamp"] - t0).dt.total_seconds()
-        df_pts["window_index"] = (elapsed_sec // self.config.window_duration_sec).astype(int)
-
         traj_id = Path(plt_file_path).stem
+
+        # Identify continuous segments based on canonical max_gap_sec
+        diffs = df_pts["timestamp"].diff().dt.total_seconds().fillna(0.0)
+        diffs = np.maximum(diffs, 0.0)
+        gap_mask = diffs > self.config.max_gap_sec
+        seg_indices = gap_mask.cumsum().astype(int)
+        df_pts["segment_index"] = seg_indices
+        df_pts["segment_id"] = [f"{traj_id}_s{idx}" for idx in seg_indices]
+
+        # Canonical per-segment windowing: anchor elapsed time and window_index
+        # to each independent segment's own start timestamp.
+        w_dur = self.config.window_duration_sec
         windows: List[Dict[str, Any]] = []
-        for w_idx, w_df in df_pts.groupby("window_index"):
-            if len(w_df) < self.config.min_points_per_window:
-                continue
-            dt_series = (w_df["timestamp"] - w_df["timestamp"].shift(1)).dt.total_seconds().fillna(0.0)
-            time_diffs = dt_series.to_numpy(dtype=np.float64)
-            w_feats = compute_window_features_dict(
-                window_id=f"{u_id}_w_{w_idx}",
-                user_id=u_id,
-                trajectory_id=traj_id,
-                segment_id=f"{traj_id}_s0",
-                window_index=int(w_idx),
-                is_full_window=True,
-                lats=w_df["latitude"].to_numpy(dtype=np.float64),
-                lons=w_df["longitude"].to_numpy(dtype=np.float64),
-                ts=w_df["timestamp"].to_numpy(),
-                dts=time_diffs,
-                config=self.feature_cfg,
-            )
-            w_feats["latitude"] = float(w_df["latitude"].iloc[-1])
-            w_feats["longitude"] = float(w_df["longitude"].iloc[-1])
-            windows.append(w_feats)
+
+        for s_idx, s_df in df_pts.groupby("segment_index", sort=True):
+            seg_id = f"{traj_id}_s{s_idx}"
+            seg_t0 = s_df["timestamp"].iloc[0]
+            seg_t_end = s_df["timestamp"].iloc[-1]
+            seg_duration = float((seg_t_end - seg_t0).total_seconds())
+            max_win_idx = int(np.floor(seg_duration / w_dur))
+
+            seg_elapsed = (s_df["timestamp"] - seg_t0).dt.total_seconds()
+            s_df = s_df.assign(window_index=(seg_elapsed // w_dur).astype(int))
+
+            for w_idx, w_df in s_df.groupby("window_index", sort=True):
+                if len(w_df) < self.config.min_points_per_window:
+                    continue
+                w_idx_int = int(w_idx)
+                is_full = (w_idx_int < max_win_idx) or (seg_duration == (max_win_idx + 1) * w_dur)
+                dt_series = (w_df["timestamp"] - w_df["timestamp"].shift(1)).dt.total_seconds().fillna(0.0)
+                time_diffs = dt_series.to_numpy(dtype=np.float64)
+                win_id = f"{u_id}_s{s_idx}_w_{w_idx_int}"
+                w_feats = compute_window_features_dict(
+                    window_id=win_id,
+                    user_id=u_id,
+                    trajectory_id=traj_id,
+                    segment_id=seg_id,
+                    window_index=w_idx_int,
+                    is_full_window=bool(is_full),
+                    lats=w_df["latitude"].to_numpy(dtype=np.float64),
+                    lons=w_df["longitude"].to_numpy(dtype=np.float64),
+                    ts=w_df["timestamp"].to_numpy(),
+                    dts=time_diffs,
+                    config=self.feature_cfg,
+                )
+                w_feats["latitude"] = float(w_df["latitude"].iloc[-1])
+                w_feats["longitude"] = float(w_df["longitude"].iloc[-1])
+                windows.append(w_feats)
 
         if not windows:
             raise ValueError(f"No valid 120-second windows extracted from {plt_file_path}")
@@ -788,7 +917,15 @@ class RiskInferenceEngine:
 
         predictions: List[Dict[str, Any]] = []
         for i, curr_win in enumerate(windows):
-            prev_win = windows[i - 1] if i > 0 else None
+            prev_win = (
+                windows[i - 1]
+                if (
+                    i > 0
+                    and curr_win.get("window_index") == windows[i - 1].get("window_index") + 1
+                    and curr_win.get("segment_id") == windows[i - 1].get("segment_id")
+                )
+                else None
+            )
             pred = self.predict_window(
                 curr_window=curr_win,
                 prev_window=prev_win,
