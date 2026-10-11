@@ -1,0 +1,140 @@
+{
+  "chunk": 5.1,
+  "status": "CHUNK 5 LOCKED",
+  "audit_version": "5.1_targeted_final_audit",
+  "timestamp_utc": "2026-10-06T15:52:00Z",
+  "dataset_summary": {
+    "users_profiled": 182,
+    "total_source_trajectories": 18669,
+    "ml_driven_users": 116,
+    "rule_based_fallback_users": 66,
+    "ml_driven_percentage": 63.74
+  },
+  "spatial_anchors": {
+    "clustering_method": "DBSCAN (Haversine)",
+    "eps_meters": 150.0,
+    "min_samples": 3,
+    "confirmed_threshold_distinct_visits": 5,
+    "radius_percentile": 95.0,
+    "radius_floor_meters": 25.0,
+    "total_anchors_discovered": 1154,
+    "confirmed_anchors": 524,
+    "pending_caregiver_review_anchors": 630,
+    "clusters_prevented_from_false_confirmation": 142,
+    "users_with_zero_anchors": 23,
+    "anchor_count_distribution": {
+      "min": 0,
+      "p25": 1.0,
+      "median": 3.0,
+      "p75": 6.0,
+      "max": 139,
+      "mean": 6.34
+    }
+  },
+  "mobility_trip_statistics": {
+    "users_with_return_trips": 145,
+    "return_trip_availability_pct": 79.67,
+    "avg_return_trip_distance_m": {
+      "median": 12697.31,
+      "mean": 19701.43
+    },
+    "max_historical_radius_m": {
+      "median": 123118.53,
+      "max": 11142249.14
+    }
+  },
+  "baseline_modeling": {
+    "features_profiled": [
+      "entropy_directional",
+      "mean_speed_mps",
+      "tortuosity_index",
+      "path_distance_m",
+      "straight_line_displacement_m",
+      "turn_frequency",
+      "loop_metric",
+      "pacing_tendency"
+    ],
+    "total_baseline_fits": 1456,
+    "standard_empirical_fits_n_geq_30": 1405,
+    "invalid_gamma_empirical_fallbacks_n_lt_30": 34,
+    "total_empirical_fits": 1439,
+    "gamma_fits": 16,
+    "undefined_fits": 1,
+    "fallback_reasons_by_feature": {
+      "entropy_directional": 11,
+      "loop_metric": 5,
+      "pacing_tendency": 9,
+      "turn_frequency": 7,
+      "path_distance_m": 1,
+      "straight_line_displacement_m": 1
+    },
+    "reconciliation_equation": "1405 standard empirical + 34 fallback empirical + 16 gamma + 1 undefined = 1456 total (100.0%)"
+  },
+  "cold_start_stability": {
+    "distance_metric": "cumulative trajectory path distance in meters (D_i)",
+    "trip_ordering": "strictly chronological by start_time",
+    "missing_value_handling": "NaN preserved, excluded from CV calculation; zero substitution strictly prohibited",
+    "min_trips_for_ml_driven": 7,
+    "stability_delta_cv_threshold": 0.05,
+    "consecutive_stable_trips_required": 3,
+    "delta_cv_formula": "|CV_N - CV_{N-1}| / CV_{N-1}",
+    "cv_formula": "std(D_1..D_N, ddof=1) / mean(D_1..D_N)"
+  },
+  "data_quality_quarantine": {
+    "total_window_observations": 676697,
+    "quarantined_observations": 238,
+    "quarantine_percentage": 0.0352,
+    "quarantine_reasons": {
+      "extreme_kinematic_transition": 236,
+      "personal_mad_speed_outlier": 55,
+      "unphysical_speed_burst": 51
+    }
+  },
+  "test_suite_verification": {
+    "total_tests": 83,
+    "passed_tests": 83,
+    "flake8_errors": 0
+  },
+  "locked_files_integrity": {
+    "ml/data/processed/trajectories.parquet": {
+      "size_bytes": 741328927,
+      "sha256_prefix": "17570ab9226f5274",
+      "matches_locked": true
+    },
+    "ml/data/processed/trajectory_windows.parquet": {
+      "size_bytes": 755650907,
+      "sha256_prefix": "8a7fbd8677594f23",
+      "matches_locked": true
+    },
+    "ml/data/processed/trajectory_features.parquet": {
+      "size_bytes": 207997942,
+      "sha256_prefix": "7a2b6637a42e8d1e",
+      "matches_locked": true
+    },
+    "ml/data/processed/behavior_windows.parquet": {
+      "size_bytes": 54493814,
+      "sha256_prefix": "ac67e9dd2c8ad0d3",
+      "matches_locked": true
+    },
+    "ml/src/data.py": {
+      "size_bytes": 29496,
+      "sha256_prefix": "a124f2d469102475",
+      "matches_locked": true
+    },
+    "ml/src/trajectory.py": {
+      "size_bytes": 26745,
+      "sha256_prefix": "b21ed71e63056af5",
+      "matches_locked": true
+    },
+    "ml/src/features.py": {
+      "size_bytes": 37768,
+      "sha256_prefix": "0b850322a44f8c75",
+      "matches_locked": true
+    },
+    "ml/src/behavior.py": {
+      "size_bytes": 46273,
+      "sha256_prefix": "b87f5b6d68ef9b19",
+      "matches_locked": true
+    }
+  }
+}
