@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
-import MapPanel from './components/MapPanel'
-import RiskPanel from './components/RiskPanel'
-import AlertPanel from './components/AlertPanel'
+import CaregiverDashboard from './components/caregiver/CaregiverDashboard'
+import TechnicalDashboard from './components/technical/TechnicalDashboard'
 
 export default function App() {
+  const [activeView, setActiveView] = useState('caregiver')
   const [userId, setUserId] = useState('sim_stage6')
   const [isConnected, setIsConnected] = useState(false)
 
@@ -18,6 +18,7 @@ export default function App() {
   // Spatial location state (decoupled from riskMessages feed)
   const [currentLocation, setCurrentLocation] = useState(null)
   const [locationHistory, setLocationHistory] = useState([])
+  const [trailMetadata, setTrailMetadata] = useState([])
 
   // Historical data (fetched once on connect)
   const [historyEntries, setHistoryEntries] = useState([])
@@ -85,6 +86,15 @@ export default function App() {
           const loc = { lat: payload.location.lat, lng: payload.location.lng }
           setCurrentLocation(loc)
           setLocationHistory((prev) => [...prev, [loc.lat, loc.lng]].slice(-30))
+          setTrailMetadata((prev) => [
+            ...prev,
+            {
+              timestamp: payload.timestamp || null,
+              riskTier: payload.risk_tier || null,
+              riskScore: payload.risk_score != null ? payload.risk_score : null,
+              speed: payload.sensor_metrics?.speed_mps != null ? payload.sensor_metrics.speed_mps : null,
+            },
+          ].slice(-30))
         }
       } catch (err) {
         console.error('Failed to parse risk websocket message', err)
@@ -143,25 +153,35 @@ export default function App() {
       const data = await res.json()
       setHistoryEntries(data)
 
-      // Seed location history from historical location data if empty
-      setLocationHistory((prev) => {
-        if (prev.length > 0) return prev
-        const seeded = []
-        // Ensure chronological order (oldest first -> newest last)
-        const chronological = [...data].sort(
-          (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-        )
-        for (const entry of chronological) {
-          if (entry.location && entry.location.lat != null && entry.location.lng != null) {
-            seeded.push([entry.location.lat, entry.location.lng])
-          }
+      // Seed location history and trail metadata from historical location data if empty
+      const chronological = [...data].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+      )
+      const seededCoords = []
+      const seededMeta = []
+      for (const entry of chronological) {
+        if (entry.location && entry.location.lat != null && entry.location.lng != null) {
+          seededCoords.push([entry.location.lat, entry.location.lng])
+          seededMeta.push({
+            timestamp: entry.timestamp || null,
+            riskTier: entry.risk_tier || null,
+            riskScore: entry.risk_score != null ? entry.risk_score : null,
+            speed: entry.sensor_metrics?.speed_mps != null ? entry.sensor_metrics.speed_mps : null,
+          })
         }
-        if (seeded.length > 0) {
-          const last = seeded[seeded.length - 1]
+      }
+      if (seededCoords.length > 0) {
+        setLocationHistory((prev) => {
+          if (prev.length > 0) return prev
+          const last = seededCoords[seededCoords.length - 1]
           setCurrentLocation({ lat: last[0], lng: last[1] })
-        }
-        return seeded.slice(-30)
-      })
+          return seededCoords.slice(-30)
+        })
+        setTrailMetadata((prev) => {
+          if (prev.length > 0) return prev
+          return seededMeta.slice(-30)
+        })
+      }
     } catch (err) {
       console.error('Error fetching risk history:', err)
       setHistoryError(err.message)
@@ -210,150 +230,115 @@ export default function App() {
   const latestHistory = historyEntries.length > 0 ? historyEntries[historyEntries.length - 1] : null
   const activeRisk = latestRisk || latestHistory
 
+  // Synchronize document.body theme class with active view (Serene Hearth vs Technical)
+  useEffect(() => {
+    if (activeView === 'caregiver') {
+      document.body.classList.remove('caregiver-dark-theme')
+      document.body.classList.remove('technical-theme')
+      document.body.classList.add('caregiver-serene-theme')
+    } else {
+      document.body.classList.remove('caregiver-serene-theme')
+      document.body.classList.remove('caregiver-dark-theme')
+      document.body.classList.add('technical-theme')
+    }
+    return () => {
+      document.body.classList.remove('caregiver-serene-theme')
+      document.body.classList.remove('caregiver-dark-theme')
+      document.body.classList.remove('technical-theme')
+    }
+  }, [activeView])
+
+  // Test event listener for state-driven UI verification (gated to dev/test environments)
+  useEffect(() => {
+    const isTestable =
+      Boolean(import.meta.env.DEV) ||
+      import.meta.env.MODE === 'test' ||
+      (typeof window !== 'undefined' && window.__ENABLE_TEST_HARNESS__ === true)
+
+    if (!isTestable) return
+
+    const handler = (e) => {
+      if (e.detail?.riskMessages !== undefined) setRiskMessages(e.detail.riskMessages)
+      if (e.detail?.alertMessages !== undefined) setAlertMessages(e.detail.alertMessages)
+      if (e.detail?.alertWsStatus !== undefined) setAlertWsStatus(e.detail.alertWsStatus)
+      if (e.detail?.riskWsStatus !== undefined) setRiskWsStatus(e.detail.riskWsStatus)
+      if (e.detail?.isConnected !== undefined) setIsConnected(e.detail.isConnected)
+      if (e.detail?.currentLocation !== undefined) setCurrentLocation(e.detail.currentLocation)
+      if (e.detail?.locationHistory !== undefined) setLocationHistory(e.detail.locationHistory)
+      if (e.detail?.trailMetadata !== undefined) setTrailMetadata(e.detail.trailMetadata)
+    }
+    window.addEventListener('__testInjectState', handler)
+    return () => window.removeEventListener('__testInjectState', handler)
+  }, [])
+
   return (
-    <div className="container">
-      <header className="header">
-        <h1>Predictive Geofencing Operator Dashboard</h1>
-        <p>Stage 8: Live Spatial Visualization, TreeSHAP Explainability &amp; Quarantine Suppression</p>
-      </header>
-
-      {/* Connection & Controls Bar */}
-      <div className="controls-card">
-        <form onSubmit={handleConnectClick} className="form-group">
-          <label htmlFor="user-id-input">User ID:</label>
-          <input
-            id="user-id-input"
-            type="text"
-            className="form-input"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="e.g. sim_stage6"
-            disabled={isConnected}
-          />
-          {!isConnected ? (
-            <button type="submit" className="btn btn-primary">
-              Connect
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={handleDisconnectClick}
-            >
-              Disconnect
-            </button>
-          )}
-          {isConnected && (riskWsStatus === 'closed' || riskWsStatus === 'error' || alertWsStatus === 'closed' || alertWsStatus === 'error') && (
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleReconnectClick}
-            >
-              Reconnect
-            </button>
-          )}
-        </form>
-
-        <div className="status-indicators">
-          <span className={`status-pill status-${riskWsStatus}`}>
-            Risk WS: {riskWsStatus.toUpperCase()}
-          </span>
-          <span className={`status-pill status-${alertWsStatus}`}>
-            Alerts WS: {alertWsStatus.toUpperCase()}
-          </span>
+    <div className={`container ${activeView === 'caregiver' ? 'caregiver-mode-active' : 'technical-mode-active'}`}>
+      {/* Top View Mode Switcher */}
+      <div className="view-mode-bar">
+        <div className="view-mode-toggle">
+          <button
+            type="button"
+            className={`view-toggle-btn ${activeView === 'caregiver' ? 'active' : ''}`}
+            onClick={() => setActiveView('caregiver')}
+          >
+            🛡️ Caregiver View
+          </button>
+          <button
+            type="button"
+            className={`view-toggle-btn ${activeView === 'technical' ? 'active' : ''}`}
+            onClick={() => setActiveView('technical')}
+          >
+            🛠️ Technical Inspector
+          </button>
         </div>
       </div>
 
-      {/* Main Dashboard Grid: Map on Left (60%), Risk & Alerts on Right (40%) */}
-      <div className="dashboard-main-grid">
-        <div className="map-column">
-          <MapPanel
-            currentLocation={currentLocation}
-            locationHistory={locationHistory}
-            currentRiskTier={activeRisk?.risk_tier}
-            currentRiskScore={activeRisk?.risk_score}
-            userId={userId}
-          />
-        </div>
-
-        <div className="side-column">
-          <RiskPanel
-            currentRisk={latestRisk}
-            historyEntries={historyEntries}
-          />
-
-          <AlertPanel
-            alerts={alertMessages}
-            onAlertUpdate={handleAlertUpdate}
-          />
-        </div>
-      </div>
-
-      {/* Bottom Panel: Historical Risk Records (REST) */}
-      <div className="panel" style={{ marginTop: '24px' }}>
-        <div className="panel-header">
-          <h2 className="panel-title">
-            Historical Risk Records (REST: GET /api/risk-history/{userId}?limit=20)
-          </h2>
-          {isConnected && (
-            <button
-              className="btn btn-secondary"
-              style={{ padding: '4px 10px', fontSize: '12px' }}
-              onClick={() => fetchHistory(userId)}
-            >
-              Refresh
-            </button>
-          )}
-        </div>
-
-        {historyLoading && <div className="empty-state">Loading risk history...</div>}
-        {historyError && (
-          <div className="empty-state" style={{ color: '#b91c1c' }}>
-            Failed to load risk history: {historyError}
-          </div>
-        )}
-
-        {!historyLoading && !historyError && historyEntries.length === 0 && (
-          <div className="empty-state">
-            {isConnected
-              ? 'No history found for this user in the database.'
-              : 'Connect to query database history for this user.'}
-          </div>
-        )}
-
-        {!historyLoading && !historyError && historyEntries.length > 0 && (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Timestamp</th>
-                  <th>Risk Tier</th>
-                  <th>Risk Score</th>
-                  <th>Polling Tier</th>
-                  <th>Grid Cell ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historyEntries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td className="mono">{entry.id}</td>
-                    <td className="mono">{entry.timestamp}</td>
-                    <td>
-                      <span className={`tier-badge tier-${entry.risk_tier}`}>
-                        {entry.risk_tier}
-                      </span>
-                    </td>
-                    <td className="mono">{Number(entry.risk_score).toFixed(1)}</td>
-                    <td className="mono">Tier {entry.polling_tier}</td>
-                    <td className="mono">{entry.grid_cell_id || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Render active interface: pure React render branch without reconnecting */}
+      {activeView === 'caregiver' ? (
+        <CaregiverDashboard
+          userId={userId}
+          setUserId={setUserId}
+          isConnected={isConnected}
+          handleConnectClick={handleConnectClick}
+          handleDisconnectClick={handleDisconnectClick}
+          handleReconnectClick={handleReconnectClick}
+          riskWsStatus={riskWsStatus}
+          alertWsStatus={alertWsStatus}
+          currentLocation={currentLocation}
+          locationHistory={locationHistory}
+          trailMetadata={trailMetadata}
+          activeRisk={activeRisk}
+          latestRisk={latestRisk}
+          historyEntries={historyEntries}
+          alertMessages={alertMessages}
+          handleAlertUpdate={handleAlertUpdate}
+          historyLoading={historyLoading}
+          historyError={historyError}
+          fetchHistory={fetchHistory}
+          onSwitchToTechnical={() => setActiveView('technical')}
+        />
+      ) : (
+        <TechnicalDashboard
+          userId={userId}
+          setUserId={setUserId}
+          isConnected={isConnected}
+          handleConnectClick={handleConnectClick}
+          handleDisconnectClick={handleDisconnectClick}
+          handleReconnectClick={handleReconnectClick}
+          riskWsStatus={riskWsStatus}
+          alertWsStatus={alertWsStatus}
+          currentLocation={currentLocation}
+          locationHistory={locationHistory}
+          activeRisk={activeRisk}
+          latestRisk={latestRisk}
+          historyEntries={historyEntries}
+          alertMessages={alertMessages}
+          handleAlertUpdate={handleAlertUpdate}
+          historyLoading={historyLoading}
+          historyError={historyError}
+          fetchHistory={fetchHistory}
+        />
+      )}
     </div>
   )
 }

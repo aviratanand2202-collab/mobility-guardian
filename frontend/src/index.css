@@ -213,7 +213,24 @@ body {
 /* Map Panel */
 .map-wrapper {
   position: relative;
+  height: 500px;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
   background-color: #e5e7eb;
+}
+
+@media (max-width: 1024px) {
+  .map-wrapper {
+    height: 420px;
+  }
+}
+
+@media (max-width: 640px) {
+  .map-wrapper {
+    height: 350px;
+  }
 }
 
 .map-overlay-notice {
@@ -616,4 +633,4014 @@ body {
   color: #9ca3af;
   font-size: 13px;
   font-style: italic;
+}
+
+/* ==========================================================================
+   View Mode Switcher (Caregiver View vs Technical Inspector)
+   ========================================================================== */
+.view-mode-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.view-mode-toggle {
+  display: inline-flex;
+  background-color: #e2e8f0;
+  padding: 4px;
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.08);
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.view-toggle-btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle-btn:hover {
+  color: #0f172a;
+}
+
+.view-toggle-btn.active {
+  background: #ffffff;
+  color: #4f46e5;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+}
+
+/* ==========================================================================
+   Serene Hearth Healthcare: Design Tokens & Typography Foundation (Phase 1)
+   ========================================================================== */
+:root {
+  --sh-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --sh-surface: #fcf9ef;
+  --sh-surface-dim: #dddad0;
+  --sh-surface-bright: #fcf9ef;
+  --sh-surface-lowest: #ffffff;
+  --sh-surface-low: #f7f4e9;
+  --sh-surface-container: #f1eee4;
+  --sh-surface-high: #ebe8de;
+  --sh-surface-highest: #e5e2d9;
+  --sh-surface-variant: #e5e2d9;
+
+  --sh-on-surface: #1c1c16;
+  --sh-on-surface-variant: #414843;
+  --sh-outline: #717973;
+  --sh-outline-variant: #c1c8c2;
+
+  --sh-primary: #244a38;
+  --sh-primary-dark: #0b3323;
+  --sh-on-primary: #ffffff;
+  --sh-primary-container: #244a38;
+  --sh-on-primary-container: #90b9a2;
+
+  --sh-secondary: #596056;
+  --sh-on-secondary: #ffffff;
+  --sh-secondary-container: #dee5d7;
+  --sh-on-secondary-container: #5f665b;
+
+  --sh-safe: #2e7d52;
+  --sh-safe-wash: #e6f2eb;
+  --sh-safe-border: #cde3d5;
+  --sh-tertiary: #00341c;
+  --sh-tertiary-container: #004d2c;
+  --sh-tertiary-fixed: #a4f4bf;
+  --sh-tertiary-fixed-dim: #88d7a5;
+
+  --sh-caution: #d97736;
+  --sh-caution-wash: #fbf0e6;
+  --sh-caution-border: #f4d6c1;
+
+  --sh-critical: #c2413a;
+  --sh-critical-wash: #f9e9e8;
+  --sh-critical-border: #f0ccc9;
+  --sh-error: #ba1a1a;
+  --sh-error-container: #ffdad6;
+  --sh-on-error-container: #93000a;
+}
+
+body.caregiver-serene-theme {
+  background-color: var(--sh-surface);
+  color: var(--sh-on-surface);
+  font-family: var(--sh-font-family);
+  overflow-x: hidden;
+}
+
+.container.caregiver-mode-active {
+  max-width: 1400px;
+  width: 100%;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+body.caregiver-serene-theme .caregiver-dashboard-container {
+  font-family: var(--sh-font-family);
+}
+
+/* Numerical alignment per Serene Hearth specification */
+body.caregiver-serene-theme .tabular-nums,
+body.caregiver-serene-theme .metric-value,
+body.caregiver-serene-theme .timeline-card-time,
+body.caregiver-serene-theme .timeline-card-speed,
+body.caregiver-serene-theme .inspector-value,
+body.caregiver-serene-theme .mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* View Mode Switcher styling in Serene Hearth mode */
+body.caregiver-serene-theme .view-mode-toggle {
+  background-color: #e5e2d9;
+  border: 1px solid #c1c8c2;
+  box-shadow: inset 0 1px 2px rgba(28, 28, 22, 0.06);
+}
+
+body.caregiver-serene-theme .view-toggle-btn {
+  color: #414843;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .view-toggle-btn:hover {
+  color: #1c1c16;
+}
+
+body.caregiver-serene-theme .view-toggle-btn.active {
+  background: #244a38;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(36, 74, 56, 0.25);
+}
+
+/* Strict Isolation: Technical Theme explicitly defaults to system stack */
+body.technical-theme {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Fallback for legacy dark theme references during migration */
+body.caregiver-dark-theme {
+  background-color: #0b0f19;
+  color: #f8fafc;
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Caregiver Dashboard: Dark Premium Safety-Monitoring Theme & Compact Layout
+   ========================================================================== */
+.caregiver-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 1. Serene Hearth Header with Integrated Person Identifier & Controls */
+.caregiver-header {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 14px;
+  padding: 12px 18px;
+  box-shadow: var(--sh-shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.caregiver-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.caregiver-identity-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.caregiver-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--sh-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(36, 74, 56, 0.2);
+  flex-shrink: 0;
+}
+
+.caregiver-avatar .avatar-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.caregiver-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sh-secondary);
+  margin-bottom: 2px;
+  font-family: var(--sh-font-family);
+}
+
+.caregiver-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.caregiver-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  font-family: var(--sh-font-family);
+}
+
+.caregiver-person-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: var(--sh-surface-container);
+  border: 1px solid rgba(193, 200, 194, 0.6);
+  color: var(--sh-on-surface);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.caregiver-person-badge strong {
+  font-weight: 700;
+  color: var(--sh-on-surface);
+}
+
+.beacon-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.beacon-dot.beacon-live {
+  background-color: var(--sh-tertiary-fixed-dim);
+  box-shadow: 0 0 0 2px rgba(118, 160, 137, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.beacon-dot.beacon-offline {
+  background-color: var(--sh-outline);
+}
+
+.badge-divider {
+  color: var(--sh-outline);
+  font-size: 11px;
+}
+
+.beacon-status-text {
+  font-size: 11.5px;
+  color: var(--sh-secondary);
+  font-weight: 500;
+}
+
+/* Integrated Monitoring Controls */
+.caregiver-controls-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-group-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.control-label-compact {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sh-secondary);
+}
+
+.control-input-compact {
+  padding: 7px 12px;
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sh-on-surface);
+  background-color: var(--sh-surface-container-lowest);
+  font-family: monospace;
+  width: 140px;
+  transition: all 0.2s ease;
+}
+
+.control-input-compact:focus {
+  outline: none;
+  border-color: var(--sh-primary);
+  box-shadow: 0 0 0 2px rgba(36, 74, 56, 0.2);
+}
+
+.control-input-compact:disabled {
+  opacity: 0.7;
+  background-color: var(--sh-surface-container);
+  cursor: not-allowed;
+}
+
+.caregiver-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--sh-font-family);
+}
+
+.caregiver-btn-primary {
+  background-color: var(--sh-primary);
+  color: var(--sh-on-primary);
+  box-shadow: 0 2px 6px rgba(36, 74, 56, 0.2);
+}
+
+.caregiver-btn-primary:hover {
+  background-color: #1b382b;
+}
+
+.caregiver-btn-danger {
+  background-color: var(--sh-error-container);
+  border: 1px solid var(--sh-error);
+  color: var(--sh-on-error-container);
+}
+
+.caregiver-btn-danger:hover {
+  background-color: var(--sh-error);
+  color: #ffffff;
+}
+
+.caregiver-btn-secondary {
+  background-color: var(--sh-surface-container);
+  border: 1px solid var(--sh-outline-variant);
+  color: var(--sh-on-surface);
+}
+
+.caregiver-btn-secondary:hover {
+  background-color: var(--sh-surface-container-high);
+}
+
+/* Header Status Pills Bar */
+.caregiver-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(193, 200, 194, 0.4);
+  flex-wrap: wrap;
+}
+
+.caregiver-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.caregiver-status-pill .pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.caregiver-status-pill.pill-active {
+  background-color: var(--sh-primary-container);
+  color: var(--sh-on-primary-container);
+  border: 1px solid rgba(36, 74, 56, 0.25);
+}
+
+.caregiver-status-pill.pill-active .pill-dot {
+  background-color: var(--sh-primary);
+  box-shadow: 0 0 5px rgba(36, 74, 56, 0.5);
+}
+
+.caregiver-status-pill.pill-inactive {
+  background-color: var(--sh-surface-container);
+  color: var(--sh-secondary);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+.caregiver-status-pill.pill-inactive .pill-dot {
+  background-color: var(--sh-outline);
+}
+
+.caregiver-status-pill.pill-connecting {
+  background-color: var(--sh-tertiary-container);
+  color: #7a3a0c;
+  border: 1px solid rgba(217, 119, 54, 0.35);
+}
+
+.caregiver-status-pill.pill-connecting .pill-dot {
+  background-color: var(--sh-tertiary);
+  animation: pulse 1.5s infinite;
+}
+
+.caregiver-status-pill.pill-alert-issue {
+  background-color: var(--sh-error-container);
+  color: var(--sh-on-error-container);
+  border: 1px solid rgba(194, 65, 58, 0.35);
+}
+
+.caregiver-status-pill.pill-normal {
+  background-color: var(--sh-secondary-container);
+  color: var(--sh-on-secondary-fixed);
+  border: 1px solid rgba(36, 74, 56, 0.2);
+}
+
+.caregiver-status-pill.pill-warning {
+  background-color: var(--sh-error-container);
+  color: var(--sh-on-error-container);
+  border: 1px solid rgba(194, 65, 58, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.caregiver-status-pill.pill-subtle {
+  background-color: var(--sh-surface-container-low);
+  color: var(--sh-secondary);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+/* 2. Serene Hearth Status Hero Banner with Integrated Care Action Strip */
+.caregiver-hero-banner {
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--sh-surface-container-low);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  box-shadow: var(--sh-shadow-sm);
+  transition: all 0.25s ease;
+}
+
+.caregiver-hero-quiescent,
+.caregiver-hero-normal {
+  border-left: 5px solid var(--sh-primary);
+}
+
+.caregiver-hero-suspicious {
+  border-left: 5px solid var(--sh-tertiary);
+}
+
+.caregiver-hero-critical {
+  border-left: 5px solid var(--sh-error);
+}
+
+.caregiver-hero-offline {
+  border-left: 5px solid var(--sh-outline);
+}
+
+.caregiver-hero-connecting {
+  border-left: 5px solid var(--sh-tertiary);
+}
+
+.caregiver-hero-waiting {
+  border-left: 5px solid #3d82a4;
+}
+
+/* Hero Top Row */
+.caregiver-hero-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-status-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  box-shadow: 0 1px 3px rgba(36, 74, 56, 0.05);
+}
+
+.hero-status-badge.caregiver-badge-quiescent,
+.hero-status-badge.caregiver-badge-normal {
+  color: var(--sh-primary);
+  border-color: rgba(36, 74, 56, 0.3);
+}
+
+.hero-status-badge.caregiver-badge-quiescent .hero-status-dot-ping,
+.hero-status-badge.caregiver-badge-normal .hero-status-dot-ping {
+  background-color: var(--sh-tertiary-fixed-dim);
+}
+
+.hero-status-badge.caregiver-badge-suspicious {
+  color: #9c4900;
+  border-color: rgba(217, 119, 54, 0.4);
+}
+
+.hero-status-badge.caregiver-badge-suspicious .hero-status-dot-ping {
+  background-color: var(--sh-tertiary);
+}
+
+.hero-status-badge.caregiver-badge-critical {
+  color: var(--sh-on-error-container);
+  border-color: rgba(194, 65, 58, 0.4);
+}
+
+.hero-status-badge.caregiver-badge-critical .hero-status-dot-ping {
+  background-color: var(--sh-error);
+}
+
+.hero-status-badge.caregiver-badge-offline {
+  color: var(--sh-secondary);
+  border-color: var(--sh-outline-variant);
+}
+
+.hero-status-badge.caregiver-badge-offline .hero-status-dot-ping {
+  background-color: var(--sh-outline);
+}
+
+.hero-status-badge.caregiver-badge-connecting {
+  color: #9c4900;
+  border-color: rgba(217, 119, 54, 0.4);
+}
+
+.hero-status-badge.caregiver-badge-connecting .hero-status-dot-ping {
+  background-color: var(--sh-tertiary);
+}
+
+.hero-status-badge.caregiver-badge-waiting {
+  color: #2e5b70;
+  border-color: rgba(61, 130, 164, 0.4);
+}
+
+.hero-status-badge.caregiver-badge-waiting .hero-status-dot-ping {
+  background-color: #3d82a4;
+}
+
+.hero-status-dot-ping {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.hero-divider-dot {
+  color: var(--sh-outline);
+  font-size: 13px;
+}
+
+.hero-context-tag {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--sh-secondary);
+}
+
+.hero-telemetry-freshness-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.freshness-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sh-secondary);
+  box-shadow: 0 1px 2px rgba(36, 74, 56, 0.04);
+}
+
+.freshness-chip.age-chip {
+  background: var(--sh-surface-container);
+  color: var(--sh-primary);
+  font-weight: 700;
+}
+
+/* Integrated Hero Action Card */
+.caregiver-hero-action-card {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(36, 74, 56, 0.04);
+}
+
+.hero-action-content-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.hero-action-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-action-type-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.hero-action-type-tag.tag-stable {
+  background-color: var(--sh-primary-container);
+  color: var(--sh-on-primary-container);
+  border: 1px solid rgba(36, 74, 56, 0.2);
+}
+
+.hero-action-type-tag.tag-urgent {
+  background-color: var(--sh-error-container);
+  color: var(--sh-on-error-container);
+  border: 1px solid rgba(194, 65, 58, 0.35);
+}
+
+.hero-action-narrative {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--sh-on-surface-variant);
+}
+
+.hero-action-qualitative {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--sh-tertiary);
+  margin-top: 2px;
+}
+
+.hero-action-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.hero-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--sh-font-family);
+}
+
+.hero-btn-primary {
+  background-color: var(--sh-primary);
+  color: var(--sh-on-primary);
+  border: none;
+  box-shadow: 0 1px 4px rgba(36, 74, 56, 0.2);
+}
+
+.hero-btn-primary:hover {
+  background-color: #1b382b;
+}
+
+.hero-btn-secondary {
+  background-color: var(--sh-secondary-container);
+  color: var(--sh-on-secondary-fixed);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+}
+
+.hero-btn-secondary:hover {
+  background-color: #c5d8cd;
+}
+
+.hero-btn-outline {
+  background-color: var(--sh-surface-container-low);
+  color: var(--sh-primary);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+.hero-btn-outline:hover {
+  background-color: var(--sh-surface-container);
+}
+
+/* 3. Compact 4-Metric Summary Strip */
+.caregiver-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.caregiver-metric-card {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.caregiver-metric-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.metric-icon-disc {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.metric-disc-shield {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.metric-disc-pace {
+  background-color: rgba(99, 102, 241, 0.18);
+  color: #818cf8;
+}
+
+.metric-disc-battery {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.metric-disc-trail {
+  background-color: rgba(168, 85, 247, 0.18);
+  color: #c084fc;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.metric-eyebrow {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+.metric-value {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.metric-hint {
+  font-size: 10px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. Main Grid Layout */
+.caregiver-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.caregiver-map-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.caregiver-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* 5. Map Container & Panel */
+.map-panel-container {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.map-panel-container .panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.map-panel-container .panel-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.map-panel-container .badge-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.map-header-recenter-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.map-header-recenter-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.28);
+  color: #ffffff;
+}
+
+.map-header-recenter-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.map-wrapper {
+  position: relative;
+  height: 330px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #090d16;
+}
+
+/* Dark Muted Tile Filter for Caregiver Dark Mode (transforms standard OpenStreetMap tiles cleanly) */
+body.caregiver-dark-theme .leaflet-tile-pane {
+  filter: brightness(0.65) invert(1) contrast(2.4) hue-rotate(200deg) saturate(0.28) brightness(0.8);
+}
+
+/* Truthful No-Location Radar Container (CRITICAL: replaces SF map when no coords) */
+.map-empty-telemetry-container {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, #131c31 0%, #090d16 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+}
+
+.map-radar-graphic {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(99, 102, 241, 0.35);
+}
+
+.radar-circle-outer {
+  width: 110px;
+  height: 110px;
+}
+
+.radar-circle-mid {
+  width: 74px;
+  height: 74px;
+  border-style: solid;
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.radar-circle-inner {
+  width: 38px;
+  height: 38px;
+  border-style: solid;
+  border-color: rgba(99, 102, 241, 0.45);
+}
+
+.radar-scanner {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: rgba(99, 102, 241, 0.85);
+  animation: spin 2.5s linear infinite;
+}
+
+.radar-center-beacon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.6);
+  z-index: 2;
+}
+
+.beacon-icon {
+  font-size: 15px;
+}
+
+.map-empty-telemetry-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 380px;
+  z-index: 2;
+}
+
+.map-empty-pill {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  padding: 2px 10px;
+  border-radius: 9999px;
+  margin-bottom: 2px;
+}
+
+.map-empty-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.map-empty-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+.map-empty-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.empty-tag {
+  font-size: 10.5px;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: #cbd5e1;
+}
+
+/* Custom Marker Pin Styling */
+.custom-live-marker-wrapper {
+  position: relative;
+  width: 36px;
+  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.custom-live-marker-halo {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  opacity: 0.45;
+  box-shadow: 0 0 14px currentColor;
+  animation: pulse 1.8s infinite;
+}
+
+.custom-live-marker-pin {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.custom-live-marker-tip {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid;
+  margin-top: -1px;
+  z-index: 1;
+}
+
+/* Floating Recenter Button */
+.map-floating-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+}
+
+.map-floating-recenter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(17, 24, 39, 0.88);
+  backdrop-filter: blur(12px);
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.map-floating-recenter-btn:hover:not(:disabled) {
+  background-color: rgba(30, 41, 59, 0.95);
+  border-color: #6366f1;
+  transform: translateY(-1px);
+}
+
+.map-floating-recenter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Floating Dark Frosted Point Inspector */
+.map-point-inspector {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  max-width: 340px;
+  width: calc(100% - 24px);
+  z-index: 1000;
+  background: rgba(13, 19, 34, 0.94);
+  color: #ffffff;
+  backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideUpFade 0.2s ease-out;
+}
+
+.inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 8px;
+}
+
+.inspector-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspector-badge {
+  font-size: 12px;
+  font-weight: 800;
+  color: #a5b4fc;
+}
+
+.inspector-latest-tag {
+  font-size: 10px;
+  font-weight: 800;
+  background-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.inspector-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.inspector-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  gap: 8px;
+}
+
+.inspector-label {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.inspector-value {
+  color: #f8fafc;
+  font-weight: 700;
+  text-align: right;
+}
+
+.inspector-relative {
+  color: #cbd5e1;
+  font-weight: normal;
+  font-size: 10.5px;
+}
+
+.inspector-tier-pill {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border: 1px solid;
+}
+
+.inspector-footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inspector-action-btn {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: #6366f1;
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.inspector-action-btn:hover {
+  background: #4f46e5;
+}
+
+.inspector-action-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
+.inspector-action-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* 6. Horizontal Movement Timeline */
+.movement-timeline-container {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.timeline-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timeline-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.timeline-subtext {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.timeline-clear-btn {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.timeline-clear-btn:hover {
+  background: rgba(99, 102, 241, 0.28);
+  color: #ffffff;
+}
+
+.movement-timeline-track {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 2px 8px 2px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.timeline-card {
+  flex: 0 0 106px;
+  background: #161f36;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.timeline-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.timeline-card-selected {
+  border-color: #6366f1 !important;
+  background: rgba(99, 102, 241, 0.22) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4) !important;
+}
+
+.timeline-card-latest {
+  border-left: 3px solid #10b981;
+}
+
+.timeline-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-step-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.timeline-tier-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.timeline-live-pill {
+  font-size: 9px;
+  font-weight: 800;
+  background-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+  padding: 1px 4px;
+  border-radius: 9999px;
+}
+
+.timeline-card-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.timeline-card-speed {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.timeline-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.timeline-empty-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.timeline-empty-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.timeline-empty-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
+.timeline-empty-desc {
+  font-size: 11px;
+  color: #64748b;
+}
+
+/* ==========================================================================
+   Serene Hearth Healthcare: Spatial Centerpiece — Leaflet Map Integration
+   ========================================================================== */
+body.caregiver-serene-theme .map-panel-container {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: var(--sh-shadow-sm);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+body.caregiver-serene-theme .map-panel-container .panel-header {
+  border-bottom: 1px solid rgba(193, 200, 194, 0.45);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+body.caregiver-serene-theme .map-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+body.caregiver-serene-theme .map-panel-container .panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .map-header-sector-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sh-secondary);
+  background: var(--sh-surface-container);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  padding: 2.5px 9px;
+  border-radius: 9999px;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .map-header-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+body.caregiver-serene-theme .map-header-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: var(--sh-font-family);
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .map-header-recenter-btn {
+  background: var(--sh-surface-container-low);
+  color: var(--sh-primary);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .map-header-recenter-btn:hover:not(:disabled) {
+  background: var(--sh-surface-container-high);
+  color: #1b382b;
+}
+
+body.caregiver-serene-theme .map-header-focus-btn {
+  background: var(--sh-secondary-container);
+  color: var(--sh-on-secondary-fixed);
+  border: 1px solid rgba(193, 200, 194, 0.6);
+}
+
+body.caregiver-serene-theme .map-header-focus-btn:hover:not(:disabled) {
+  background: #c5d8cd;
+}
+
+body.caregiver-serene-theme .map-header-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+body.caregiver-serene-theme .map-panel-container .badge-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sh-secondary);
+  background: var(--sh-surface-container);
+  border: 1px solid rgba(193, 200, 194, 0.5);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .map-wrapper {
+  position: relative;
+  height: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--sh-outline-variant);
+  background-color: var(--sh-surface-container-low);
+}
+
+@media (max-width: 768px) {
+  body.caregiver-serene-theme .map-wrapper {
+    height: 360px;
+  }
+}
+
+/* Warm cartographic tile filter in Serene Hearth */
+body.caregiver-serene-theme .leaflet-tile-pane {
+  filter: saturate(0.9) contrast(1.02) brightness(0.98);
+}
+
+/* Truthful Corner Calibration Badge */
+body.caregiver-serene-theme .map-corner-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 8px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--sh-shadow-sm);
+  pointer-events: none;
+}
+
+body.caregiver-serene-theme .map-corner-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+body.caregiver-serene-theme .map-corner-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+body.caregiver-serene-theme .map-corner-dot.dot-live {
+  background-color: #244a38;
+  box-shadow: 0 0 0 2px rgba(118, 160, 137, 0.4);
+  animation: pulse 2s infinite;
+}
+
+body.caregiver-serene-theme .map-corner-dot.dot-offline {
+  background-color: var(--sh-outline);
+}
+
+body.caregiver-serene-theme .map-corner-trail-dash {
+  width: 8px;
+  height: 2px;
+  background-color: var(--sh-primary);
+  border-radius: 1px;
+}
+
+body.caregiver-serene-theme .map-corner-divider {
+  color: var(--sh-outline-variant);
+  font-size: 11px;
+}
+
+body.caregiver-serene-theme .map-corner-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sh-on-surface);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--sh-font-family);
+}
+
+/* Floating Controls Overlay (Recenter + Focus Trail) */
+body.caregiver-serene-theme .map-floating-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  display: flex;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .map-floating-recenter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  color: var(--sh-primary);
+  border: 1px solid var(--sh-outline-variant);
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: var(--sh-font-family);
+  cursor: pointer;
+  box-shadow: var(--sh-shadow-sm);
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .map-floating-recenter-btn:hover:not(:disabled) {
+  background-color: #ffffff;
+  color: #1b382b;
+  box-shadow: 0 3px 10px rgba(28, 28, 22, 0.14);
+}
+
+body.caregiver-serene-theme .map-floating-focus-btn {
+  background: rgba(214, 232, 206, 0.94);
+  color: var(--sh-on-secondary-fixed);
+}
+
+body.caregiver-serene-theme .map-floating-focus-btn:hover:not(:disabled) {
+  background-color: #c5d8cd;
+}
+
+body.caregiver-serene-theme .map-floating-recenter-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+body.caregiver-serene-theme .recenter-text-full {
+  display: inline;
+}
+
+body.caregiver-serene-theme .recenter-text-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  body.caregiver-serene-theme .map-corner-badge {
+    top: 8px;
+    left: 8px;
+    padding: 3px 8px;
+    gap: 4px;
+    max-width: 140px;
+  }
+
+  body.caregiver-serene-theme .map-corner-trail-info {
+    display: none;
+  }
+
+  body.caregiver-serene-theme .map-corner-text {
+    font-size: 10px;
+  }
+
+  body.caregiver-serene-theme .map-floating-controls {
+    top: 8px;
+    right: 8px;
+    gap: 4px;
+  }
+
+  body.caregiver-serene-theme .map-floating-recenter-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  body.caregiver-serene-theme .recenter-text-full {
+    display: none;
+  }
+
+  body.caregiver-serene-theme .recenter-text-mobile {
+    display: inline;
+  }
+}
+
+/* Empty Telemetry Radar Graphic in Serene Hearth */
+body.caregiver-serene-theme .map-empty-telemetry-container {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, var(--sh-surface-container-low) 0%, var(--sh-surface-container) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  box-sizing: border-box;
+  text-align: center;
+  position: relative;
+}
+
+body.caregiver-serene-theme .map-radar-graphic {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+body.caregiver-serene-theme .radar-circle {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(36, 74, 56, 0.25);
+}
+
+body.caregiver-serene-theme .radar-circle-outer {
+  width: 110px;
+  height: 110px;
+}
+
+body.caregiver-serene-theme .radar-circle-mid {
+  width: 74px;
+  height: 74px;
+  border-style: solid;
+  border-color: rgba(36, 74, 56, 0.2);
+}
+
+body.caregiver-serene-theme .radar-circle-inner {
+  width: 38px;
+  height: 38px;
+  border-style: solid;
+  border-color: rgba(36, 74, 56, 0.35);
+}
+
+body.caregiver-serene-theme .radar-scanner {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--sh-primary);
+  animation: spin 2.5s linear infinite;
+}
+
+body.caregiver-serene-theme .radar-center-beacon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sh-primary) 0%, var(--sh-primary-container) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(36, 74, 56, 0.3);
+  z-index: 2;
+}
+
+body.caregiver-serene-theme .map-empty-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: var(--sh-surface-container-high);
+  color: var(--sh-secondary);
+  border: 1px solid var(--sh-outline-variant);
+  padding: 2.5px 10px;
+  border-radius: 9999px;
+  margin-bottom: 4px;
+}
+
+body.caregiver-serene-theme .map-empty-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .map-empty-desc {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--sh-on-surface-variant);
+  line-height: 1.45;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .empty-tag {
+  font-size: 11px;
+  background-color: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  padding: 3px 9px;
+  border-radius: 6px;
+  color: var(--sh-on-surface);
+}
+
+/* Critical Empty Telemetry (GPS unavailable, but critical movement risk flagged) */
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical {
+  background: radial-gradient(circle at center, #fff5f5 0%, #fee2e2 100%);
+  border: 1.5px solid #fca5a5;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .radar-circle {
+  border-color: rgba(186, 26, 26, 0.35);
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .radar-scanner {
+  border-top-color: #ba1a1a;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .radar-center-beacon {
+  background: linear-gradient(135deg, #ba1a1a 0%, #dc2626 100%);
+  box-shadow: 0 0 18px rgba(186, 26, 26, 0.45);
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .map-empty-pill {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .map-empty-title {
+  color: #991b1b;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-critical .map-empty-desc {
+  color: #7f1d1d;
+}
+
+/* Suspicious Empty Telemetry (GPS unavailable, but elevated movement risk flagged) */
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious {
+  background: radial-gradient(circle at center, #fffdf0 0%, #fef3c7 100%);
+  border: 1.5px solid #fde68a;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .radar-circle {
+  border-color: rgba(217, 119, 6, 0.35);
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .radar-scanner {
+  border-top-color: #d97706;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .radar-center-beacon {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  box-shadow: 0 0 18px rgba(217, 119, 6, 0.35);
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .map-empty-pill {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .map-empty-title {
+  color: #92400e;
+}
+
+body.caregiver-serene-theme .map-empty-telemetry-container.map-empty-suspicious .map-empty-desc {
+  color: #78350f;
+}
+
+.map-corner-dot.dot-stale {
+  background-color: #f59e0b;
+}
+
+.inspector-drag-handle {
+  display: none;
+}
+
+.btn-text-full {
+  display: inline;
+}
+
+.btn-text-mobile {
+  display: none;
+}
+
+/* Floating Serene Hearth Point Inspector Pod (matching Stitch Pod lines 289-341) */
+body.caregiver-serene-theme .map-point-inspector {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  max-width: 380px;
+  width: calc(100% - 28px);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--sh-on-surface);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  border: 1px solid var(--sh-outline-variant);
+  box-shadow: 0 12px 32px rgba(28, 28, 22, 0.18);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideUpFade 0.2s ease-out;
+}
+
+body.caregiver-serene-theme .inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(193, 200, 194, 0.45);
+  padding-bottom: 8px;
+}
+
+body.caregiver-serene-theme .inspector-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.caregiver-serene-theme .inspector-icon-disc {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sh-secondary-container);
+  color: var(--sh-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+body.caregiver-serene-theme .inspector-title-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.caregiver-serene-theme .inspector-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .inspector-title-text {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .inspector-latest-tag {
+  font-size: 10px;
+  font-weight: 700;
+  background-color: var(--sh-tertiary-fixed);
+  color: var(--sh-primary);
+  padding: 1px 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(118, 160, 137, 0.3);
+}
+
+body.caregiver-serene-theme .inspector-subtext {
+  font-size: 11px;
+  color: var(--sh-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+body.caregiver-serene-theme .inspector-close-btn {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  color: var(--sh-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 4px 7px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .inspector-close-btn:hover {
+  background: var(--sh-surface-container-high);
+  color: var(--sh-on-surface);
+}
+
+/* Metric Triple Grid inside Inspector Pod */
+body.caregiver-serene-theme .inspector-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+body.caregiver-serene-theme .inspector-metric-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+body.caregiver-serene-theme .inspector-metric-divider {
+  border-left: 1px solid var(--sh-outline-variant);
+  padding-left: 8px;
+}
+
+body.caregiver-serene-theme .inspector-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .inspector-tier-pill {
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border: 1px solid;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.caregiver-serene-theme .inspector-metric-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sh-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+body.caregiver-serene-theme .inspector-footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(193, 200, 194, 0.45);
+}
+
+body.caregiver-serene-theme .inspector-action-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: var(--sh-font-family);
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .inspector-action-btn.primary {
+  background: var(--sh-primary);
+  color: var(--sh-on-primary);
+  box-shadow: 0 1px 4px rgba(36, 74, 56, 0.2);
+}
+
+body.caregiver-serene-theme .inspector-action-btn.primary:hover {
+  background: #1b382b;
+}
+
+body.caregiver-serene-theme .inspector-action-btn.secondary {
+  background: var(--sh-surface-container-high);
+  color: var(--sh-primary);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .inspector-action-btn.secondary:hover {
+  background: var(--sh-surface-container-highest);
+  color: #1b382b;
+}
+
+/* ==========================================================================
+   Serene Hearth Healthcare: 4-Metric Summary Strip
+   ========================================================================== */
+body.caregiver-serene-theme .caregiver-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+body.caregiver-serene-theme .caregiver-metric-card {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: var(--sh-shadow-sm);
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+body.caregiver-serene-theme .caregiver-metric-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--sh-primary);
+  box-shadow: 0 4px 12px rgba(28, 28, 22, 0.08);
+}
+
+body.caregiver-serene-theme .metric-icon-disc {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+body.caregiver-serene-theme .metric-disc-shield {
+  background-color: var(--sh-safe-wash);
+  color: var(--sh-safe);
+}
+
+body.caregiver-serene-theme .metric-disc-pace {
+  background-color: var(--sh-secondary-container);
+  color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .metric-disc-battery {
+  background-color: var(--sh-surface-container-high);
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .metric-disc-trail {
+  background-color: #e8efe9;
+  color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .metric-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+body.caregiver-serene-theme .metric-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .metric-value {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--sh-on-surface);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+  font-family: var(--sh-font-family);
+  font-variant-numeric: tabular-nums;
+}
+
+body.caregiver-serene-theme .metric-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--sh-on-surface-variant);
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.25;
+  font-family: var(--sh-font-family);
+}
+
+/* ==========================================================================
+   Serene Hearth Healthcare: Chronological Walking Journey Timeline / Feed
+   ========================================================================== */
+body.caregiver-serene-theme .movement-timeline-container {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 14px;
+  box-shadow: var(--sh-shadow-sm);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+body.caregiver-serene-theme .timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(193, 200, 194, 0.45);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.caregiver-serene-theme .timeline-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.caregiver-serene-theme .timeline-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  margin: 0;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .timeline-subtext {
+  font-size: 11px;
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .timeline-clear-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--sh-surface-container);
+  border: 1px solid var(--sh-outline-variant);
+  color: var(--sh-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .timeline-clear-btn:hover {
+  background: var(--sh-surface-container-high);
+}
+
+body.caregiver-serene-theme .timeline-empty-state {
+  background: var(--sh-surface-container-low);
+  border: 1px dashed var(--sh-outline-variant);
+  border-radius: 10px;
+  padding: 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+body.caregiver-serene-theme .timeline-empty-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+body.caregiver-serene-theme .timeline-empty-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.caregiver-serene-theme .timeline-empty-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .timeline-empty-desc {
+  font-size: 11.5px;
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+}
+
+/* Vertical Chronological Journey Feed */
+body.caregiver-serene-theme .journey-feed-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 6px 4px 6px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sh-outline-variant) transparent;
+}
+
+body.caregiver-serene-theme .journey-feed-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+body.caregiver-serene-theme .journey-feed-list::-webkit-scrollbar-thumb {
+  background: var(--sh-outline-variant);
+  border-radius: 4px;
+}
+
+body.caregiver-serene-theme .journey-hairline {
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--sh-surface-variant);
+  z-index: 1;
+}
+
+body.caregiver-serene-theme .journey-feed-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  outline: none;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .journey-node-disc {
+  position: relative;
+  z-index: 2;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid var(--sh-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+body.caregiver-serene-theme .journey-node-disc.node-selected {
+  background: var(--sh-primary);
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(36, 74, 56, 0.25);
+}
+
+body.caregiver-serene-theme .journey-node-disc.node-latest {
+  box-shadow: 0 0 0 2px rgba(118, 160, 137, 0.4);
+}
+
+body.caregiver-serene-theme .journey-card {
+  flex: 1;
+  min-width: 0;
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .journey-feed-item:hover .journey-card {
+  border-color: var(--sh-primary);
+  background: #ffffff;
+  transform: translateX(2px);
+}
+
+body.caregiver-serene-theme .journey-item-selected .journey-card {
+  border-color: var(--sh-primary);
+  background: var(--sh-secondary-container);
+  box-shadow: 0 0 0 1.5px rgba(36, 74, 56, 0.2);
+}
+
+body.caregiver-serene-theme .journey-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+body.caregiver-serene-theme .journey-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.caregiver-serene-theme .journey-waypoint-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .journey-tag-latest {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--sh-tertiary-fixed);
+  color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .journey-card-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+body.caregiver-serene-theme .journey-time-rel {
+  color: var(--sh-outline);
+  font-weight: 500;
+  font-size: 10.5px;
+}
+
+body.caregiver-serene-theme .journey-card-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+
+body.caregiver-serene-theme .journey-tier-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid;
+  font-family: var(--sh-font-family);
+}
+
+body.caregiver-serene-theme .journey-metric-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--sh-on-surface-variant);
+  background: var(--sh-surface-container);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(193, 200, 194, 0.4);
+  font-family: var(--sh-font-family);
+  font-variant-numeric: tabular-nums;
+}
+
+body.caregiver-serene-theme .journey-coords-text {
+  font-size: 10px;
+  color: var(--sh-outline);
+  font-family: monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 7. Movement Observations */
+.caregiver-insights-card {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.caregiver-insights-card .panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.caregiver-insights-card .panel-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.caregiver-insights-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.caregiver-insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.caregiver-insight-card {
+  background: #161f36;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.caregiver-insight-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+.caregiver-insight-card.insight-expanded {
+  border-color: #6366f1;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15);
+}
+
+.insight-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+
+.insight-summary-row:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.insight-icon-disc {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.insight-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.insight-category-tag {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #818cf8;
+}
+
+.insight-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.35;
+}
+
+.insight-weight-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.insight-weight-pill.pill-elevated {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.insight-weight-pill.pill-calm {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.insight-expand-icon {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.insight-expanded-body {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 14px;
+  background-color: #0b0f19;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  animation: slideUpFade 0.15s ease-out;
+}
+
+.insight-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.insight-detail-label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.insight-detail-val {
+  color: #f8fafc;
+  font-weight: 700;
+  text-align: right;
+}
+
+.insight-detail-val.val-elevated {
+  color: #f87171;
+}
+
+.insight-detail-val.val-calm {
+  color: #34d399;
+}
+
+.caregiver-status-footnote {
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.caregiver-quiet-observations {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.quiet-icon-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.quiet-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.quiet-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #34d399;
+}
+
+.quiet-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* 8. Safety Alerts */
+.caregiver-alerts-card {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.caregiver-alerts-card .panel-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.caregiver-alerts-card .panel-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.caregiver-all-clear-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.caregiver-all-clear-card.empty-alert-offline {
+  background: rgba(100, 116, 139, 0.08);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.caregiver-all-clear-card.empty-alert-offline .all-clear-badge-disc {
+  background-color: #64748b;
+  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.25);
+}
+
+.caregiver-all-clear-card.empty-alert-offline .all-clear-title {
+  color: #94a3b8;
+}
+
+.caregiver-all-clear-card.empty-alert-offline .all-clear-pill {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+}
+
+.caregiver-all-clear-card.empty-alert-critical {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+  border-left: 4px solid #ef4444;
+}
+
+.caregiver-all-clear-card.empty-alert-critical .all-clear-badge-disc {
+  background-color: #ef4444;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+}
+
+.caregiver-all-clear-card.empty-alert-critical .all-clear-title {
+  color: #f87171;
+}
+
+.caregiver-all-clear-card.empty-alert-critical .all-clear-pill {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+}
+
+.caregiver-all-clear-card.empty-alert-suspicious {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+  border-left: 4px solid #f59e0b;
+}
+
+.caregiver-all-clear-card.empty-alert-suspicious .all-clear-badge-disc {
+  background-color: #f59e0b;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.caregiver-all-clear-card.empty-alert-suspicious .all-clear-title {
+  color: #fbbf24;
+}
+
+.caregiver-all-clear-card.empty-alert-suspicious .all-clear-pill {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fde68a;
+}
+
+.caregiver-all-clear-card.empty-alert-awaiting {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.25);
+}
+
+.caregiver-all-clear-card.empty-alert-awaiting .all-clear-badge-disc {
+  background-color: #0891b2;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
+}
+
+.caregiver-all-clear-card.empty-alert-awaiting .all-clear-title {
+  color: #22d3ee;
+}
+
+.caregiver-all-clear-card.empty-alert-awaiting .all-clear-pill {
+  background-color: rgba(6, 182, 212, 0.18);
+  color: #a5f3fc;
+}
+
+/* Serene Hearth Scoped Overrides */
+body.caregiver-serene-theme .caregiver-all-clear-card {
+  box-shadow: var(--sh-shadow-sm);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-offline {
+  background: var(--sh-surface-container);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-offline .all-clear-badge-disc {
+  background-color: var(--sh-outline);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-offline .all-clear-title {
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-offline .all-clear-desc {
+  color: var(--sh-on-surface-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-offline .all-clear-pill {
+  background-color: var(--sh-surface-container-high);
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-critical {
+  background: var(--sh-error-container);
+  border: 1px solid rgba(194, 65, 58, 0.35);
+  border-left: 5px solid var(--sh-error);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-critical .all-clear-badge-disc {
+  background-color: var(--sh-error);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-critical .all-clear-title {
+  color: var(--sh-on-error-container);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-critical .all-clear-desc {
+  color: #410e0b;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-critical .all-clear-pill {
+  background-color: var(--sh-error);
+  color: #ffffff;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-suspicious {
+  background: var(--sh-tertiary-container);
+  border: 1px solid rgba(217, 119, 54, 0.35);
+  border-left: 5px solid var(--sh-tertiary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-suspicious .all-clear-badge-disc {
+  background-color: var(--sh-tertiary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-suspicious .all-clear-title {
+  color: #7a3a0c;
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-suspicious .all-clear-desc {
+  color: #552700;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-suspicious .all-clear-pill {
+  background-color: var(--sh-tertiary);
+  color: #ffffff;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-awaiting {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-awaiting .all-clear-badge-disc {
+  background-color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-awaiting .all-clear-title {
+  color: var(--sh-secondary);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-awaiting .all-clear-desc {
+  color: var(--sh-on-surface-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-awaiting .all-clear-pill {
+  background-color: var(--sh-surface-container);
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-nominal {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-nominal .all-clear-badge-disc {
+  background-color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-nominal .all-clear-title {
+  color: var(--sh-primary);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-nominal .all-clear-desc {
+  color: var(--sh-on-surface-variant);
+}
+
+body.caregiver-serene-theme .caregiver-all-clear-card.empty-alert-nominal .all-clear-pill {
+  background-color: var(--sh-primary-container);
+  color: var(--sh-on-primary-container);
+}
+
+/* ==========================================================================
+   Serene Hearth Healthcare: Harmonized Movement Observations & Safety Alerts
+   ========================================================================== */
+body.caregiver-serene-theme .caregiver-insights-card,
+body.caregiver-serene-theme .caregiver-alerts-card {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: var(--sh-shadow-sm);
+}
+
+body.caregiver-serene-theme .caregiver-insights-card .panel-header,
+body.caregiver-serene-theme .caregiver-alerts-card .panel-header {
+  border-bottom: 1px solid rgba(193, 200, 194, 0.45);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+body.caregiver-serene-theme .caregiver-insights-card .panel-title,
+body.caregiver-serene-theme .caregiver-alerts-card .panel-title {
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .caregiver-insights-card .badge-count,
+body.caregiver-serene-theme .caregiver-alerts-card .badge-count {
+  background: var(--sh-surface-container);
+  color: var(--sh-secondary);
+  border: 1px solid rgba(193, 200, 194, 0.45);
+  font-family: var(--sh-font-family);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 2px 8px;
+}
+
+/* Movement Observations under Serene Hearth */
+body.caregiver-serene-theme .caregiver-quiet-observations {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 12px;
+}
+
+body.caregiver-serene-theme .quiet-icon-circle {
+  background-color: var(--sh-primary-container);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(36, 74, 56, 0.18);
+}
+
+body.caregiver-serene-theme .caregiver-quiet-observations.quiet-offline {
+  background: var(--sh-surface-container);
+  border-color: var(--sh-outline-variant);
+}
+
+body.caregiver-serene-theme .caregiver-quiet-observations.quiet-offline .quiet-icon-circle {
+  background-color: var(--sh-outline);
+  box-shadow: none;
+}
+
+body.caregiver-serene-theme .quiet-title {
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .quiet-desc {
+  color: var(--sh-on-surface-variant);
+  font-family: var(--sh-font-family);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+body.caregiver-serene-theme .caregiver-insight-card {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 12px;
+}
+
+body.caregiver-serene-theme .caregiver-insight-card:hover {
+  background: var(--sh-surface-container);
+  border-color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .caregiver-insight-card.insight-expanded {
+  border-color: var(--sh-primary);
+  box-shadow: 0 3px 12px rgba(36, 74, 56, 0.1);
+}
+
+body.caregiver-serene-theme .insight-summary-row:hover {
+  background-color: transparent;
+}
+
+body.caregiver-serene-theme .insight-icon-disc {
+  background-color: var(--sh-surface-container-high);
+  color: var(--sh-primary);
+}
+
+body.caregiver-serene-theme .insight-category-tag {
+  color: var(--sh-secondary);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+body.caregiver-serene-theme .insight-text {
+  color: var(--sh-on-surface);
+  font-family: var(--sh-font-family);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+body.caregiver-serene-theme .insight-weight-pill.pill-elevated {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+body.caregiver-serene-theme .insight-weight-pill.pill-calm {
+  background-color: var(--sh-secondary-container);
+  color: var(--sh-primary);
+  border: 1px solid rgba(36, 74, 56, 0.2);
+}
+
+body.caregiver-serene-theme .insight-expanded-body {
+  border-top: 1px solid var(--sh-outline-variant);
+  background-color: var(--sh-surface-container-lowest);
+}
+
+body.caregiver-serene-theme .insight-detail-label {
+  color: var(--sh-secondary);
+}
+
+body.caregiver-serene-theme .insight-detail-val {
+  color: var(--sh-on-surface);
+}
+
+body.caregiver-serene-theme .insight-detail-val.val-elevated {
+  color: #b91c1c;
+}
+
+body.caregiver-serene-theme .insight-detail-val.val-calm {
+  color: #047857;
+}
+
+body.caregiver-serene-theme .caregiver-status-footnote {
+  color: var(--sh-secondary);
+  border-top: 1px dashed rgba(193, 200, 194, 0.5);
+  font-size: 11px;
+}
+
+/* Active Safety Alerts under Serene Hearth */
+/* Active Safety Alerts under Serene Hearth */
+body.caregiver-serene-theme .caregiver-recalibration-card {
+  background: #fefce8;
+  border: 1.5px solid #d97706;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.1);
+}
+
+body.caregiver-serene-theme .recal-header {
+  color: #92400e;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+  font-size: 13.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .recal-body {
+  color: #78350f;
+  font-family: var(--sh-font-family);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 6px 0 8px 0;
+}
+
+body.caregiver-serene-theme .recal-caveat {
+  font-family: var(--sh-font-family);
+  font-size: 11px;
+  line-height: 1.4;
+  color: #92400e;
+  margin-bottom: 12px;
+}
+
+body.caregiver-serene-theme .recal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+body.caregiver-serene-theme .recal-btn-primary {
+  background: var(--sh-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 8px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(11, 51, 35, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.caregiver-serene-theme .recal-btn-primary:hover {
+  background: #144933;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(11, 51, 35, 0.25);
+}
+
+body.caregiver-serene-theme .recal-btn-primary:focus-visible {
+  outline: 2px solid var(--sh-primary);
+  outline-offset: 2px;
+}
+
+body.caregiver-serene-theme .recal-btn-secondary {
+  background: var(--sh-surface-container);
+  color: var(--sh-on-surface);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 8px;
+  font-family: var(--sh-font-family);
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 8px 16px;
+  min-height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.caregiver-serene-theme .recal-btn-secondary:hover {
+  background: var(--sh-surface-container-high);
+}
+
+body.caregiver-serene-theme .recal-btn-secondary:focus-visible {
+  outline: 2px solid var(--sh-primary);
+  outline-offset: 2px;
+}
+
+body.caregiver-serene-theme .caregiver-alert-card {
+  background: var(--sh-surface-container-lowest);
+  border-radius: 14px;
+  box-shadow: var(--sh-shadow-sm);
+  padding: 14px 16px;
+}
+
+body.caregiver-serene-theme .caregiver-alert-card.alert-tier-3 {
+  background-color: #fff8f7;
+  border: 1.5px solid #ba1a1a;
+  border-left: 5px solid #ba1a1a;
+  box-shadow: 0 2px 10px rgba(186, 26, 26, 0.08);
+}
+
+body.caregiver-serene-theme .caregiver-alert-card.alert-tier-2 {
+  background-color: #fffdf5;
+  border: 1.5px solid #d97706;
+  border-left: 5px solid #d97706;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.08);
+}
+
+body.caregiver-serene-theme .alert-severity-badge.severity-critical {
+  background-color: #ffdad6;
+  color: #93000a;
+  border: 1px solid #ffb4ab;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .alert-severity-badge.severity-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .alert-status-pill.pill-pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .alert-status-pill.pill-dismissed {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+}
+
+body.caregiver-serene-theme .alert-time-stamp {
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+body.caregiver-serene-theme .alert-message-text {
+  color: var(--sh-on-surface);
+  font-family: var(--sh-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+body.caregiver-serene-theme .alert-action-prompt {
+  background: var(--sh-surface-container-low);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+  font-size: 12px;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+body.caregiver-serene-theme .alert-expand-btn {
+  background: transparent;
+  border: none;
+  color: var(--sh-primary);
+  font-family: var(--sh-font-family);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .alert-expand-btn:hover {
+  background-color: var(--sh-surface-container);
+  text-decoration: none;
+}
+
+body.caregiver-serene-theme .alert-expand-btn:focus-visible {
+  outline: 2px solid var(--sh-primary);
+  outline-offset: 2px;
+}
+
+body.caregiver-serene-theme .alert-details-panel {
+  background: var(--sh-surface-container-lowest);
+  border: 1px solid var(--sh-outline-variant);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 4px;
+}
+
+body.caregiver-serene-theme .alert-details-panel .field-label {
+  color: var(--sh-secondary);
+  font-family: var(--sh-font-family);
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+body.caregiver-serene-theme .alert-details-panel .field-value {
+  color: var(--sh-on-surface);
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+  font-size: 11.5px;
+}
+
+body.caregiver-serene-theme .alert-error-banner {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: var(--sh-font-family);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .alert-footer-actions {
+  border-top: 1px solid var(--sh-outline-variant);
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+body.caregiver-serene-theme .alert-confirm-btn {
+  background-color: var(--sh-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-family: var(--sh-font-family);
+  font-size: 12.5px;
+  font-weight: 700;
+  min-height: 40px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(11, 51, 35, 0.2);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .alert-confirm-btn:hover:not(:disabled) {
+  background-color: #144933;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(11, 51, 35, 0.25);
+}
+
+body.caregiver-serene-theme .alert-confirm-btn:focus-visible {
+  outline: 2px solid var(--sh-primary);
+  outline-offset: 2px;
+}
+
+body.caregiver-serene-theme .alert-confirm-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+body.caregiver-serene-theme .alert-confirmed-badge {
+  background-color: #e6f4ea;
+  border: 1px solid #a8dab5;
+  color: #137333;
+  font-family: var(--sh-font-family);
+  font-weight: 700;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.all-clear-badge-disc {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.all-clear-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.all-clear-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #34d399;
+}
+
+.all-clear-desc {
+  margin: 0;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.all-clear-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.all-clear-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.all-clear-zone {
+  font-size: 10.5px;
+  color: #64748b;
+}
+
+.caregiver-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.caregiver-alert-card {
+  background: #161f36;
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.caregiver-alert-card.alert-tier-3 {
+  background-color: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+  border-left: 4px solid #ef4444;
+}
+
+.caregiver-alert-card.alert-tier-2 {
+  background-color: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+  border-left: 4px solid #f59e0b;
+}
+
+.alert-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.alert-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.alert-severity-badge {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.alert-severity-badge.severity-critical {
+  background-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.alert-severity-badge.severity-warning {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.alert-status-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.alert-status-pill.pill-pending {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+}
+
+.alert-status-pill.pill-dismissed {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.alert-time-stamp {
+  font-size: 11.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.alert-message-text {
+  margin: 0;
+  font-size: 12.5px;
+  color: #f8fafc;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.alert-action-prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #fca5a5;
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 6px 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+.alert-expand-bar {
+  display: flex;
+}
+
+.alert-expand-btn {
+  background: transparent;
+  border: none;
+  color: #818cf8;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.alert-expand-btn:hover {
+  text-decoration: underline;
+}
+
+.alert-details-panel {
+  background-color: #0b0f19;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 11.5px;
+}
+
+.alert-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-field {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field-label {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.field-value {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.alert-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #f87171;
+  background-color: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.alert-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.alert-confirm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  background-color: #059669;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+  transition: all 0.2s ease;
+}
+
+.alert-confirm-btn:hover:not(:disabled) {
+  background-color: #10b981;
+  transform: translateY(-1px);
+}
+
+.alert-confirm-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.alert-confirmed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #34d399;
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+
+/* Recalibration Warning Card */
+.caregiver-recalibration-card {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1.5px solid #f59e0b;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+}
+
+.recal-header {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 3px;
+}
+
+.recal-body {
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  color: #fef3c7;
+  line-height: 1.4;
+}
+
+.recal-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Responsive Adaptations
+   ========================================================================== */
+
+/* Tablet & Medium Screens (<= 1024px) */
+@media (max-width: 1024px) {
+  .caregiver-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .caregiver-metrics-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .map-wrapper {
+    height: 340px;
+  }
+
+  .caregiver-header-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .caregiver-controls-inline {
+    width: 100%;
+  }
+}
+
+/* Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+  .container.caregiver-mode-active {
+    padding: 12px 10px;
+  }
+
+  .caregiver-header {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .caregiver-hero-banner {
+    padding: 12px 14px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .caregiver-hero-action-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .hero-action-buttons-group {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .hero-action-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: 11.5px;
+    padding: 6px 10px;
+    min-height: 38px;
+  }
+
+  .control-group-compact {
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .control-input-compact {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .map-panel-container .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  body.caregiver-serene-theme .caregiver-metrics-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  body.caregiver-serene-theme .caregiver-metric-card {
+    padding: 10px 10px;
+    gap: 8px;
+    align-items: flex-start;
+    min-height: 84px;
+  }
+
+  body.caregiver-serene-theme .metric-icon-disc {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  body.caregiver-serene-theme .metric-eyebrow {
+    font-size: 9.5px;
+    letter-spacing: 0.04em;
+  }
+
+  body.caregiver-serene-theme .metric-value {
+    font-size: 12px;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  body.caregiver-serene-theme .metric-hint {
+    font-size: 10px;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  body:not(.caregiver-serene-theme) .caregiver-metrics-strip {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .btn-text-full {
+    display: none;
+  }
+
+  .btn-text-mobile {
+    display: inline;
+  }
+
+  .map-wrapper {
+    height: 420px;
+  }
+
+  .map-empty-telemetry-container {
+    height: 420px;
+    padding: 16px 12px;
+  }
+
+  .map-radar-graphic {
+    width: 90px;
+    height: 90px;
+    margin-bottom: 8px;
+  }
+
+  .radar-circle-outer { width: 85px; height: 85px; }
+  .radar-circle-mid { width: 55px; height: 55px; }
+  .radar-circle-inner { width: 28px; height: 28px; }
+  .radar-scanner { width: 85px; height: 85px; }
+
+  /* Compact Responsive Bottom-Sheet Inspector (leaves >68% useful map canvas open) */
+  body.caregiver-serene-theme .map-point-inspector {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 -8px 24px rgba(28, 28, 22, 0.16);
+    padding: 6px 12px 8px 12px;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.98);
+    box-sizing: border-box;
+  }
+
+  .inspector-drag-handle {
+    display: block;
+    width: 32px;
+    height: 3px;
+    background: #c1c8c2;
+    border-radius: 2px;
+    margin: 0 auto 2px auto;
+  }
+
+  body.caregiver-serene-theme .inspector-header {
+    padding-bottom: 3px;
+  }
+
+  body.caregiver-serene-theme .inspector-icon-disc {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  body.caregiver-serene-theme .inspector-title-text {
+    font-size: 12.5px;
+  }
+
+  body.caregiver-serene-theme .inspector-subtext {
+    font-size: 10px;
+  }
+
+  body.caregiver-serene-theme .inspector-metrics-grid {
+    padding: 4px 8px;
+    gap: 4px;
+    border-radius: 8px;
+  }
+
+  body.caregiver-serene-theme .inspector-metric-col {
+    gap: 1px;
+  }
+
+  body.caregiver-serene-theme .inspector-metric-label {
+    font-size: 8.5px;
+  }
+
+  body.caregiver-serene-theme .inspector-tier-pill {
+    font-size: 9px;
+    padding: 1px 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.caregiver-serene-theme .inspector-metric-val {
+    font-size: 10.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  body.caregiver-serene-theme .inspector-footer {
+    padding-top: 3px;
+    gap: 6px;
+  }
+
+  body.caregiver-serene-theme .inspector-action-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+    min-height: 28px;
+  }
+
+  body:not(.caregiver-serene-theme) .map-point-inspector {
+    left: 8px;
+    bottom: 8px;
+    width: calc(100% - 16px);
+    max-width: none;
+    box-sizing: border-box;
+    padding: 10px 12px;
+  }
+
+  body.caregiver-serene-theme .alert-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  body.caregiver-serene-theme .alert-badge-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    width: 100%;
+  }
+
+  body.caregiver-serene-theme .alert-confirm-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 14px;
+    min-height: 44px;
+  }
+
+  body.caregiver-serene-theme .recal-btn-primary,
+  body.caregiver-serene-theme .recal-btn-secondary {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  body.caregiver-serene-theme .alert-expand-btn {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+
+  .caregiver-btn {
+    min-height: 38px;
+  }
+}
+
+/* Small Mobile Screens (<= 480px) */
+@media (max-width: 480px) {
+  .caregiver-title {
+    font-size: 16px;
+  }
+
+  .caregiver-hero-icon-wrapper {
+    width: 38px;
+    height: 38px;
+  }
+
+  .caregiver-hero-icon {
+    font-size: 20px;
+  }
+
+  .map-panel-container,
+  .caregiver-insights-card,
+  .caregiver-alerts-card {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
 }
