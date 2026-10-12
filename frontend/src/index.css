@@ -4644,3 +4644,112 @@ body.caregiver-serene-theme .alert-confirmed-badge {
     border-radius: 14px;
   }
 }
+
+/* Observational ML Evaluation Card (Shadow Mode) */
+.ml-evaluation-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #6366f1;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.ml-eval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ml-eval-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ml-eval-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.ml-eval-pill-evaluated {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.ml-eval-pill-collecting {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.ml-eval-pill-unavailable {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.ml-eval-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.ml-eval-metric {
+  display: flex;
+  flex-direction: column;
+}
+
+.ml-eval-metric-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: #4338ca;
+  line-height: 1.1;
+}
+
+.ml-eval-metric-label {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.ml-eval-status-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.ml-eval-status-msg {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.ml-eval-status-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.ml-eval-meta-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.ml-eval-disclaimer {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed #e2e8f0;
+  font-size: 11px;
+  color: #94a3b8;
+  font-style: italic;
+}

@@ -134,38 +134,53 @@ export default function TechnicalDashboard({
           </div>
         )}
 
-        {!historyLoading && !historyError && historyEntries.length > 0 && (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Timestamp</th>
-                  <th>Risk Tier</th>
-                  <th>Risk Score</th>
-                  <th>Polling Tier</th>
-                  <th>Grid Cell ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {historyEntries.map((entry) => (
-                  <tr key={entry.id}>
-                    <td className="mono">{entry.id}</td>
-                    <td className="mono">{entry.timestamp}</td>
-                    <td>
-                      <span className={`tier-badge tier-${entry.risk_tier}`}>
-                        {entry.risk_tier}
-                      </span>
-                    </td>
-                    <td className="mono">{Number(entry.risk_score).toFixed(1)}</td>
-                    <td className="mono">Tier {entry.polling_tier}</td>
-                    <td className="mono">{entry.grid_cell_id || '-'}</td>
+        {!historyLoading && !historyError && historyEntries.length > 0 && (() => {
+          const hasAnyMlEval = historyEntries.some((e) => e.ml_evaluation != null)
+          return (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Timestamp</th>
+                    <th>Risk Tier</th>
+                    <th>Risk Score</th>
+                    <th>Polling Tier</th>
+                    <th>Grid Cell ID</th>
+                    {hasAnyMlEval && <th>ML Eval (Shadow)</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {historyEntries.map((entry) => (
+                    <tr key={entry.id}>
+                      <td className="mono">{entry.id}</td>
+                      <td className="mono">{entry.timestamp}</td>
+                      <td>
+                        <span className={`tier-badge tier-${entry.risk_tier}`}>
+                          {entry.risk_tier}
+                        </span>
+                      </td>
+                      <td className="mono">{Number(entry.risk_score).toFixed(1)}</td>
+                      <td className="mono">Tier {entry.polling_tier}</td>
+                      <td className="mono">{entry.grid_cell_id || '-'}</td>
+                      {hasAnyMlEval && (
+                        <td className="mono">
+                          {entry.ml_evaluation?.calibrated_probability != null
+                            ? `${(entry.ml_evaluation.calibrated_probability * 100).toFixed(1)}%`
+                            : entry.ml_evaluation?.evidence_status === 'INSUFFICIENT_EVIDENCE'
+                            ? 'Collecting'
+                            : entry.ml_evaluation?.evidence_status === 'ERROR'
+                            ? 'Unavailable'
+                            : '-'}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

@@ -18,6 +18,11 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
   // Extract explainability top features
   const topFeatures = effectiveRisk?.explainability?.top_features || []
 
+  // Derive observational shadow ML evaluation:
+  // Prefer live WebSocket currentRisk.ml_evaluation; when currentRisk is present,
+  // do not fall back to previous windows or history entries (strictly prevents stale carry-over).
+  const mlEvaluation = currentRisk ? currentRisk.ml_evaluation : latestHistory?.ml_evaluation
+
   // Prepare trend data: take the most recent 15 points (oldest first -> newest last),
   // plus include currentRisk if newer / not already represented
   const points = [...historyEntries].slice(-15)
@@ -205,6 +210,87 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
           </div>
         )}
       </div>
+
+      {/* Observational Shadow ML Evaluation Display (rendered only when ml_evaluation is present) */}
+      {mlEvaluation != null && (
+        <div className="ml-evaluation-card" data-testid="ml-evaluation-card">
+          <div className="ml-eval-header">
+            <span className="ml-eval-title">
+              <span aria-hidden="true">🔬</span> Observational ML Evaluation (Shadow Mode)
+            </span>
+            <span
+              className={`ml-eval-pill ml-eval-pill-${
+                mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
+                  ? 'evaluated'
+                  : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE'
+                  ? 'collecting'
+                  : 'unavailable'
+              }`}
+              data-testid="ml-eval-status-pill"
+            >
+              {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
+                ? 'Window Evaluated'
+                : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE'
+                ? 'Collecting Telemetry'
+                : 'Unavailable'}
+            </span>
+          </div>
+
+          <div className="ml-eval-body">
+            {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' &&
+            mlEvaluation.engine_status === 'ACTIVE' &&
+            mlEvaluation.calibrated_probability != null ? (
+              <div className="ml-eval-metric">
+                <div className="ml-eval-metric-val" data-testid="ml-eval-probability">
+                  {(mlEvaluation.calibrated_probability * 100).toFixed(1)}%
+                </div>
+                <div className="ml-eval-metric-label">
+                  Kinematic Outlier Probability (120s Window)
+                </div>
+              </div>
+            ) : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' ? (
+              <div className="ml-eval-status-block">
+                <div className="ml-eval-status-msg" data-testid="ml-eval-insufficient-msg">
+                  Collecting telemetry
+                </div>
+                <div className="ml-eval-status-desc">
+                  Accumulating 120s window. Safety cannot be verified from incomplete evidence.
+                </div>
+              </div>
+            ) : (
+              <div className="ml-eval-status-block">
+                <div className="ml-eval-status-msg" data-testid="ml-eval-unavailable-msg">
+                  ML Evaluation Unavailable
+                </div>
+                <div className="ml-eval-status-desc">
+                  Observational signal temporarily offline. Operational risk monitoring remains active.
+                </div>
+              </div>
+            )}
+
+            {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE' && (
+              <div className="ml-eval-meta-block">
+                {mlEvaluation.decision_state && (
+                  <div className="detail-item">
+                    <span className="detail-label">Decision:</span>
+                    <span className="detail-val mono">{mlEvaluation.decision_state}</span>
+                  </div>
+                )}
+                {mlEvaluation.raw_probability != null && (
+                  <div className="detail-item">
+                    <span className="detail-label">Raw Prob:</span>
+                    <span className="detail-val mono">{(mlEvaluation.raw_probability * 100).toFixed(1)}%</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="ml-eval-disclaimer">
+            Observational ML evaluation only — not a clinical prediction, diagnosis, or operational safety decision.
+          </div>
+        </div>
+      )}
 
       {/* TreeSHAP Explainability Top Features */}
       <div className="explainability-section">
