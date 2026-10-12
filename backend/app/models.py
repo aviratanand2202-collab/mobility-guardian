@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
@@ -99,10 +99,10 @@ class RiskScoreOutput(BaseModel):
     battery_override_active: bool = False
     polling_instruction: Optional[PollingInstruction] = None
     location: Optional[Location] = None
-    # kinematic_features, trigger_state, explainability intentionally loose
-    # here (dict passthrough) since Person A owns their internal shape -
-    # backend only needs to read risk_tier / risk_score / polling_tier to
-    # drive its own state machines.
+    ml_evaluation: Optional[dict[str, Any]] = None
+    kinematic_features: Optional[dict[str, Any]] = None
+    trigger_state: Optional[dict[str, Any]] = None
+    explainability: Optional[dict[str, Any]] = None
 
 
 # ---------- Alerts ----------

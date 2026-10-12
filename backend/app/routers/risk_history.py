@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone, timedelta
 import json
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -28,6 +28,26 @@ class RiskHistoryEntry(BaseModel):
     polling_tier: int
     grid_cell_id: Optional[str] = None
     location: Optional[Location] = None
+    ml_evaluation: Optional[dict[str, Any]] = None
+
+
+def _extract_ml_evaluation(raw_json: Optional[str]) -> Optional[dict[str, Any]]:
+    """Extract ml_evaluation dict from raw_output_json if present.
+
+    Returns None gracefully if raw_json is missing, invalid JSON,
+    or predates the addition of shadow ML evaluation.
+    """
+    if not raw_json:
+        return None
+    try:
+        data = json.loads(raw_json)
+        if isinstance(data, dict):
+            ml_eval = data.get("ml_evaluation")
+            if isinstance(ml_eval, dict):
+                return ml_eval
+    except Exception:
+        return None
+    return None
 
 
 def _extract_location(raw_json: Optional[str]) -> Optional[Location]:
@@ -119,6 +139,7 @@ async def get_user_risk_history(
             polling_tier=row.polling_tier,
             grid_cell_id=row.grid_cell_id,
             location=_extract_location(row.raw_output_json),
+            ml_evaluation=_extract_ml_evaluation(row.raw_output_json),
         )
         for row in rows
     ]

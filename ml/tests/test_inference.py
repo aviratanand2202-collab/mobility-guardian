@@ -287,6 +287,19 @@ def test_behavior_pattern_integration(engine):
 def test_backend_telemetry_endpoint_integration():
     """Verify POST /api/telemetry/ingest returns valid RiskScoreOutput."""
     client = TestClient(app)
+    client.post(
+        "/api/consent/record",
+        json={
+            "user_id": "backend_patient_001",
+            "guardian_consent": {
+                "granted": True,
+                "granted_at": "2026-10-07T11:00:00Z",
+                "guardian_id": "guardian_001",
+            },
+            "end_user_consent_applicable": False,
+            "data_retention_ack": True,
+        },
+    )
     payload = {
         "user_id": "backend_patient_001",
         "timestamp": "2026-10-07T12:00:00Z",

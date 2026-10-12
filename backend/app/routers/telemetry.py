@@ -18,6 +18,7 @@ from app.models import (
 )
 from app.routers.consent import is_consented
 from app.services.geospatial import location_to_h3_cell
+from app.services.inference_service import evaluate_shadow_inference
 from app.services.mock_risk_engine import compute_risk
 from app.state_machines.dismissal_quarantine import get_or_create_cell_state
 from app.state_machines.pdr_hysteresis import get_or_create_state, save_state
@@ -54,6 +55,12 @@ async def ingest_telemetry(payload: TelemetryPayload):
 
     # Compute risk with suppression multiplier applied from cell dismissal state
     risk_output = compute_risk(payload, pdr_tier, cell_dismissal_state=cell_state)
+
+    # Observational shadow-mode ML inference (governed by ENABLE_ML_INFERENCE_ENGINE)
+    ml_eval = await evaluate_shadow_inference(payload)
+    if ml_eval is not None:
+        risk_output.ml_evaluation = ml_eval
+
     await push_risk_update(payload.user_id, risk_output.model_dump(mode="json"))
 
     # If risk is Tier 2 (SUSPICIOUS) or Tier 3 (CRITICAL), create or update an AlertRecord
