@@ -11,7 +11,7 @@ import logging
 from pathlib import Path
 import sys
 import threading
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from app.config import is_ml_inference_enabled
 from app.models import RiskScoreOutput, TelemetryPayload
@@ -22,11 +22,13 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from ml.src.inference import InferenceConfig, RiskInferenceEngine
+if TYPE_CHECKING:
+    from ml.src.inference import InferenceConfig, RiskInferenceEngine
 
 logger = logging.getLogger(__name__)
 
 _engine: Optional[RiskInferenceEngine] = None
+_engine_init_lock = threading.Lock()
 _user_locks: dict[str, asyncio.Lock] = {}
 _user_thread_locks: dict[str, threading.Lock] = {}
 _locks_guard = asyncio.Lock()
@@ -37,18 +39,23 @@ def get_inference_engine() -> RiskInferenceEngine:
     """Lazy initialize singleton RiskInferenceEngine with paths anchored to repo root."""
     global _engine
     if _engine is None:
-        cfg = InferenceConfig(
-            model_dir=str(_REPO_ROOT / "ml" / "models" / "xgboost"),
-            profiles_dir=str(_REPO_ROOT / "ml" / "models" / "profiles"),
-        )
-        _engine = RiskInferenceEngine(config=cfg)
+        with _engine_init_lock:
+            if _engine is None:
+                from ml.src.inference import InferenceConfig, RiskInferenceEngine
+
+                cfg = InferenceConfig(
+                    model_dir=str(_REPO_ROOT / "ml" / "models" / "xgboost"),
+                    profiles_dir=str(_REPO_ROOT / "ml" / "models" / "profiles"),
+                )
+                _engine = RiskInferenceEngine(config=cfg)
     return _engine
 
 
 def reset_inference_engine() -> None:
     """Reset the singleton engine and per-user locks (useful for testing and isolation)."""
     global _engine
-    _engine = None
+    with _engine_init_lock:
+        _engine = None
     _user_locks.clear()
     with _thread_locks_guard:
         _user_thread_locks.clear()
@@ -92,6 +99,23 @@ async def evaluate_shadow_inference(
     if not is_ml_inference_enabled():
         return None
 
+    try:
+        engine = get_inference_engine()
+    except Exception as exc:
+        logger.warning(
+            f"Shadow ML inference engine initialization encountered error for user '{payload.user_id}': {exc}",
+            exc_info=True,
+        )
+        return {
+            "engine_status": "FAILED",
+            "evidence_status": "ERROR",
+            "calibrated_probability": None,
+            "raw_probability": None,
+            "ml_risk_score": None,
+            "ml_risk_tier": None,
+            "error": "ML inference execution encountered an unexpected error.",
+        }
+
     loop = asyncio.get_running_loop()
     start_time = loop.time()
     user_lock = await _get_user_lock(payload.user_id)
@@ -118,7 +142,6 @@ async def evaluate_shadow_inference(
     # Lock is held. Worker must release it upon completion, even if coroutine times out.
     thread_dispatched = False
     try:
-        engine = get_inference_engine()
 
         # Prepare telemetry dictionary matching RiskInferenceEngine input schema
         payload_dict: dict[str, Any] = payload.model_dump(mode="json")

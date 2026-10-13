@@ -220,24 +220,25 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
             </span>
             <span
               className={`ml-eval-pill ml-eval-pill-${
-                mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
+                currentRisk && mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
                   ? 'evaluated'
-                  : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE'
+                  : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' || !currentRisk
                   ? 'collecting'
                   : 'unavailable'
               }`}
               data-testid="ml-eval-status-pill"
             >
-              {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
+              {currentRisk && mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE'
                 ? 'Window Evaluated'
-                : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE'
+                : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' || !currentRisk
                 ? 'Collecting Telemetry'
                 : 'Unavailable'}
             </span>
           </div>
 
           <div className="ml-eval-body">
-            {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' &&
+            {currentRisk &&
+            mlEvaluation.evidence_status === 'WINDOW_EVALUATED' &&
             mlEvaluation.engine_status === 'ACTIVE' &&
             mlEvaluation.calibrated_probability != null ? (
               <div className="ml-eval-metric">
@@ -248,13 +249,15 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
                   Kinematic Outlier Probability (120s Window)
                 </div>
               </div>
-            ) : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' ? (
+            ) : mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' || !currentRisk ? (
               <div className="ml-eval-status-block">
                 <div className="ml-eval-status-msg" data-testid="ml-eval-insufficient-msg">
                   Collecting telemetry
                 </div>
                 <div className="ml-eval-status-desc">
-                  Accumulating 120s window. Safety cannot be verified from incomplete evidence.
+                  {!currentRisk
+                    ? 'Awaiting live telemetry for current connection. Safety cannot be verified from incomplete evidence.'
+                    : 'Accumulating 120s window. Safety cannot be verified from incomplete evidence.'}
                 </div>
               </div>
             ) : (
@@ -268,7 +271,7 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
               </div>
             )}
 
-            {mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE' && (
+            {currentRisk && mlEvaluation.evidence_status === 'WINDOW_EVALUATED' && mlEvaluation.engine_status === 'ACTIVE' && (
               <div className="ml-eval-meta-block">
                 {mlEvaluation.decision_state && (
                   <div className="detail-item">

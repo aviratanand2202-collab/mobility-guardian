@@ -327,3 +327,16 @@ def test_risk_history_list_includes_location(client: TestClient):
     # Legacy entry gracefully has null location without raising any error
     assert entries2[1]["location"] is None
 
+
+def test_database_isolation_preserves_development_database():
+    """
+    Test 6: Verify that tests execute against an isolated test database,
+    preventing test runner cleanup fixtures from mutating or clearing
+    the primary development app.db database.
+    """
+    from app.db import _DB_PATH, _DATA_DIR
+    assert _DB_PATH.name == "test_app.db", (
+        f"Tests must execute against isolated test_app.db, got {_DB_PATH.name}"
+    )
+    assert _DB_PATH != _DATA_DIR / "app.db", "Tests must not target development app.db"
+

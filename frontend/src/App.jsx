@@ -51,6 +51,8 @@ export default function App() {
     setRiskWsStatus('disconnected')
     setAlertWsStatus('disconnected')
     setIsConnected(false)
+    setRiskMessages([])
+    setAlertMessages([])
     console.info('[Dashboard] disconnectSockets() complete.')
   }
 
@@ -58,6 +60,8 @@ export default function App() {
     if (!targetUserId || !targetUserId.trim()) return
 
     disconnectSockets()
+    setRiskMessages([])
+    setAlertMessages([])
     setIsConnected(true)
     setRiskWsStatus('connecting')
     setAlertWsStatus('connecting')
@@ -146,7 +150,7 @@ export default function App() {
     setHistoryLoading(true)
     setHistoryError(null)
     try {
-      const res = await fetch(`/api/risk-history/${targetUserId}?limit=20`)
+      const res = await fetch(`/api/risk-history/${targetUserId}?limit=100`)
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }

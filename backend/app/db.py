@@ -6,6 +6,7 @@ They are NOT Pydantic models and do not modify app/models.py.
 """
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, Text
@@ -19,8 +20,8 @@ from sqlalchemy.orm import DeclarativeBase
 # Resolve the data directory relative to this file's location so it works
 # regardless of the working directory uvicorn is launched from.
 _DATA_DIR = Path(__file__).resolve().parent / "data"
-_DB_PATH = _DATA_DIR / "app.db"
-_DB_URL = f"sqlite+aiosqlite:///{_DB_PATH}"
+_DB_PATH = Path(os.getenv("DATABASE_PATH", str(_DATA_DIR / "app.db")))
+_DB_URL = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{_DB_PATH}")
 
 engine = create_async_engine(_DB_URL, echo=False)
 async_session = async_sessionmaker(

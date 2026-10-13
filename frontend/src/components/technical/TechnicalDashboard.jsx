@@ -106,7 +106,7 @@ export default function TechnicalDashboard({
       <div className="panel" style={{ marginTop: '24px' }}>
         <div className="panel-header">
           <h2 className="panel-title">
-            Historical Risk Records (REST: GET /api/risk-history/{userId}?limit=20)
+            Historical Risk Records (REST: GET /api/risk-history/{userId}?limit=100)
           </h2>
           {isConnected && (
             <button
@@ -136,6 +136,9 @@ export default function TechnicalDashboard({
 
         {!historyLoading && !historyError && historyEntries.length > 0 && (() => {
           const hasAnyMlEval = historyEntries.some((e) => e.ml_evaluation != null)
+          const sortedEntries = [...historyEntries].sort(
+            (a, b) => new Date(b.timestamp) - new Date(a.timestamp) || b.id - a.id
+          )
           return (
             <div style={{ overflowX: 'auto' }}>
               <table className="data-table">
@@ -151,7 +154,7 @@ export default function TechnicalDashboard({
                   </tr>
                 </thead>
                 <tbody>
-                  {historyEntries.map((entry) => (
+                  {sortedEntries.map((entry) => (
                     <tr key={entry.id}>
                       <td className="mono">{entry.id}</td>
                       <td className="mono">{entry.timestamp}</td>

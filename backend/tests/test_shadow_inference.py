@@ -566,3 +566,157 @@ def test_historical_risk_entry_extracts_ml_evaluation_when_present():
     })
     assert _extract_ml_evaluation(raw_without_ml) is None
     assert _extract_ml_evaluation(None) is None
+
+
+# ==============================================================================
+# 10. OPTIONAL ML DEPENDENCY DECOUPLING & REGRESSION TESTS
+# ==============================================================================
+
+
+def test_backend_application_imports_and_serves_without_ml_dependencies():
+    """Verify backend app imports, initializes, and serves requests when ML modules are unavailable."""
+    import importlib
+    from fastapi.testclient import TestClient
+
+    blocked_modules = {
+        "numpy": None,
+        "pandas": None,
+        "xgboost": None,
+        "ml": None,
+        "ml.src": None,
+        "ml.src.inference": None,
+    }
+    try:
+        with patch.dict(sys.modules, blocked_modules):
+            import app.services.inference_service as inf_svc
+            importlib.reload(inf_svc)
+            assert not inf_svc.is_ml_inference_enabled()
+
+            import app.main as main_mod
+            importlib.reload(main_mod)
+            with TestClient(main_mod.app) as test_client:
+                resp = test_client.get("/health")
+                assert resp.status_code == 200
+                assert resp.json() == {"status": "ok"}
+    finally:
+        # Restore normal module state
+        import app.services.inference_service as inf_svc
+        importlib.reload(inf_svc)
+        import app.main as main_mod
+        importlib.reload(main_mod)
+
+
+def test_disabled_path_does_not_instantiate_engine_or_import_ml():
+    """Verify disabled path never calls get_inference_engine and returns None."""
+    async def _test():
+        payload = _make_telemetry(user_id="user_flag_off")
+        with patch("app.services.inference_service.is_ml_inference_enabled", return_value=False):
+            with patch("app.services.inference_service.get_inference_engine") as mock_engine:
+                result = await evaluate_shadow_inference(payload)
+                assert result is None
+                mock_engine.assert_not_called()
+
+    asyncio.run(_test())
+
+
+def test_enabled_path_handles_missing_ml_dependency_safely():
+    """Verify that when enabled, missing ML dependencies produce a controlled FAILED/ERROR result with null scores."""
+    async def _test():
+        payload = _make_telemetry(user_id="user_missing_dep")
+        reset_inference_engine()
+
+        with patch("app.services.inference_service.is_ml_inference_enabled", return_value=True):
+            with patch("app.services.inference_service.get_inference_engine", side_effect=ModuleNotFoundError("No module named 'numpy'")):
+                eval_out = await evaluate_shadow_inference(payload)
+
+        assert eval_out is not None
+        assert eval_out["engine_status"] == "FAILED"
+        assert eval_out["evidence_status"] == "ERROR"
+        assert eval_out["calibrated_probability"] is None
+        assert eval_out["raw_probability"] is None
+        assert eval_out["ml_risk_score"] is None
+        assert eval_out["ml_risk_tier"] is None
+        # Must not report as SAFE
+        assert eval_out["ml_risk_tier"] not in ("QUIESCENT", "SAFE")
+        assert eval_out["error"] == "ML inference execution encountered an unexpected error."
+
+    asyncio.run(_test())
+
+
+def test_enabled_path_handles_missing_model_artifacts_safely():
+    """Verify that when enabled, missing model files return controlled FAILED/ERROR result."""
+    async def _test():
+        payload = _make_telemetry(user_id="user_missing_artifact")
+        reset_inference_engine()
+
+        with patch("app.services.inference_service.is_ml_inference_enabled", return_value=True):
+            with patch("app.services.inference_service.get_inference_engine", side_effect=FileNotFoundError("Model file booster.bin not found")):
+                eval_out = await evaluate_shadow_inference(payload)
+
+        assert eval_out is not None
+        assert eval_out["engine_status"] == "FAILED"
+        assert eval_out["evidence_status"] == "ERROR"
+        assert eval_out["calibrated_probability"] is None
+        assert eval_out["raw_probability"] is None
+        assert eval_out["ml_risk_score"] is None
+        assert eval_out["ml_risk_tier"] is None
+        assert "booster.bin" not in eval_out["error"]
+
+    asyncio.run(_test())
+
+
+def test_operational_risk_and_alerts_unaffected_by_missing_ml_dependencies():
+    """Verify operational risk calculation and alert generation are strictly unaffected when ML dependencies fail."""
+    async def _test():
+        payload = _make_telemetry(user_id="user_op_risk_unaffected", speed_mps=15.0)
+
+        # Baseline operational calculation without ML
+        baseline_op = compute_risk(payload, None)
+        assert baseline_op.risk_tier in (RiskTier.SUSPICIOUS, RiskTier.CRITICAL)
+
+        # 1. When ML is enabled but dependency is missing:
+        with patch("app.services.inference_service.is_ml_inference_enabled", return_value=True):
+            with patch("app.services.inference_service.get_inference_engine", side_effect=ModuleNotFoundError("No module named 'numpy'")):
+                eval_out = await evaluate_shadow_inference(payload)
+
+        # Attach shadow evaluation
+        test_op = compute_risk(payload, None)
+        test_op.ml_evaluation = eval_out
+
+        # Operational metrics MUST match baseline exactly
+        assert test_op.risk_tier == baseline_op.risk_tier
+        assert test_op.risk_score == baseline_op.risk_score
+        assert test_op.polling_tier == baseline_op.polling_tier
+
+        # Alert decision is solely determined by operational risk_tier
+        op_alert_triggered = test_op.risk_tier in (RiskTier.SUSPICIOUS, RiskTier.CRITICAL)
+        assert op_alert_triggered is True
+
+    asyncio.run(_test())
+
+
+def test_per_user_lock_released_on_engine_initialization_failure():
+    """Verify per-user lock is not leaked when engine initialization raises, allowing subsequent calls."""
+    async def _test():
+        payload = _make_telemetry(user_id="user_lock_cleanup")
+        reset_inference_engine()
+
+        # First call fails on initialization
+        with patch("app.services.inference_service.is_ml_inference_enabled", return_value=True):
+            with patch("app.services.inference_service.get_inference_engine", side_effect=ImportError("Cannot import name 'RiskInferenceEngine'")):
+                eval1 = await evaluate_shadow_inference(payload, timeout_sec=0.2)
+                assert eval1["engine_status"] == "FAILED"
+
+                # Second call for SAME user should acquire lock cleanly without timing out
+                eval2 = await evaluate_shadow_inference(payload, timeout_sec=0.2)
+                assert eval2["engine_status"] == "FAILED"
+
+    asyncio.run(_test())
+
+
+def test_get_inference_engine_lazy_import_raises_on_missing_dep():
+    """Verify get_inference_engine attempts import only when called and raises if dependency missing."""
+    reset_inference_engine()
+    with patch.dict(sys.modules, {"ml.src.inference": None}):
+        with pytest.raises((ImportError, ModuleNotFoundError)):
+            get_inference_engine()

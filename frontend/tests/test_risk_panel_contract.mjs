@@ -105,13 +105,14 @@ function evaluateRiskPanelState(currentRisk, historyEntries) {
 
   if (isMlCardRendered) {
     if (
+      currentRisk &&
       mlEvaluation.evidence_status === 'WINDOW_EVALUATED' &&
       mlEvaluation.engine_status === 'ACTIVE' &&
       mlEvaluation.calibrated_probability != null
     ) {
       mlStatus = 'WINDOW_EVALUATED'
       mlProbabilityFormatted = `${(mlEvaluation.calibrated_probability * 100).toFixed(1)}%`
-    } else if (mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE') {
+    } else if (mlEvaluation.evidence_status === 'INSUFFICIENT_EVIDENCE' || !currentRisk) {
       mlStatus = 'INSUFFICIENT_EVIDENCE'
       mlDisplayMessage = 'Collecting telemetry'
     } else {
@@ -281,4 +282,86 @@ test('6. TechnicalDashboard historical records table correctly formats ML Eval c
     /\(entry\.ml_evaluation\.calibrated_probability \* 100\)\.toFixed\(1\)/,
     'Must format historical probability as percentage'
   )
+})
+
+test('7. TechnicalDashboard historical table sorts entries newest first (descending timestamp)', () => {
+  const technicalDashboardPath = path.resolve(__dirname, '../src/components/technical/TechnicalDashboard.jsx')
+  const techCode = fs.readFileSync(technicalDashboardPath, 'utf8')
+
+  assert.match(
+    techCode,
+    /const sortedEntries = \[\.\.\.historyEntries\]\.sort/,
+    'Must create sorted copy of historyEntries for descending display'
+  )
+  assert.match(
+    techCode,
+    /new Date\(b\.timestamp\) - new Date\(a\.timestamp\)/,
+    'Must sort descending by timestamp'
+  )
+
+  // Verify pure sorting behavior: newest timestamp and higher ID come first
+  const mockEntries = [
+    { id: 3, timestamp: '2026-10-13T07:48:00Z', risk_score: 40.0 },
+    { id: 25, timestamp: '2026-10-13T07:50:00Z', risk_score: 41.0 },
+    { id: 32, timestamp: '2026-10-13T07:50:35Z', risk_score: 47.7 },
+  ]
+  const sorted = [...mockEntries].sort(
+    (a, b) => new Date(b.timestamp) - new Date(a.timestamp) || b.id - a.id
+  )
+  assert.equal(sorted[0].id, 32, 'Newest record must be first')
+  assert.equal(sorted[1].id, 25, 'Intermediate record must be second')
+  assert.equal(sorted[2].id, 3, 'Oldest record must be last')
+})
+
+test('8. App.jsx queries limit=100 and resets live risk/alert messages on socket reconnect/disconnect', () => {
+  const appPath = path.resolve(__dirname, '../src/App.jsx')
+  const appCode = fs.readFileSync(appPath, 'utf8')
+
+  // History query limit increased to 100 to prevent truncating newer evaluated records
+  assert.match(
+    appCode,
+    /\/api\/risk-history\/\$\{targetUserId\}\?limit=100/,
+    'fetchHistory must query with limit=100'
+  )
+
+  // Live messages reset in disconnectSockets and connectSockets
+  assert.match(
+    appCode,
+    /disconnectSockets = \(\) => \{[\s\S]*?setRiskMessages\(\[\]\)[\s\S]*?setAlertMessages\(\[\]\)/,
+    'disconnectSockets must reset riskMessages and alertMessages'
+  )
+  assert.match(
+    appCode,
+    /connectSockets = \([a-zA-Z0-9_]+\) => \{[\s\S]*?setRiskMessages\(\[\]\)[\s\S]*?setAlertMessages\(\[\]\)/,
+    'connectSockets must reset riskMessages and alertMessages'
+  )
+})
+
+test('9. RiskPanel preserves collecting/waiting state when no live evaluation has arrived in current connection', () => {
+  // Scenario: Reconnected to socket (currentRisk is null), but persisted history has an evaluated window (ID 32)
+  const historyWithEvaluated = [
+    {
+      id: 32,
+      timestamp: '2026-10-13T07:50:35Z',
+      risk_score: 47.7,
+      risk_tier: 'NORMAL_TRANSIT',
+      ml_evaluation: {
+        engine_status: 'ACTIVE',
+        evidence_status: 'WINDOW_EVALUATED',
+        calibrated_probability: 0.7851,
+        raw_probability: 0.7800,
+        ml_risk_score: 78.5,
+        decision_state: 'CRITICAL',
+      },
+    },
+  ]
+
+  // currentRisk is null (no message received yet on new connection)
+  const state = evaluateRiskPanelState(null, historyWithEvaluated)
+
+  // Card is rendered because historical ML metadata is known, BUT it must show collecting state, NOT claim 78.5% live
+  assert.equal(state.isMlCardRendered, true)
+  assert.equal(state.mlStatus, 'INSUFFICIENT_EVIDENCE', 'Must show collecting/waiting status when currentRisk is null')
+  assert.equal(state.mlDisplayMessage, 'Collecting telemetry', 'Must display Collecting telemetry message')
+  assert.equal(state.mlProbabilityFormatted, null, 'Must NOT format probability as live prediction')
 })
