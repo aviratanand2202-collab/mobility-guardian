@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import MapPanel from '../MapPanel'
+import TrustedCompanionPanel from '../companion/TrustedCompanionPanel'
+import PatientConsentModal from './PatientConsentModal'
 
 function getRelativeTime(timestamp, currentTime) {
   if (!timestamp) return '-'
@@ -33,15 +35,63 @@ export default function CaregiverDashboard({
   historyEntries = [],
   alertMessages,
   handleAlertUpdate,
+  patientStatus = null,
   onSwitchToTechnical,
 }) {
+  const [inputUserId, setInputUserId] = useState(userId)
   const [now, setNow] = useState(Date.now())
+
+  useEffect(() => {
+    setInputUserId(userId)
+  }, [userId])
   const [mapActionTrigger, setMapActionTrigger] = useState(null)
   const [dismissingIds, setDismissingIds] = useState(new Set())
   const [dismissErrors, setDismissErrors] = useState({})
   const [recalibrationPrompt, setRecalibrationPrompt] = useState(null)
   const [expandedFeatureIndices, setExpandedFeatureIndices] = useState(new Set())
   const [expandedAlertIds, setExpandedAlertIds] = useState(new Set())
+  const [activeCompanion, setActiveCompanion] = useState(null)
+  const [patientConsent, setPatientConsent] = useState(null)
+  const [consentLoading, setConsentLoading] = useState(false)
+  const [showConsentModal, setShowConsentModal] = useState(false)
+
+  // Fetch patient consent record per §2.7
+  const fetchPatientConsent = async (targetId) => {
+    if (!targetId || !targetId.trim()) {
+      setPatientConsent(null)
+      return
+    }
+    setConsentLoading(true)
+    try {
+      const res = await fetch(`/api/consent/${encodeURIComponent(targetId.trim())}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.status === 'not_found') {
+          setPatientConsent({ isConsented: false, record: null })
+        } else if (data.guardian_consent?.granted) {
+          setPatientConsent({ isConsented: true, record: data })
+        } else {
+          setPatientConsent({ isConsented: false, record: data })
+        }
+      } else {
+        setPatientConsent({ isConsented: false, record: null })
+      }
+    } catch (err) {
+      console.warn('Failed to fetch patient consent:', err)
+      setPatientConsent({ isConsented: false, record: null })
+    } finally {
+      setConsentLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPatientConsent(userId)
+  }, [userId])
+
+  const handleConsentRecorded = (record) => {
+    setPatientConsent({ isConsented: true, record })
+    fetchPatientConsent(userId)
+  }
 
   const toggleFeatureExpand = (idx) => {
     setExpandedFeatureIndices((prev) => {
@@ -494,17 +544,43 @@ export default function CaregiverDashboard({
           </div>
 
           {/* Integrated Monitoring Controls Form */}
-          <form onSubmit={handleConnectClick} className="caregiver-controls-inline">
+          <form
+            onSubmit={(e) => {
+              if (e) {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+              const trimmed = (inputUserId || '').trim()
+              if (!trimmed) return
+              if (!isConnected) {
+                if (trimmed !== userId) {
+                  setUserId(trimmed)
+                }
+                handleConnectClick(e, trimmed)
+              } else {
+                handleDisconnectClick()
+              }
+            }}
+            className="caregiver-controls-inline"
+          >
             <div className="control-group-compact">
               <label htmlFor="caregiver-user-id" className="control-label-compact">Person ID</label>
               <input
                 id="caregiver-user-id"
                 type="text"
                 className="control-input-compact"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                placeholder="e.g. sim_stage6"
-                disabled={isConnected}
+                value={inputUserId}
+                onChange={(e) => setInputUserId(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    const trimmed = (inputUserId || '').trim()
+                    if (!trimmed) return
+                    if (isConnected) handleDisconnectClick()
+                    setUserId(trimmed)
+                  }
+                }}
+                placeholder="e.g. test_user_000"
               />
             </div>
             {!isConnected ? (
@@ -538,6 +614,25 @@ export default function CaregiverDashboard({
 
         {/* Live Status Indicators Bar */}
         <div className="caregiver-header-badges">
+          {/* Patient Consent Status Pill */}
+          {patientConsent?.isConsented ? (
+            <span
+              className="caregiver-status-pill pill-active"
+              title="Authorized patient & guardian consent on file (§2.7)"
+            >
+              <span className="pill-dot"></span>
+              ✓ Patient Consent on File
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="caregiver-status-pill pill-consent-required clickable"
+              onClick={() => setShowConsentModal(true)}
+              title="Click to set up authorized patient consent"
+            >
+              ⚠️ Patient Consent Required
+            </button>
+          )}
           <span
             className={`caregiver-status-pill ${
               !isRiskOnline
@@ -816,10 +911,21 @@ export default function CaregiverDashboard({
             telemetryTimestamp={telemetryTimestamp}
             telemetryAge={telemetryAge}
             actionTrigger={mapActionTrigger}
+            activeCompanion={activeCompanion}
+            patientStatus={patientStatus}
           />
         </div>
 
         <div className="caregiver-side-col">
+          {/* Trusted Companion Mode */}
+          <TrustedCompanionPanel
+            userId={userId}
+            currentLocation={currentLocation}
+            onCompanionStateChange={setActiveCompanion}
+            patientConsent={patientConsent}
+            onOpenConsentModal={() => setShowConsentModal(true)}
+          />
+
           {/* Card 1: Plain-Language Movement Observations (Requirement 1) */}
           <div className="panel caregiver-insights-card">
             <div className="panel-header">
@@ -1218,6 +1324,15 @@ export default function CaregiverDashboard({
           </div>
         </div>
       </div>
+
+      {/* Patient Consent Setup Modal */}
+      {showConsentModal && (
+        <PatientConsentModal
+          userId={userId}
+          onClose={() => setShowConsentModal(false)}
+          onConsentRecorded={handleConsentRecorded}
+        />
+      )}
     </div>
   )
 }

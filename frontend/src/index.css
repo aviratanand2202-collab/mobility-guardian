@@ -4753,3 +4753,1602 @@ body.caregiver-serene-theme .alert-confirmed-badge {
   color: #94a3b8;
   font-style: italic;
 }
+/* Group Demo Mode Styles */
+.map-mode-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 2px;
+}
+
+body.caregiver-serene-theme .map-mode-toggle-group {
+  background: var(--sh-surface-container-low, #e6ece4);
+  border: 1px solid var(--sh-outline-variant, #c1c8c2);
+}
+
+.map-mode-toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+body.caregiver-serene-theme .map-mode-toggle-btn {
+  color: #52634f;
+  font-family: var(--sh-font-family);
+}
+
+.map-mode-toggle-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+body.caregiver-serene-theme .map-mode-toggle-btn:hover:not(.active) {
+  background: rgba(36, 74, 56, 0.08);
+  color: #1b382b;
+}
+
+.map-mode-toggle-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+body.caregiver-serene-theme .map-mode-toggle-btn.active {
+  background: #244a38;
+  color: #ffffff;
+}
+
+.map-header-fit-group-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-header-fit-group-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+  color: #10b981;
+}
+
+body.caregiver-serene-theme .map-header-fit-group-btn {
+  background: var(--sh-secondary-container, #d5e8dc);
+  color: var(--sh-on-secondary-fixed, #0f4c3a);
+  border: 1px solid rgba(193, 200, 194, 0.6);
+  font-family: var(--sh-font-family);
+}
+
+/* ==========================================================================
+   Multi-Patient Tracking: Trajectory Comparison Styles
+   ========================================================================== */
+.multi-patient-dashboard-strip {
+  background: #131c31;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+body.caregiver-serene-theme .multi-patient-dashboard-strip {
+  background: var(--sh-surface-container-low, #f4f7f4);
+  border: 1px solid var(--sh-outline-variant, #c1c8c2);
+  box-shadow: var(--sh-shadow-xs, 0 1px 4px rgba(0, 0, 0, 0.06));
+}
+
+.multi-patient-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.multi-patient-add-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 480px;
+}
+
+.multi-patient-input {
+  flex: 1;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+}
+
+.multi-patient-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+body.caregiver-serene-theme .multi-patient-input {
+  background: #ffffff;
+  color: #19382b;
+  border: 1px solid #c1c8c2;
+}
+
+.multi-patient-add-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.multi-patient-add-btn:hover {
+  background: #1d4ed8;
+}
+
+body.caregiver-serene-theme .multi-patient-add-btn {
+  background: #244a38;
+}
+
+.multi-patient-add-btn:hover {
+  background: #1b382b;
+}
+
+.multi-patient-chips-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.multi-patient-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  color: #f8fafc;
+  transition: all 0.15s ease;
+}
+
+body.caregiver-serene-theme .multi-patient-chip {
+  background: #ffffff;
+  color: #1b382b;
+}
+
+.chip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chip-label {
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.chip-status {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+body.caregiver-serene-theme .chip-status {
+  color: #556c5e;
+}
+
+.chip-remove-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.chip-remove-btn:hover {
+  color: #ef4444;
+}
+
+/* Multi-Patient Marker Styling */
+.multi-patient-marker-wrapper {
+  position: relative;
+  width: 44px;
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.multi-patient-pill-tag {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-size: 8.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  font-family: monospace;
+  z-index: 3;
+}
+
+.dot-multi {
+  background-color: #2563eb;
+  box-shadow: 0 0 6px #2563eb;
+}
+
+/* Multi-Patient Summary Grid */
+.multi-patient-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.multi-patient-summary-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+body.caregiver-serene-theme .multi-patient-summary-card {
+  background: #ffffff;
+  border: 1px solid rgba(193, 200, 194, 0.7);
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.summary-patient-id {
+  font-size: 13px;
+  font-weight: 800;
+  font-family: monospace;
+}
+
+.summary-status-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.summary-status-tag.has-data {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+body.caregiver-serene-theme .summary-status-tag.has-data {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.summary-status-tag.no-data {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+body.caregiver-serene-theme .summary-status-tag.no-data {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.summary-status-tag.unknown {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+body.caregiver-serene-theme .summary-status-tag.unknown {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.summary-card-body {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+body.caregiver-serene-theme .summary-card-body {
+  color: #2e4d3c;
+}
+
+/* ==========================================================================
+   Trusted Companion Mode Styles
+   ========================================================================== */
+.trusted-companion-card {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  margin-bottom: 10px;
+}
+
+body.caregiver-serene-theme .trusted-companion-card {
+  background: var(--sh-surface-container-lowest, #ffffff);
+  border: 1px solid var(--sh-outline-variant, #c1c8c2);
+  box-shadow: var(--sh-shadow-sm, 0 1px 4px rgba(0, 0, 0, 0.06));
+}
+
+.companion-panel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.companion-error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Idle State */
+.companion-idle-state {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.companion-idle-icon-disc {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.companion-idle-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0 0 4px 0;
+}
+
+body.caregiver-serene-theme .companion-idle-title {
+  color: #1b382b;
+}
+
+.companion-idle-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0 0 8px 0;
+  line-height: 1.45;
+}
+
+body.caregiver-serene-theme .companion-idle-desc {
+  color: #4b6354;
+}
+
+.companion-privacy-bullets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.privacy-pill {
+  font-size: 10.5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+body.caregiver-serene-theme .privacy-pill {
+  background: #f1f5f2;
+  border-color: #d1ded5;
+  color: #244a38;
+}
+
+/* Buttons */
+.companion-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.companion-btn-primary {
+  background: #7c3aed;
+  color: #ffffff;
+}
+
+.companion-btn-primary:hover:not(:disabled) {
+  background: #6d28d9;
+}
+
+.companion-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.companion-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.companion-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.companion-btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+}
+
+.companion-btn-sim {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.companion-btn-sim-quick {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  font-size: 10.5px;
+  padding: 4px 8px;
+}
+
+/* Pending Invite State */
+.companion-pending-state {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pending-badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.companion-status-tag.tag-pending {
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.countdown-pill {
+  font-size: 10.5px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.pending-instructions {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+body.caregiver-serene-theme .pending-instructions {
+  color: #4b6354;
+}
+
+.invite-link-box {
+  display: flex;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.invite-link-input {
+  flex: 1;
+  background: #0a0f1d;
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-family: monospace;
+}
+
+body.caregiver-serene-theme .invite-link-input {
+  background: #f8faf9;
+  color: #244a38;
+  border-color: #c1c8c2;
+}
+
+.pending-actions-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* Active Accompaniment State */
+.companion-active-state {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.active-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.active-companion-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.companion-avatar-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.2);
+  color: #c4b5fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.companion-name-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.companion-alias-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+body.caregiver-serene-theme .companion-alias-title {
+  color: #1b382b;
+}
+
+.companion-privacy-tag {
+  font-size: 9.5px;
+  color: #94a3b8;
+}
+
+/* Accompaniment Badges */
+.accompaniment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.badge-with-companion {
+  background: rgba(16, 185, 129, 0.18);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+body.caregiver-serene-theme .badge-with-companion {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.badge-separated {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+body.caregiver-serene-theme .badge-separated {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.badge-unverified {
+  background: rgba(100, 116, 139, 0.18);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+}
+
+body.caregiver-serene-theme .badge-unverified {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+/* Metrics Grid */
+.companion-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 6px;
+}
+
+.companion-metric-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+body.caregiver-serene-theme .companion-metric-item {
+  background: #f7faf8;
+  border-color: #e2e8e4;
+}
+
+.c-metric-eyebrow {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.c-metric-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+body.caregiver-serene-theme .c-metric-value {
+  color: #1b382b;
+}
+
+.c-metric-hint {
+  font-size: 9.5px;
+  color: #94a3b8;
+}
+
+/* Narrative */
+.companion-narrative-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.companion-narrative-card.narrative-safe-departure {
+  border-left: 3px solid #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.narrative-icon {
+  font-size: 16px;
+}
+
+.narrative-text {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  line-height: 1.4;
+}
+
+body.caregiver-serene-theme .narrative-text {
+  color: #244a38;
+}
+
+.safe-zone-accompaniment-hint {
+  font-size: 10.5px;
+  color: #60a5fa;
+  margin-top: 2px;
+}
+
+body.caregiver-serene-theme .safe-zone-accompaniment-hint {
+  color: #2563eb;
+}
+
+.active-actions-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Companion Map Marker */
+.companion-pill-tag {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #7c3aed;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+  z-index: 3;
+}
+
+/* Companion Portal Modal */
+.companion-portal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.companion-portal-modal {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: slideUpFade 0.25s ease-out;
+}
+
+.companion-portal-header {
+  padding: 16px 20px;
+  background: #161f36;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.portal-header-icon {
+  font-size: 24px;
+}
+
+.portal-header-text {
+  flex: 1;
+}
+
+.portal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.portal-subtitle {
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+
+.portal-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.companion-portal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.consent-callout {
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.callout-kicker {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.callout-patient {
+  margin: 4px 0 6px 0;
+  font-size: 13.5px;
+  color: #f8fafc;
+}
+
+.callout-disclosure {
+  margin: 0;
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+.consent-guarantees {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guarantee-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.guarantee-icon {
+  font-size: 16px;
+  margin-top: 1px;
+}
+
+.guarantee-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11.5px;
+}
+
+.guarantee-text strong {
+  color: #f8fafc;
+}
+
+.guarantee-text span {
+  color: #94a3b8;
+}
+
+.companion-alias-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alias-label {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.alias-input {
+  background: #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #f8fafc;
+  font-size: 13px;
+}
+
+.consent-buttons-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.consent-accept-btn {
+  flex: 2;
+  padding: 10px 16px;
+  font-size: 13px;
+}
+
+.portal-active-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portal-active-banner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  color: #34d399;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.active-telemetry-status-card {
+  background: #161f36;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-metric-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.status-metric-label {
+  color: #94a3b8;
+}
+
+.status-metric-val {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.active-companion-help {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.active-controls-cluster {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.portal-state-box {
+  text-align: center;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.state-icon {
+  font-size: 32px;
+}
+
+.state-title {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 15px;
+}
+
+.state-desc {
+  margin: 0 0 12px 0;
+  color: #94a3b8;
+  font-size: 12px;
+  max-width: 380px;
+}
+
+/* ==========================================================================
+   Patient Consent Modal & Compliance Styles (§2.7)
+   ========================================================================== */
+.patient-consent-modal {
+  max-width: 580px;
+  width: 100%;
+}
+
+.patient-consent-modal .form-group-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.patient-consent-modal .form-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+body.caregiver-serene-theme .patient-consent-modal .form-field-label {
+  color: #1b382b;
+}
+
+.req-asterisk {
+  color: #ef4444;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+.patient-consent-modal .field-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+body.caregiver-serene-theme .patient-consent-modal .field-hint {
+  color: #4b6354;
+}
+
+.checkbox-consent-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.15s ease;
+}
+
+.checkbox-consent-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+body.caregiver-serene-theme .checkbox-consent-card {
+  background: #f7faf8;
+  border-color: #d1ded5;
+}
+
+body.caregiver-serene-theme .checkbox-consent-card:hover {
+  border-color: #244a38;
+}
+
+.checkbox-label-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: #7c3aed;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: #f8fafc;
+}
+
+body.caregiver-serene-theme .checkbox-text-group {
+  color: #1b382b;
+}
+
+.checkbox-subtext {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+  font-weight: normal;
+}
+
+body.caregiver-serene-theme .checkbox-subtext {
+  color: #4b6354;
+}
+
+.capacity-assessment-card {
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.caregiver-serene-theme .capacity-assessment-card {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.field-section-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #c7d2fe;
+}
+
+body.caregiver-serene-theme .field-section-title {
+  color: #3730a3;
+}
+
+.capacity-desc {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+body.caregiver-serene-theme .capacity-desc {
+  color: #4b6354;
+}
+
+.radio-options-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.radio-option-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+body.caregiver-serene-theme .radio-option-label {
+  color: #1b382b;
+}
+
+.radio-option-label input[type="radio"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #818cf8;
+  cursor: pointer;
+}
+
+.patient-consent-row {
+  border-left: 3px solid #818cf8;
+}
+
+.companion-consent-notice-box {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+body.caregiver-serene-theme .companion-consent-notice-box {
+  background: #fef3c7;
+  border-color: #fde68a;
+}
+
+.consent-notice-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.consent-notice-icon {
+  font-size: 16px;
+}
+
+.consent-notice-text {
+  font-size: 11.5px;
+  color: #fbbf24;
+}
+
+body.caregiver-serene-theme .consent-notice-text {
+  color: #b45309;
+}
+
+.consent-notice-text p {
+  margin: 2px 0 0 0;
+  color: #cbd5e1;
+  font-size: 11px;
+}
+
+body.caregiver-serene-theme .consent-notice-text p {
+  color: #4b6354;
+}
+
+.consent-setup-btn {
+  align-self: flex-start;
+}
+
+.companion-error-message-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.companion-btn-inline-setup {
+  background: #fbbf24;
+  color: #1e293b;
+  border: none;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.companion-btn-inline-setup:hover {
+  background: #f59e0b;
+}
+
+.caregiver-status-pill.pill-consent-required {
+  background-color: var(--sh-tertiary-container, rgba(245, 158, 11, 0.18));
+  color: #7a3a0c;
+  border: 1px solid rgba(217, 119, 54, 0.45);
+}
+
+button.caregiver-status-pill {
+  cursor: pointer;
+  background: none;
+  font-family: inherit;
+}
+
+button.caregiver-status-pill.pill-consent-required:hover {
+  background-color: #fed7aa;
+  border-color: #ea580c;
+  box-shadow: 0 1px 4px rgba(217, 119, 54, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Technical Dashboard: Real Family & Companion Accompaniment Strip
+   ========================================================================== */
+.technical-accompaniment-strip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tech-acc-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tech-acc-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.tech-acc-icon {
+  font-size: 18px;
+}
+
+.tech-acc-patient-tag {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #334155;
+  margin-left: 6px;
+}
+
+.tech-acc-status-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tech-acc-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tech-acc-status-pill .pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.tech-acc-status-pill.pill-accompanied {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+.tech-acc-status-pill.pill-accompanied .pill-dot {
+  background-color: #22c55e;
+}
+
+.tech-acc-status-pill.pill-separated {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+.tech-acc-status-pill.pill-separated .pill-dot {
+  background-color: #ef4444;
+}
+
+.tech-acc-status-pill.pill-unverified {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+.tech-acc-status-pill.pill-unverified .pill-dot {
+  background-color: #94a3b8;
+}
+
+.tech-acc-stale-tag {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tech-acc-live-tag {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tech-acc-body-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tech-acc-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.tech-acc-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tech-acc-detail-item .detail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.tech-acc-detail-item .detail-value {
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.tech-acc-safe-departure-note {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tech-acc-actions-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.tech-acc-idle-card {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tech-acc-idle-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.tech-acc-form {
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tech-acc-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.tech-acc-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tech-acc-input-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.tech-acc-form-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.tech-acc-error {
+  font-size: 12px;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.tech-acc-prereq-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #f59e0b;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #92400e;
+}
+
+.tech-acc-prereq-banner .prereq-icon {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.tech-acc-prereq-banner .prereq-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12.5px;
+}
+
+.tech-acc-prereq-banner .prereq-content strong {
+  color: #78350f;
+  font-weight: 700;
+}
+
+.tech-acc-prereq-banner .prereq-text {
+  margin: 0;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.tech-acc-consent-alert {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-left: 4px solid #ef4444;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #991b1b;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* Patient Quick Select Bar in Technical Inspector */
+.patient-quick-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 4px;
+  padding: 2px 8px;
+  background: rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.quick-select-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-right: 2px;
+}
+

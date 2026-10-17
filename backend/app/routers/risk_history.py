@@ -77,7 +77,7 @@ def _extract_location(raw_json: Optional[str]) -> Optional[Location]:
     return None
 
 
-def _parse_datetime(val: Optional[str], default: datetime) -> datetime:
+def _parse_datetime(val: Optional[str], default: Optional[datetime] = None) -> Optional[datetime]:
     if val is None or not val.strip():
         return default
     try:
@@ -106,25 +106,29 @@ async def get_user_risk_history(
     Retrieve lightweight historical risk records for a patient over a time range,
     ordered ascending by timestamp for efficient trend line visualization.
     """
-    now_utc = datetime.now(timezone.utc)
-    start_dt = _parse_datetime(start, default=now_utc - timedelta(hours=24))
-    end_dt = _parse_datetime(end, default=now_utc)
+    start_dt = _parse_datetime(start, default=None)
+    end_dt = _parse_datetime(end, default=None)
 
     # Respect and cap limit between 1 and 2000
     capped_limit = max(1, min(limit, 2000))
 
     async with async_session() as session:
-        result = await session.execute(
-            select(RiskScoreHistoryRow)
-            .where(
-                RiskScoreHistoryRow.user_id == user_id,
-                RiskScoreHistoryRow.timestamp >= start_dt,
-                RiskScoreHistoryRow.timestamp <= end_dt,
-            )
-            .order_by(RiskScoreHistoryRow.timestamp.asc())
-            .limit(capped_limit)
-        )
-        rows = result.scalars().all()
+        stmt = select(RiskScoreHistoryRow).where(RiskScoreHistoryRow.user_id == user_id)
+        if start_dt is not None:
+            stmt = stmt.where(RiskScoreHistoryRow.timestamp >= start_dt)
+        if end_dt is not None:
+            stmt = stmt.where(RiskScoreHistoryRow.timestamp <= end_dt)
+
+        if start_dt is None:
+            # When start is not specified, fetch the most recent records up to capped_limit
+            # and sort ascending so the result is chronological
+            stmt = stmt.order_by(RiskScoreHistoryRow.timestamp.desc()).limit(capped_limit)
+            result = await session.execute(stmt)
+            rows = list(reversed(result.scalars().all()))
+        else:
+            stmt = stmt.order_by(RiskScoreHistoryRow.timestamp.asc()).limit(capped_limit)
+            result = await session.execute(stmt)
+            rows = result.scalars().all()
 
     return [
         RiskHistoryEntry(
