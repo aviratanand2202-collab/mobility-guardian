@@ -61,6 +61,37 @@ def reset_inference_engine() -> None:
         _user_thread_locks.clear()
 
 
+def warmup_inference_engine() -> bool:
+    """Pre-warm singleton RiskInferenceEngine during server startup.
+
+    Guarantees:
+    - No-op returning False when ENABLE_ML_INFERENCE_ENGINE is false.
+    - Idempotent and thread-safe via _engine_init_lock.
+    - Fault-tolerant: if model files are missing or deserialization fails, catches
+      the exception, logs a sanitized diagnostic, and returns False.
+    - Operational risk calculation and service availability remain independent of ML.
+    """
+    if not is_ml_inference_enabled():
+        return False
+    try:
+        get_inference_engine()
+        logger.info("Shadow ML inference engine successfully pre-warmed.")
+        return True
+    except Exception as exc:
+        logger.warning(
+            f"Shadow ML engine pre-warming failed during startup (will fall back gracefully): {exc}",
+            exc_info=True,
+        )
+        return False
+
+
+async def async_warmup_inference_engine() -> bool:
+    """Asynchronously pre-warm the ML inference engine off the main event loop thread."""
+    if not is_ml_inference_enabled():
+        return False
+    return await asyncio.to_thread(warmup_inference_engine)
+
+
 async def _get_user_lock(user_id: str) -> asyncio.Lock:
     """Retrieve or create an asyncio.Lock for the specified user to serialize stateful buffers."""
     if user_id not in _user_locks:

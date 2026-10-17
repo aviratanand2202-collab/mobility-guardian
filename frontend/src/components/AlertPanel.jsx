@@ -201,14 +201,19 @@ export default function AlertPanel({ alerts, onAlertUpdate }) {
                   </div>
 
                   {/* Suppression Multiplier Indicator */}
-                  {alert.sensitivity_multiplier != null && (
-                    <div className="suppression-pill">
-                      🛡️ Suppression Applied: <strong>{alert.sensitivity_multiplier.toFixed(2)}x</strong> multiplier
-                      {alert.dismissal_count != null && (
-                        <span> (Dismissal #{alert.dismissal_count})</span>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const dismissalCount = alert.dismissal_count ?? alert.dismissal_count_in_window ?? alert.dismissal?.dismissal_count_in_window
+                    const sensitivityMultiplier = alert.sensitivity_multiplier ?? (dismissalCount != null ? 1.0 - Math.min(0.30, 0.10 * dismissalCount) : null)
+                    if (sensitivityMultiplier == null) return null
+                    return (
+                      <div className="suppression-pill">
+                        🛡️ Suppression Applied: <strong>{sensitivityMultiplier.toFixed(2)}x</strong> multiplier
+                        {dismissalCount != null && (
+                          <span> (Dismissal #{dismissalCount})</span>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {errorMsg && (
                     <div className="alert-error-banner">

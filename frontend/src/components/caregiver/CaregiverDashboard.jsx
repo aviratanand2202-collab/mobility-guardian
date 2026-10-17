@@ -33,6 +33,9 @@ export default function CaregiverDashboard({
   historyEntries = [],
   alertMessages,
   handleAlertUpdate,
+  alertsLoading = false,
+  alertsError = null,
+  fetchAlerts,
   onSwitchToTechnical,
 }) {
   const [now, setNow] = useState(Date.now())
@@ -306,6 +309,11 @@ export default function CaregiverDashboard({
     }
   }
 
+  // Separate active (PENDING) and historical/dismissed (DISMISSED_SAFE) alert counts
+  const pendingAlerts = alertMessages.filter((a) => a.status === 'PENDING')
+  const pendingCount = pendingAlerts.length
+  const dismissedCount = alertMessages.filter((a) => a.status === 'DISMISSED_SAFE').length
+
   // Truthful Alert Empty-State Presentation per Safety Correction
   let emptyAlertTitle = 'No Active Alerts Recorded'
   let emptyAlertDesc = 'No geofence breach or safety alert events have been triggered.'
@@ -315,7 +323,23 @@ export default function CaregiverDashboard({
   let emptyAlertDiscClass = 'disc-nominal'
   let emptyAlertIcon = '🛡️'
 
-  if (isAlertOffline) {
+  if (alertsLoading && alertMessages.length === 0) {
+    emptyAlertTitle = 'Syncing Safety Alerts...'
+    emptyAlertDesc = 'Checking server for active or past safety alerts...'
+    emptyAlertPillText = 'Syncing'
+    emptyAlertZoneText = 'Querying records'
+    emptyAlertCardClass = 'empty-alert-awaiting'
+    emptyAlertDiscClass = 'disc-awaiting'
+    emptyAlertIcon = '🔄'
+  } else if (alertsError && alertMessages.length === 0) {
+    emptyAlertTitle = 'Alert Records Unavailable'
+    emptyAlertDesc = `Unable to verify existing safety alerts: ${alertsError}. Live alerts will still stream if triggered.`
+    emptyAlertPillText = 'Sync Error'
+    emptyAlertZoneText = 'Safeguards unverified'
+    emptyAlertCardClass = 'empty-alert-critical'
+    emptyAlertDiscClass = 'disc-critical'
+    emptyAlertIcon = '⚠️'
+  } else if (isAlertOffline) {
     emptyAlertTitle = isRiskOffline ? 'No Alerts Recorded — Stream Offline' : 'Alert Monitoring Unavailable'
     emptyAlertDesc = isRiskOffline
       ? 'Telemetry and alert streams are disconnected. Real-time safety safeguards cannot be verified.'
@@ -976,12 +1000,16 @@ export default function CaregiverDashboard({
               <h2 className="panel-title">Active Safety Alerts</h2>
               <span className="badge-count">
                 {isAlertOffline
-                  ? `${alertMessages.length} recorded (Stream Offline)`
-                  : isAlertConnecting
-                  ? 'Connecting...'
-                  : alertMessages.length === 0
-                  ? '0 active alerts'
-                  : `${alertMessages.length} active alert${alertMessages.length === 1 ? '' : 's'}`}
+                  ? `${pendingCount} active · ${dismissedCount} dismissed (Stream Offline)`
+                  : isAlertConnecting || alertsLoading
+                  ? 'Syncing alerts...'
+                  : alertsError && alertMessages.length === 0
+                  ? 'Alerts unavailable'
+                  : pendingCount === 0
+                  ? dismissedCount > 0
+                    ? `0 active (${dismissedCount} dismissed)`
+                    : '0 active alerts'
+                  : `${pendingCount} active alert${pendingCount === 1 ? '' : 's'}${dismissedCount > 0 ? ` (${dismissedCount} dismissed)` : ''}`}
               </span>
             </div>
 
@@ -1041,6 +1069,14 @@ export default function CaregiverDashboard({
                   const isPending = alert.status === 'PENDING'
                   const isDismissed = alert.status === 'DISMISSED_SAFE'
                   const isExpanded = expandedAlertIds.has(alertId)
+                  const dismissalCount =
+                    alert.dismissal_count_in_window ??
+                    alert.dismissal?.dismissal_count_in_window
+                  const sensitivityMultiplier =
+                    alert.sensitivity_multiplier ??
+                    (dismissalCount != null
+                      ? 1.0 - Math.min(0.30, 0.10 * dismissalCount)
+                      : null)
 
                   return (
                     <div
@@ -1142,22 +1178,22 @@ export default function CaregiverDashboard({
                                 <span className="field-value mono">{alert.grid_cell_id}</span>
                               </div>
                             )}
-                            {alert.sensitivity_multiplier != null && (
+                            {sensitivityMultiplier != null && (
                               <div className="detail-field">
                                 <span className="field-label">Zone Sensitivity:</span>
                                 <span className="field-value">
-                                  {(alert.sensitivity_multiplier * 100).toFixed(0)}%
-                                  {alert.sensitivity_multiplier < 1
-                                    ? ` (${(100 - alert.sensitivity_multiplier * 100).toFixed(0)}% suppression applied)`
+                                  {(sensitivityMultiplier * 100).toFixed(0)}%
+                                  {sensitivityMultiplier < 1
+                                    ? ` (${(100 - sensitivityMultiplier * 100).toFixed(0)}% suppression applied)`
                                     : ' (Standard)'}
                                 </span>
                               </div>
                             )}
-                            {alert.dismissal_count_in_window != null && (
+                            {dismissalCount != null && (
                               <div className="detail-field">
                                 <span className="field-label">Window Confirmations:</span>
                                 <span className="field-value">
-                                  {alert.dismissal_count_in_window} / 3 before safe-route update
+                                  {dismissalCount} / 3 before safe-route update
                                 </span>
                               </div>
                             )}

@@ -3,8 +3,9 @@ Alert lifecycle endpoints: creation (typically pushed internally when risk
 crosses Tier 2/3), caregiver acknowledgement, and dismissal.
 """
 from datetime import datetime, timezone
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
 from app.db import async_session, AlertRecordRow
@@ -15,6 +16,49 @@ from app.state_machines.dismissal_quarantine import (
 )
 
 router = APIRouter()
+
+
+@router.get("/user/{user_id}", response_model=List[AlertRecord])
+async def get_user_alerts(
+    user_id: str,
+    status: Optional[str] = Query(None, description="Optional status filter (e.g. PENDING, DISMISSED_SAFE)"),
+    limit: int = Query(50, ge=1, le=200, description="Max results (default 50, capped at 200)"),
+) -> List[AlertRecord]:
+    """
+    Retrieve persisted alert records for a specific user, ordered descending by timestamp.
+    Enables initial hydration after refresh, reconnect, or user switch.
+    """
+    async with async_session() as session:
+        query = (
+            select(AlertRecordRow)
+            .where(AlertRecordRow.user_id == user_id)
+            .order_by(AlertRecordRow.timestamp.desc())
+            .limit(limit)
+        )
+        if status is not None and status.strip():
+            query = query.where(AlertRecordRow.status == status.strip())
+        result = await session.execute(query)
+        rows = result.scalars().all()
+
+    return [_row_to_alert_record(row) for row in rows]
+
+
+@router.get("", response_model=List[AlertRecord])
+async def list_alerts(
+    user_id: Optional[str] = Query(None, description="User ID to filter alerts (required)"),
+    status: Optional[str] = Query(None, description="Optional status filter"),
+    limit: int = Query(50, ge=1, le=200, description="Max results (default 50, capped at 200)"),
+) -> List[AlertRecord]:
+    """
+    Retrieve persisted alert records scoped to a user query parameter.
+    Rejects un-scoped requests to prevent cross-user data leakage.
+    """
+    if not user_id or not user_id.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="user_id query parameter is required to retrieve alerts.",
+        )
+    return await get_user_alerts(user_id=user_id.strip(), status=status, limit=limit)
 
 
 @router.get("/{alert_id}")

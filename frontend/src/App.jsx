@@ -25,6 +25,14 @@ export default function App() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyError, setHistoryError] = useState(null)
 
+  // Alert hydration state (fetched on connect / user switch)
+  const [alertsLoading, setAlertsLoading] = useState(false)
+  const [alertsError, setAlertsError] = useState(null)
+
+  // Active user ref and abort controller to prevent race conditions on user switch
+  const activeUserRef = useRef(userId)
+  const alertFetchAbortControllerRef = useRef(null)
+
   // Refs to hold WebSocket instances
   const riskSocketRef = useRef(null)
   const alertSocketRef = useRef(null)
@@ -38,6 +46,10 @@ export default function App() {
 
   const disconnectSockets = () => {
     console.info('[Dashboard] disconnectSockets() executing: closing sockets and setting isConnected=false')
+    if (alertFetchAbortControllerRef.current) {
+      alertFetchAbortControllerRef.current.abort()
+      alertFetchAbortControllerRef.current = null
+    }
     if (riskSocketRef.current) {
       riskSocketRef.current.onclose = null
       riskSocketRef.current.close()
@@ -53,11 +65,16 @@ export default function App() {
     setIsConnected(false)
     setRiskMessages([])
     setAlertMessages([])
+    setAlertsLoading(false)
+    setAlertsError(null)
     console.info('[Dashboard] disconnectSockets() complete.')
   }
 
   const connectSockets = (targetUserId) => {
     if (!targetUserId || !targetUserId.trim()) return
+
+    const trimmedUser = targetUserId.trim()
+    activeUserRef.current = trimmedUser
 
     disconnectSockets()
     setRiskMessages([])
@@ -144,6 +161,7 @@ export default function App() {
 
     // 3. Fetch recent history via REST (through Vite proxy /api)
     fetchHistory(targetUserId.trim())
+    fetchAlerts(targetUserId.trim())
   }
 
   const fetchHistory = async (targetUserId) => {
@@ -191,6 +209,70 @@ export default function App() {
       setHistoryError(err.message)
     } finally {
       setHistoryLoading(false)
+    }
+  }
+
+  const fetchAlerts = async (targetUserId) => {
+    if (!targetUserId || !targetUserId.trim()) return
+    const user = targetUserId.trim()
+
+    // Abort previous in-flight alert fetch
+    if (alertFetchAbortControllerRef.current) {
+      alertFetchAbortControllerRef.current.abort()
+    }
+    const abortController = new AbortController()
+    alertFetchAbortControllerRef.current = abortController
+
+    setAlertsLoading(true)
+    setAlertsError(null)
+
+    try {
+      const res = await fetch(`/api/alerts/user/${encodeURIComponent(user)}?limit=50`, {
+        signal: abortController.signal,
+      })
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      }
+      const data = await res.json()
+
+      // Guard against delayed responses from prior user selections
+      if (activeUserRef.current !== user) {
+        return
+      }
+
+      setAlertMessages((prev) => {
+        // Merge persisted alerts with any real-time WebSocket alerts already received
+        const alertMap = new Map()
+        // 1. Seed with persisted alerts from backend
+        for (const alert of data) {
+          alertMap.set(alert.alert_id, alert)
+        }
+        // 2. Overlay any real-time WebSocket alerts already captured in state
+        for (const existing of prev) {
+          if (alertMap.has(existing.alert_id)) {
+            alertMap.set(existing.alert_id, { ...alertMap.get(existing.alert_id), ...existing })
+          } else {
+            alertMap.set(existing.alert_id, existing)
+          }
+        }
+        // 3. Return sorted descending by timestamp (newest first), max 20
+        return Array.from(alertMap.values())
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+          .slice(0, 20)
+      })
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        // Deliberately aborted due to user switch or newer request
+        return
+      }
+      console.error(`Error fetching alerts for user ${user}:`, err)
+      if (activeUserRef.current === user) {
+        setAlertsError(err.message)
+      }
+    } finally {
+      if (activeUserRef.current === user) {
+        setAlertsLoading(false)
+      }
     }
   }
 
@@ -319,6 +401,9 @@ export default function App() {
           historyLoading={historyLoading}
           historyError={historyError}
           fetchHistory={fetchHistory}
+          alertsLoading={alertsLoading}
+          alertsError={alertsError}
+          fetchAlerts={fetchAlerts}
           onSwitchToTechnical={() => setActiveView('technical')}
         />
       ) : (
@@ -341,6 +426,9 @@ export default function App() {
           historyLoading={historyLoading}
           historyError={historyError}
           fetchHistory={fetchHistory}
+          alertsLoading={alertsLoading}
+          alertsError={alertsError}
+          fetchAlerts={fetchAlerts}
         />
       )}
     </div>

@@ -369,19 +369,31 @@ def test_raw_research_outputs_remain_available(engine):
 def test_no_fabricated_geolife_labels_or_hash_drift():
     """Verify that benchmark artifacts and hashes remain strictly unchanged."""
     locked_hashes = {
-        "ml/data/processed/risk_predictions.parquet": (
-            "d716f7a268a7e96c874fb89c0e3311ebb343fb4c8fa7557f5eaa26c98b4a204f"
-        ),
         "predictive_risk_report.json": "c7b57bdff9c126c382f5e535b376df101d432daa0da2a3c064c424f95bafced1",
         "predictive_risk_report.md": "181c2b108b1f4f8fc044e63f4cdd70e0447726925bf120da6818c9db945df0da",
     }
     for file_path, expected_hash in locked_hashes.items():
         p = Path(file_path)
-        assert p.exists(), f"File {file_path} is missing."
+        assert p.exists(), f"Required tracked benchmark report {file_path} is missing."
         actual_hash = hashlib.sha256(p.read_bytes()).hexdigest()
         assert actual_hash == expected_hash, (
             f"Hash divergence in {file_path}! {actual_hash} != {expected_hash}"
         )
+
+    # Optional gitignored generated benchmark parquet
+    parquet_path = Path("ml/data/processed/risk_predictions.parquet")
+    expected_parquet_hash = "d716f7a268a7e96c874fb89c0e3311ebb343fb4c8fa7557f5eaa26c98b4a204f"
+    if parquet_path.exists():
+        actual_parquet_hash = hashlib.sha256(parquet_path.read_bytes()).hexdigest()
+        assert actual_parquet_hash == expected_parquet_hash, (
+            f"Hash divergence in {parquet_path}! {actual_parquet_hash} != {expected_parquet_hash}"
+        )
+    else:
+        pytest.skip(
+            f"Gitignored benchmark artifact {parquet_path} is absent. "
+            "Tracked reports (predictive_risk_report.json/md) verified successfully."
+        )
+
 
 
 # ==============================================================================

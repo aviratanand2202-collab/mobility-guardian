@@ -9,12 +9,14 @@ from fastapi import FastAPI
 
 from app.db import init_db, dispose_engine
 from app.routers import telemetry, consent, alerts, risk_history
+from app.services.inference_service import async_warmup_inference_engine
 from app.websocket import risk_stream
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    await async_warmup_inference_engine()
     yield
     await dispose_engine()
 
