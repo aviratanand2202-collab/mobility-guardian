@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import MapPanel from '../MapPanel'
 import RiskPanel from '../RiskPanel'
 import AlertPanel from '../AlertPanel'
@@ -14,6 +14,7 @@ export default function TechnicalDashboard({
   alertWsStatus,
   currentLocation,
   locationHistory,
+  trailMetadata = [],
   activeRisk,
   latestRisk,
   historyEntries,
@@ -22,7 +23,195 @@ export default function TechnicalDashboard({
   historyLoading,
   historyError,
   fetchHistory,
+  patientStatus = null,
 }) {
+  const [inputUserId, setInputUserId] = useState(userId)
+  const [activeCompanion, setActiveCompanion] = useState(null)
+  const [patientConsent, setPatientConsent] = useState(null)
+  const [companionLoading, setCompanionLoading] = useState(false)
+  const [showAssociateForm, setShowAssociateForm] = useState(false)
+  const [companionInputId, setCompanionInputId] = useState('')
+  const [companionRelationship, setCompanionRelationship] = useState('family')
+  const [isAssociating, setIsAssociating] = useState(false)
+  const [associationError, setAssociationError] = useState(null)
+
+  useEffect(() => {
+    setInputUserId(userId)
+  }, [userId])
+
+  const handleSelectPatient = (targetId) => {
+    const trimmed = (targetId || '').trim()
+    if (!trimmed) return
+    setInputUserId(trimmed)
+    if (isConnected) {
+      handleDisconnectClick()
+    }
+    setUserId(trimmed)
+  }
+
+  const handleFormSubmit = (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    const trimmed = (inputUserId || '').trim()
+    if (!trimmed) return
+    if (!isConnected || trimmed !== userId) {
+      if (isConnected && trimmed !== userId) {
+        handleDisconnectClick()
+      }
+      if (trimmed !== userId) {
+        setUserId(trimmed)
+      }
+      handleConnectClick(e, trimmed)
+    } else {
+      handleDisconnectClick()
+    }
+  }
+
+  // Check authorized consent status for current patient
+  const fetchConsent = async (targetUserId) => {
+    if (!targetUserId || !targetUserId.trim()) {
+      setPatientConsent(null)
+      return
+    }
+    try {
+      const res = await fetch(`/api/consent/${encodeURIComponent(targetUserId.trim())}`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.status === 'not_found') {
+          setPatientConsent({ is_consented: false, record: null })
+        } else if (data.guardian_consent?.granted) {
+          const isFull = data.end_user_consent_applicable ? Boolean(data.end_user_consent?.granted) : true
+          setPatientConsent({ is_consented: isFull, record: data })
+        } else {
+          setPatientConsent({ is_consented: false, record: data })
+        }
+      } else {
+        setPatientConsent({ is_consented: false, reason: 'Consent record missing' })
+      }
+    } catch (err) {
+      setPatientConsent({ is_consented: false, reason: 'Error checking consent' })
+    }
+  }
+
+  // Query actual active companion / family association for selected patient
+  const fetchActiveCompanion = async (targetUserId) => {
+    if (!targetUserId || !targetUserId.trim()) {
+      setActiveCompanion(null)
+      return
+    }
+
+    try {
+      let url = `/api/companion/sessions/active/${encodeURIComponent(targetUserId.trim())}`
+      if (currentLocation?.lat != null && currentLocation?.lng != null) {
+        url += `?patient_lat=${currentLocation.lat}&patient_lng=${currentLocation.lng}`
+      }
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        setActiveCompanion(data.active_session)
+      } else {
+        setActiveCompanion(null)
+      }
+    } catch (err) {
+      console.warn('Failed to fetch active companion for technical inspector:', err)
+      setActiveCompanion(null)
+    }
+  }
+
+  // Poll consent and active companion on mount, userId change, and periodically during monitoring
+  useEffect(() => {
+    fetchConsent(userId)
+    fetchActiveCompanion(userId)
+    const interval = setInterval(() => {
+      fetchConsent(userId)
+      fetchActiveCompanion(userId)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [userId, currentLocation?.lat, currentLocation?.lng])
+
+  // Helper to determine and display missing prerequisites when accompaniment is unverified
+  const getMissingPrerequisite = () => {
+    if (patientConsent && !patientConsent.is_consented) {
+      return `Patient consent required: ${userId || 'This patient'} has no authorized consent record on file. Patient consent must be recorded before companion or family accompaniment can be authorized.`
+    }
+    if (!activeCompanion || activeCompanion.status !== 'ACTIVE') {
+      return `No authorized family member or active Trusted Companion is currently associated with ${userId || 'this patient'}. The map displays the patient only.`
+    }
+    if (activeCompanion.last_companion_lat == null || activeCompanion.last_companion_lng == null) {
+      return `Companion location fix is unavailable. Awaiting device telemetry.`
+    }
+    if (activeCompanion.is_location_stale) {
+      return `Companion location telemetry fix is stale (>60s old). Fresh telemetry is required to verify accompaniment.`
+    }
+    if (currentLocation?.lat == null || currentLocation?.lng == null) {
+      return `Patient location telemetry is unavailable. Replay or stream patient telemetry to verify accompaniment.`
+    }
+    return null
+  }
+
+  // Explicitly associate family member or companion
+  const handleCreateAssociation = async (e) => {
+    e.preventDefault()
+    if (!userId || !userId.trim() || !companionInputId.trim()) return
+
+    setIsAssociating(true)
+    setAssociationError(null)
+
+    try {
+      const isFamily = companionRelationship === 'family'
+      const res = await fetch('/api/companion/sessions/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: userId.trim(),
+          caregiver_id: 'caregiver_primary',
+          validity_minutes: 1440, // 24 hours
+          companion_id: companionInputId.trim(),
+          relationship: companionRelationship,
+          companion_alias: isFamily
+            ? `Family Member (${companionInputId.trim()})`
+            : `Trusted Companion (${companionInputId.trim()})`,
+        }),
+      })
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || `Server returned HTTP ${res.status}`)
+      }
+
+      setCompanionInputId('')
+      setShowAssociateForm(false)
+      await fetchActiveCompanion(userId)
+    } catch (err) {
+      console.error('Failed to create companion association:', err)
+      setAssociationError(err.message)
+    } finally {
+      setIsAssociating(false)
+    }
+  }
+
+  // End active companion session / association
+  const handleEndCompanionSession = async () => {
+    if (!activeCompanion?.session_id) return
+
+    setIsAssociating(true)
+    try {
+      const res = await fetch(`/api/companion/sessions/${activeCompanion.session_id}/end`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`)
+      }
+      setActiveCompanion(null)
+    } catch (err) {
+      console.error('Failed to end companion session:', err)
+    } finally {
+      setIsAssociating(false)
+    }
+  }
+
   return (
     <div className="technical-dashboard-container">
       <header className="header">
@@ -32,18 +221,46 @@ export default function TechnicalDashboard({
 
       {/* Connection & Controls Bar */}
       <div className="controls-card">
-        <form onSubmit={handleConnectClick} className="form-group">
-          <label htmlFor="user-id-input">User ID:</label>
+        <form onSubmit={handleFormSubmit} className="form-group">
+          <label htmlFor="user-id-input">Patient ID:</label>
           <input
             id="user-id-input"
             type="text"
             className="form-input"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="e.g. sim_stage6"
-            disabled={isConnected}
+            value={inputUserId}
+            onChange={(e) => setInputUserId(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleFormSubmit(e)
+              }
+            }}
+            placeholder="Enter any patient ID..."
           />
-          {!isConnected ? (
+          {patientStatus && (
+            <span
+              className="patient-registry-status"
+              style={{
+                fontSize: '12px',
+                padding: '4px 8px',
+                borderRadius: '4px',
+                fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                backgroundColor: patientStatus.exists ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                color: patientStatus.exists ? '#059669' : '#dc2626',
+                border: `1px solid ${patientStatus.exists ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+              }}
+            >
+              {patientStatus.exists
+                ? (historyEntries?.length > 0
+                    ? `✓ Verified Patient (${historyEntries.length} records)`
+                    : `⚠️ Patient Verified (0 location records)`)
+                : `❓ Unknown Patient ID (Not Found)`}
+            </span>
+          )}
+          {!isConnected || inputUserId.trim() !== userId ? (
             <button type="submit" className="btn btn-primary">
               Connect
             </button>
@@ -77,15 +294,224 @@ export default function TechnicalDashboard({
         </div>
       </div>
 
+      {/* Real Associated Family / Companion Accompaniment Strip (Requirement 1-5) */}
+      <div className="technical-accompaniment-strip" role="region" aria-label="Family and Companion Accompaniment">
+        <div className="tech-acc-header-row">
+          <div className="tech-acc-title-group">
+            <span className="tech-acc-icon">👥</span>
+            <strong>Associated Family &amp; Companion Tracking</strong>
+            <span className="tech-acc-patient-tag">
+              Patient ID: <strong>{userId || 'None'}</strong>
+            </span>
+          </div>
+
+          <div className="tech-acc-status-badges">
+            {activeCompanion && activeCompanion.status === 'ACTIVE' ? (
+              <span
+                className={`tech-acc-status-pill ${
+                  activeCompanion.accompaniment_status === 'With Companion'
+                    ? 'pill-accompanied'
+                    : activeCompanion.accompaniment_status === 'Separated'
+                    ? 'pill-separated'
+                    : 'pill-unverified'
+                }`}
+              >
+                <span className="pill-dot" />
+                {activeCompanion.accompaniment_status || 'Accompaniment Unverified'}
+                {activeCompanion.separation_distance_m != null
+                  ? ` (${Math.round(activeCompanion.separation_distance_m)}m)`
+                  : ''}
+              </span>
+            ) : (
+              <span className="tech-acc-status-pill pill-unverified">
+                <span className="pill-dot" />
+                Accompaniment Unverified
+              </span>
+            )}
+
+            {activeCompanion?.is_location_stale && (
+              <span className="tech-acc-stale-tag">⚠️ Stale Fix (&gt;60s)</span>
+            )}
+            {activeCompanion && !activeCompanion.is_location_stale && activeCompanion.last_companion_lat != null && (
+              <span className="tech-acc-live-tag">🟢 Fresh Live Fix</span>
+            )}
+          </div>
+        </div>
+
+        {/* Details and Actions Row */}
+        {activeCompanion && activeCompanion.status === 'ACTIVE' ? (
+          <div className="tech-acc-body-card">
+            {activeCompanion.accompaniment_status === 'Accompaniment Unverified' && (
+              <div className="tech-acc-prereq-banner" role="status">
+                <span className="prereq-icon">ℹ️</span>
+                <div className="prereq-content">
+                  <strong>Accompaniment Unverified — Missing Prerequisite:</strong>
+                  <p className="prereq-text">{getMissingPrerequisite()}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="tech-acc-details-grid">
+              <div className="tech-acc-detail-item">
+                <span className="detail-label">Associated Person:</span>
+                <span className="detail-value mono">
+                  {activeCompanion.companion_user_id
+                    ? `${activeCompanion.companion_user_id} (${activeCompanion.relationship === 'family' ? 'Family Member' : 'Companion'})`
+                    : activeCompanion.companion_alias || 'Trusted Companion'}
+                </span>
+              </div>
+              <div className="tech-acc-detail-item">
+                <span className="detail-label">Actual Location:</span>
+                <span className="detail-value mono">
+                  {activeCompanion.last_companion_lat != null && activeCompanion.last_companion_lng != null
+                    ? `${activeCompanion.last_companion_lat.toFixed(5)}, ${activeCompanion.last_companion_lng.toFixed(5)}`
+                    : 'Awaiting device fix'}
+                </span>
+              </div>
+              <div className="tech-acc-detail-item">
+                <span className="detail-label">Telemetry Timestamp:</span>
+                <span className="detail-value mono">
+                  {activeCompanion.last_companion_timestamp
+                    ? new Date(activeCompanion.last_companion_timestamp).toLocaleTimeString()
+                    : '—'}
+                </span>
+              </div>
+              <div className="tech-acc-detail-item">
+                <span className="detail-label">Distance to Patient:</span>
+                <span className="detail-value">
+                  {activeCompanion.separation_distance_m != null
+                    ? `${Math.round(activeCompanion.separation_distance_m)}m (Threshold: 50m)`
+                    : 'Distance uncalculated'}
+                </span>
+              </div>
+              <div className="tech-acc-detail-item">
+                <span className="detail-label">Configured Safe Zone:</span>
+                <span className="detail-value">
+                  {activeCompanion.safe_zone?.configured
+                    ? `${activeCompanion.safe_zone.name} (${activeCompanion.safe_zone.radius_m ? `${activeCompanion.safe_zone.radius_m}m radius` : 'custom'})`
+                    : `None configured for ${userId || 'this patient'}`}
+                </span>
+              </div>
+            </div>
+
+            {activeCompanion.safe_zone_departure_accompanied && activeCompanion.safe_zone?.configured && (
+              <div className="tech-acc-safe-departure-note">
+                🛡️ Patient and companion are outside their configured safe zone ({activeCompanion.safe_zone.name}) together (Accompanied — no family separation).
+              </div>
+            )}
+
+            <div className="tech-acc-actions-row">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleEndCompanionSession}
+                disabled={isAssociating}
+              >
+                Disconnect Association / End Session
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="tech-acc-idle-card">
+            <div className="tech-acc-prereq-banner" role="status">
+              <span className="prereq-icon">ℹ️</span>
+              <div className="prereq-content">
+                <strong>Accompaniment Unverified — Missing Prerequisite:</strong>
+                <p className="prereq-text">{getMissingPrerequisite()}</p>
+              </div>
+            </div>
+
+            <p className="tech-acc-idle-desc">
+              No authorized family member or active Trusted Companion is currently associated with{' '}
+              <strong>{userId || 'this patient'}</strong>. The map displays the patient only.
+            </p>
+
+            {patientConsent && !patientConsent.is_consented ? (
+              <div className="tech-acc-consent-alert" role="alert">
+                🔒 <strong>Patient Consent Required:</strong> Cannot associate a family member or companion without authorized patient consent on file for <strong>{userId}</strong>.
+              </div>
+            ) : !showAssociateForm ? (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setShowAssociateForm(true)}
+                disabled={!userId}
+              >
+                🔗 Associate Family Member or Companion
+              </button>
+            ) : (
+              <form onSubmit={handleCreateAssociation} className="tech-acc-form">
+                <div className="tech-acc-form-row">
+                  <div className="tech-acc-input-group">
+                    <label htmlFor="tech-companion-id">Companion User ID / Alias:</label>
+                    <input
+                      id="tech-companion-id"
+                      type="text"
+                      className="form-input"
+                      value={companionInputId}
+                      onChange={(e) => setCompanionInputId(e.target.value)}
+                      placeholder="e.g. test_user_3"
+                      disabled={isAssociating}
+                    />
+                  </div>
+                  <div className="tech-acc-input-group">
+                    <label htmlFor="tech-relationship">Relationship:</label>
+                    <select
+                      id="tech-relationship"
+                      className="form-input"
+                      value={companionRelationship}
+                      onChange={(e) => setCompanionRelationship(e.target.value)}
+                      disabled={isAssociating}
+                    >
+                      <option value="family">Family Member</option>
+                      <option value="trusted_companion">Trusted Companion</option>
+                    </select>
+                  </div>
+                  <div className="tech-acc-form-buttons">
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-sm"
+                      disabled={isAssociating || !companionInputId.trim()}
+                    >
+                      {isAssociating ? 'Associating...' : `Link to ${userId}`}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => {
+                        setShowAssociateForm(false)
+                        setAssociationError(null)
+                      }}
+                      disabled={isAssociating}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                {associationError && (
+                  <div className="tech-acc-error" role="alert">
+                    ⚠️ {associationError}
+                  </div>
+                )}
+              </form>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Main Dashboard Grid: Map on Left (60%), Risk & Alerts on Right (40%) */}
       <div className="dashboard-main-grid">
         <div className="map-column">
           <MapPanel
             currentLocation={currentLocation}
             locationHistory={locationHistory}
+            trailMetadata={trailMetadata}
             currentRiskTier={activeRisk?.risk_tier}
             currentRiskScore={activeRisk?.risk_score}
             userId={userId}
+            activeCompanion={activeCompanion}
+            configuredSafeZone={activeCompanion?.safe_zone}
+            patientStatus={patientStatus}
           />
         </div>
 
@@ -128,9 +554,9 @@ export default function TechnicalDashboard({
 
         {!historyLoading && !historyError && historyEntries.length === 0 && (
           <div className="empty-state">
-            {isConnected
-              ? 'No history found for this user in the database.'
-              : 'Connect to query database history for this user.'}
+            {patientStatus && !patientStatus.exists
+              ? `Unknown patient ID "${userId}": Patient not found in the database.`
+              : `No recorded location data for this patient ("${userId}").`}
           </div>
         )}
 

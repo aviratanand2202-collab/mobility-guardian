@@ -6,10 +6,11 @@ They are NOT Pydantic models and do not modify app/models.py.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone, timedelta
 import os
 from pathlib import Path
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, Text, select, text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -120,6 +121,38 @@ class RiskScoreHistoryRow(Base):
     )
 
 
+# ---------- Trusted Companion Sessions table ----------
+
+class CompanionSessionRow(Base):
+    """
+    Temporary companion monitoring session.
+
+    Privacy and Security:
+    - Companion is an expiring temporary guest, NOT a permanent family member.
+    - Personal ID is NEVER stored or exposed to the caregiver dashboard;
+      a privacy-preserving alias (e.g. 'Trusted Companion') is used.
+    - Requires explicit consent before location updates are accepted.
+    """
+    __tablename__ = "companion_sessions"
+
+    session_id = Column(String, primary_key=True)
+    patient_id = Column(String, nullable=False, index=True)
+    caregiver_id = Column(String, nullable=False, default="caregiver_primary")
+    invite_token = Column(String, nullable=False, unique=True, index=True)
+    status = Column(String, nullable=False, default="PENDING_INVITE")
+    created_at = Column(DateTime(timezone=True), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    consent_granted = Column(Boolean, nullable=False, default=False)
+    consent_granted_at = Column(DateTime(timezone=True), nullable=True)
+    companion_alias = Column(String, nullable=False, default="Trusted Companion")
+    companion_user_id = Column(String, nullable=True, index=True)
+    relationship = Column(String, nullable=False, default="trusted_companion")
+    last_companion_lat = Column(Float, nullable=True)
+    last_companion_lng = Column(Float, nullable=True)
+    last_companion_accuracy_m = Column(Float, nullable=True)
+    last_companion_timestamp = Column(DateTime(timezone=True), nullable=True)
+
+
 async def save_risk_history(
     user_id: str,
     timestamp: DateTime,
@@ -152,6 +185,16 @@ async def init_db() -> None:
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate_columns(connection):
+            res = connection.execute(text("PRAGMA table_info(companion_sessions)"))
+            cols = [row[1] for row in res.fetchall()]
+            if "companion_user_id" not in cols:
+                connection.execute(text("ALTER TABLE companion_sessions ADD COLUMN companion_user_id TEXT"))
+            if "relationship" not in cols:
+                connection.execute(text("ALTER TABLE companion_sessions ADD COLUMN relationship TEXT DEFAULT 'trusted_companion'"))
+
+        await conn.run_sync(_migrate_columns)
 
 
 async def dispose_engine() -> None:

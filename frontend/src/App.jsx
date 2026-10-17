@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react'
 import CaregiverDashboard from './components/caregiver/CaregiverDashboard'
 import TechnicalDashboard from './components/technical/TechnicalDashboard'
+import CompanionInvitePortal from './components/companion/CompanionInvitePortal'
 
 export default function App() {
   const [activeView, setActiveView] = useState('caregiver')
-  const [userId, setUserId] = useState('sim_stage6')
+  const [userId, setUserId] = useState('test_user_000')
   const [isConnected, setIsConnected] = useState(false)
+  const [companionInviteToken, setCompanionInviteToken] = useState(() => {
+    if (typeof window !== 'undefined' && window.location?.search) {
+      return new URLSearchParams(window.location.search).get('companion_invite') || null
+    }
+    return null
+  })
 
   // Socket status states: 'disconnected' | 'connecting' | 'open' | 'closed' | 'error'
   const [riskWsStatus, setRiskWsStatus] = useState('disconnected')
@@ -24,6 +31,10 @@ export default function App() {
   const [historyEntries, setHistoryEntries] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyError, setHistoryError] = useState(null)
+  const [patientStatus, setPatientStatus] = useState(null)
+
+  // Track active fetch ID to discard stale responses from previously selected patients
+  const activeFetchIdRef = useRef(0)
 
   // Alert hydration state (fetched on connect / user switch)
   const [alertsLoading, setAlertsLoading] = useState(false)
@@ -164,7 +175,41 @@ export default function App() {
     fetchAlerts(targetUserId.trim())
   }
 
+  // Synchronize persisted location history whenever selected userId changes
+  useEffect(() => {
+    if (!userId || !userId.trim()) {
+      setCurrentLocation(null)
+      setLocationHistory([])
+      setTrailMetadata([])
+      setHistoryEntries([])
+      setPatientStatus(null)
+      return
+    }
+    fetchHistory(userId.trim())
+  }, [userId])
+
   const fetchHistory = async (targetUserId) => {
+    if (!targetUserId || !targetUserId.trim()) {
+      setHistoryEntries([])
+      setCurrentLocation(null)
+      setLocationHistory([])
+      setTrailMetadata([])
+      setPatientStatus(null)
+      return
+    }
+
+    const fetchId = ++activeFetchIdRef.current
+
+    // On patient change, immediately clear previous patient's displayed location points,
+    // markers, waypoints, and risk history before showing the new patient's results
+    setCurrentLocation(null)
+    setLocationHistory([])
+    setTrailMetadata([])
+    setHistoryEntries([])
+    setRiskMessages([])
+    setAlertMessages([])
+    setPatientStatus(null)
+
     setHistoryLoading(true)
     setHistoryError(null)
     try {
@@ -173,9 +218,36 @@ export default function App() {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
       const data = await res.json()
+
+      // Prevent stale asynchronous responses from previous selection overwriting current one
+      if (fetchId !== activeFetchIdRef.current) return
+
+      // Concurrently query patient consent/registry to distinguish registered vs unknown patient
+      let exists = false
+      let isConsented = false
+      try {
+        const consentRes = await fetch(`/api/consent/${encodeURIComponent(targetUserId)}`)
+        if (consentRes.ok) {
+          const consentData = await consentRes.json()
+          if (consentData.status !== 'not_found') {
+            exists = true
+            isConsented = Boolean(consentData.guardian_consent?.granted)
+          }
+        }
+      } catch (err) {
+        console.warn('Consent check warning:', err)
+      }
+
+      if (fetchId !== activeFetchIdRef.current) return
+
+      if (data.length > 0) {
+        exists = true
+      }
+
+      setPatientStatus({ exists, isConsented })
       setHistoryEntries(data)
 
-      // Seed location history and trail metadata from historical location data if empty
+      // Seed location history and trail metadata from historical location data
       const chronological = [...data].sort(
         (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
       )
@@ -193,22 +265,28 @@ export default function App() {
         }
       }
       if (seededCoords.length > 0) {
-        setLocationHistory((prev) => {
-          if (prev.length > 0) return prev
-          const last = seededCoords[seededCoords.length - 1]
-          setCurrentLocation({ lat: last[0], lng: last[1] })
-          return seededCoords.slice(-30)
-        })
-        setTrailMetadata((prev) => {
-          if (prev.length > 0) return prev
-          return seededMeta.slice(-30)
-        })
+        const last = seededCoords[seededCoords.length - 1]
+        setCurrentLocation({ lat: last[0], lng: last[1] })
+        setLocationHistory(seededCoords.slice(-30))
+        setTrailMetadata(seededMeta.slice(-30))
+      } else {
+        setCurrentLocation(null)
+        setLocationHistory([])
+        setTrailMetadata([])
       }
     } catch (err) {
+      if (fetchId !== activeFetchIdRef.current) return
       console.error('Error fetching risk history:', err)
       setHistoryError(err.message)
+      setCurrentLocation(null)
+      setLocationHistory([])
+      setTrailMetadata([])
+      setHistoryEntries([])
+      setPatientStatus({ exists: false, isConsented: false })
     } finally {
-      setHistoryLoading(false)
+      if (fetchId === activeFetchIdRef.current) {
+        setHistoryLoading(false)
+      }
     }
   }
 
@@ -282,17 +360,36 @@ export default function App() {
     )
   }
 
-  const handleConnectClick = (e) => {
-    if (e) {
+  const handleConnectClick = (e, explicitId) => {
+    if (e && typeof e.preventDefault === 'function') {
       e.preventDefault()
       e.stopPropagation()
     }
-    console.info('[Dashboard] handleConnectClick() fired. Current isConnected state:', isConnected)
-    if (isConnected) {
-      console.warn('[Dashboard] handleConnectClick() suppressed: already connected (prevented form resubmission).')
+    const targetId = (typeof explicitId === 'string' && explicitId.trim())
+      ? explicitId.trim()
+      : (typeof e === 'string' && e.trim())
+      ? e.trim()
+      : (userId || '').trim()
+
+    if (!targetId) {
+      console.warn('[Dashboard] Connect aborted: patient ID is empty.')
       return
     }
-    connectSockets(userId)
+
+    console.info('[Dashboard] handleConnectClick() fired for patient:', targetId)
+    if (targetId !== userId) {
+      setUserId(targetId)
+    }
+
+    if (isConnected) {
+      if (targetId === userId) {
+        console.warn('[Dashboard] handleConnectClick() suppressed: already connected.')
+        return
+      }
+      disconnectSockets()
+    }
+
+    connectSockets(targetId)
   }
 
   const handleDisconnectClick = (e) => {
@@ -359,6 +456,19 @@ export default function App() {
 
   return (
     <div className={`container ${activeView === 'caregiver' ? 'caregiver-mode-active' : 'technical-mode-active'}`}>
+      {/* Companion Invitation Portal (Active when invite token is in URL) */}
+      {companionInviteToken && (
+        <CompanionInvitePortal
+          inviteToken={companionInviteToken}
+          onClose={() => {
+            setCompanionInviteToken(null)
+            if (typeof window !== 'undefined' && window.history?.replaceState) {
+              window.history.replaceState({}, '', window.location.pathname)
+            }
+          }}
+        />
+      )}
+
       {/* Top View Mode Switcher */}
       <div className="view-mode-bar">
         <div className="view-mode-toggle">
@@ -404,6 +514,7 @@ export default function App() {
           alertsLoading={alertsLoading}
           alertsError={alertsError}
           fetchAlerts={fetchAlerts}
+          patientStatus={patientStatus}
           onSwitchToTechnical={() => setActiveView('technical')}
         />
       ) : (
@@ -418,6 +529,7 @@ export default function App() {
           alertWsStatus={alertWsStatus}
           currentLocation={currentLocation}
           locationHistory={locationHistory}
+          trailMetadata={trailMetadata}
           activeRisk={activeRisk}
           latestRisk={latestRisk}
           historyEntries={historyEntries}
@@ -429,6 +541,7 @@ export default function App() {
           alertsLoading={alertsLoading}
           alertsError={alertsError}
           fetchAlerts={fetchAlerts}
+          patientStatus={patientStatus}
         />
       )}
     </div>

@@ -150,3 +150,65 @@ class ConsentRecord(BaseModel):
     end_user_consent_applicable: bool
     end_user_consent: Optional[EndUserConsent] = None
     data_retention_ack: bool = False
+
+
+# ---------- Trusted Companion Mode ----------
+
+class CompanionSessionStatus(str, Enum):
+    PENDING_INVITE = "PENDING_INVITE"
+    ACTIVE = "ACTIVE"
+    ENDED = "ENDED"
+    REVOKED = "REVOKED"
+    EXPIRED = "EXPIRED"
+
+
+class AccompanimentStatus(str, Enum):
+    WITH_COMPANION = "With Companion"
+    SEPARATED = "Separated"
+    ACCOMPANIMENT_UNVERIFIED = "Accompaniment Unverified"
+
+
+class CompanionSessionCreate(BaseModel):
+    patient_id: str
+    caregiver_id: str = "caregiver_primary"
+    validity_minutes: int = Field(default=60, ge=5, le=1440)
+    companion_id: Optional[str] = None
+    companion_alias: Optional[str] = None
+    relationship: Optional[str] = "family"
+
+
+class CompanionConsentRequest(BaseModel):
+    granted: bool
+    companion_alias: Optional[str] = "Trusted Companion"
+
+
+class CompanionLocationUpdate(BaseModel):
+    companion_token: str
+    lat: float = Field(..., ge=-90, le=90)
+    lng: float = Field(..., ge=-180, le=180)
+    accuracy_m: Optional[float] = None
+    timestamp: Optional[datetime] = None
+
+
+class CompanionSessionSummary(BaseModel):
+    session_id: str
+    patient_id: str
+    companion_user_id: Optional[str] = None
+    relationship: Optional[str] = "trusted_companion"
+    status: CompanionSessionStatus
+    invite_token: Optional[str] = None
+    created_at: datetime
+    expires_at: datetime
+    consent_granted: bool
+    consent_granted_at: Optional[datetime] = None
+    companion_alias: str = "Trusted Companion"
+    last_companion_lat: Optional[float] = None
+    last_companion_lng: Optional[float] = None
+    last_companion_accuracy_m: Optional[float] = None
+    last_companion_timestamp: Optional[datetime] = None
+    accompaniment_status: Optional[AccompanimentStatus] = None
+    separation_distance_m: Optional[float] = None
+    is_location_stale: bool = True
+    safe_zone_departure_accompanied: Optional[bool] = False
+    safe_zone: Optional[dict[str, Any]] = None
+

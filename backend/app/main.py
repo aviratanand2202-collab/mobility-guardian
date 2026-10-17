@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db import init_db, dispose_engine
-from app.routers import telemetry, consent, alerts, risk_history
+from app.routers import telemetry, consent, alerts, risk_history, companion
 from app.services.inference_service import async_warmup_inference_engine
 from app.websocket import risk_stream
 
@@ -33,6 +33,7 @@ app.include_router(telemetry.router, prefix="/api/telemetry", tags=["telemetry"]
 app.include_router(consent.router, prefix="/api/consent", tags=["consent"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
 app.include_router(risk_history.router, prefix="/api/risk-history", tags=["risk-history"])
+app.include_router(companion.router, prefix="/api/companion", tags=["companion"])
 app.include_router(risk_stream.router, prefix="/ws", tags=["websocket"])
 
 
