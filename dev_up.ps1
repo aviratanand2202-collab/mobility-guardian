@@ -32,5 +32,10 @@ if (-not $BashPath) {
     exit 1
 }
 
+# Default to demo_app.db if DATABASE_PATH is not explicitly supplied
+if (-not $env:DATABASE_PATH) {
+    $env:DATABASE_PATH = Join-Path $PSScriptRoot "backend\app\data\demo_app.db"
+}
+
 Set-Location $PSScriptRoot
 & $BashPath "$PSScriptRoot/dev_up.sh" @args

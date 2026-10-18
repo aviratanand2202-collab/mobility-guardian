@@ -44,11 +44,13 @@ async def main():
     with urllib.request.urlopen(req) as resp:
         print(f"1. Consent recorded: HTTP {resp.status}")
 
-    # 2. Parse GeoLife points
+    # 2. Parse GeoLife points from tracked fixture
     plt_file = _REPO_ROOT / "ml" / "data" / "raw" / "geolife" / "000" / "Trajectory" / "20081023025304.plt"
+    if not plt_file.exists():
+        plt_file = _REPO_ROOT / "backend" / "tests" / "fixtures" / "sample_trajectory.plt"
     raw_points = parse_geolife_plt(plt_file)[:5]
     payloads = build_payloads(raw_points, user_id=USER_ID, preserve_timestamps=False)
-    print(f"2. Prepared {len(payloads)} GeoLife points for user '{USER_ID}'")
+    print(f"2. Prepared {len(payloads)} GeoLife points for user '{USER_ID}' from {plt_file.name}")
 
     # 3. Connect to WebSocket and stream points
     print(f"3. Connecting to WebSocket {WS_URL}/ws/risk/{USER_ID}...")

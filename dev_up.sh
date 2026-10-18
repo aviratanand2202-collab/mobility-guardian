@@ -21,6 +21,15 @@ cd "$ROOT_DIR" || exit 1
 
 echo -e "${BOLD}--- Initializing Predictive Geofencing Development Environment ---${NC}"
 
+# Default to demo_app.db if DATABASE_PATH is not explicitly supplied
+if [ -z "$DATABASE_PATH" ]; then
+    if command -v cygpath >/dev/null 2>&1; then
+        export DATABASE_PATH="$(cygpath -w "$ROOT_DIR/backend/app/data/demo_app.db")"
+    else
+        export DATABASE_PATH="$ROOT_DIR/backend/app/data/demo_app.db"
+    fi
+fi
+
 # ------------------------------------------------------------------------------
 # 1. Environment & Prerequisite Checks
 # ------------------------------------------------------------------------------
@@ -150,6 +159,7 @@ prefix_frontend() {
 # ------------------------------------------------------------------------------
 
 echo -e "${YELLOW}Starting backend service (FastAPI on port 8000)...${NC}"
+echo -e "${CYAN}[CONFIG]${NC}   Database path: $DATABASE_PATH"
 (
     cd "$ROOT_DIR/backend" || exit 1
     python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 2>&1 | prefix_backend

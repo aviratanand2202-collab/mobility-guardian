@@ -36,9 +36,14 @@ async def run_verification():
     # Reset engine to test clean cold-start
     reset_inference_engine()
 
-    # 2. Parse 30 GeoLife points from real .plt file
-    plt_file = _REPO_ROOT / "ml" / "data" / "raw" / "geolife" / "000" / "Trajectory" / "20081023025304.plt"
-    raw_points = parse_geolife_plt(plt_file)[:30]
+    # 2. Parse GeoLife points from tracked fixture
+    plt_file = _BACKEND_DIR / "tests" / "fixtures" / "sample_trajectory.plt"
+    if not plt_file.is_file():
+        raise FileNotFoundError(
+            f"Tracked fixture sample_trajectory.plt not found at {plt_file}. "
+            "Please ensure backend/tests/fixtures/sample_trajectory.plt exists in the repository."
+        )
+    raw_points = parse_geolife_plt(plt_file)
     print(f"2. Parsed {len(raw_points)} GeoLife points from {plt_file.name}")
     t_start = raw_points[0]["original_timestamp"]
     t_end = raw_points[-1]["original_timestamp"]

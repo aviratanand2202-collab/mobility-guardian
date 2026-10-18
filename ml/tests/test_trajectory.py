@@ -274,7 +274,7 @@ def test_partial_window_coverage_rule():
     # Window 1 has 1 point -> discarded
     assert win_strict[0]["window_type"] == "FULL"
     assert win_strict[1]["window_type"] == "DISCARDED"
-    assert res_strict["window_id"].iloc[2] is None
+    assert pd.isna(res_strict["window_id"].iloc[2])
 
 
 # -----------------------------------------------------------------------------

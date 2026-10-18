@@ -31,3 +31,15 @@ future clinical validation.
   after a 5-second sampling burst concludes. Intentional tradeoff:
   preserving power for a Tier 3 "Last Gasp" SOS transmission outweighs
   the latency cost of sparse polling.
+
+- **Endpoint Authentication & Authorization Model** — The current implementation
+  is designed as an isolated edge-prototype demonstration operating on a trusted local network.
+  Endpoints (`/api/telemetry/ingest`, `/api/alerts`, `/api/companion`, `/ws/risk`) enforce
+  patient consent records and parameter scoping, but do not yet integrate OAuth2/JWT
+  bearer authentication or mTLS. Production clinical deployments require reverse-proxy
+  TLS termination and cryptographic identity validation.
+
+- **State Machine TTL & Record Pruning** — In-memory and SQLite-backed state machines
+  (PDR hysteresis, cell dismissal quarantine multipliers) maintain state across the demo
+  lifecycle. Long-term production operations require automated TTL expiration sweeps and
+  background pruning of historic high-frequency GPS coordinate buffers.

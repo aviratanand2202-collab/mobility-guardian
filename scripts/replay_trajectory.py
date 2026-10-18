@@ -346,7 +346,7 @@ def main() -> int:
     parser.add_argument(
         "--input",
         type=str,
-        default="ml/data/raw/geolife/000/Trajectory/20081023025304.plt",
+        default="backend/tests/fixtures/sample_trajectory.plt",
         help="Path to GeoLife .plt trajectory file",
     )
     parser.add_argument(
@@ -423,6 +423,11 @@ def main() -> int:
     input_path = Path(args.input)
     if not input_path.is_absolute():
         input_path = _REPO_ROOT / input_path
+    if not input_path.exists():
+        fallback = _REPO_ROOT / "backend" / "tests" / "fixtures" / "sample_trajectory.plt"
+        if fallback.exists():
+            print(f"[Notice] Trajectory file '{input_path}' not found; falling back to tracked fixture '{fallback.name}'")
+            input_path = fallback
 
     print("=" * 80)
     print("GeoLife Trajectory Replay Utility")

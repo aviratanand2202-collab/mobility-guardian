@@ -48,9 +48,23 @@ To launch both the backend (FastAPI) and frontend (React/Vite) development serve
 dev_up.bat
 ```
 
-> **Note**: Run the GPS trajectory simulator (`backend/scripts/trajectory_simulator.py`) separately in its own terminal to feed simulated movement to the running backend.
+> **Note**: Both launchers automatically default to `backend/app/data/demo_app.db` with ML shadow inference disabled by default. This isolates demo sessions and guarantees baseline databases remain unmutated.
 
-### Manual Setup & Individual Services
+### Demonstrating Live Telemetry & Movement
+
+Once the development stack is running, feed live telemetry in a separate terminal:
+
+**Option A: Replay Real Beijing GeoLife Trajectory (Tracked Fixture)**
+```bash
+# Replay 15 real GeoLife points with automatic consent registration
+python scripts/replay_trajectory.py --record-consent --speed-multiplier 2.0
+```
+
+**Option B: Synthetic Movement Phenotypes (Algase Typology)**
+```bash
+# Simulate 50 points of normal walking around Beijing coordinates
+python backend/scripts/trajectory_simulator.py --user-id 000 --pattern normal --anchor-lat 39.9847 --anchor-lng 116.3184
+```
 
 If you prefer to run services individually or debug a single component:
 
