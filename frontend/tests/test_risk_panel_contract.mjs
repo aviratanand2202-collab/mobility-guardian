@@ -85,15 +85,29 @@ test('RiskPanel source code contains required shadow ML evaluation structures', 
 /**
  * Pure state evaluation logic mirror of RiskPanel.jsx
  */
-function evaluateRiskPanelState(currentRisk, historyEntries) {
-  const latestHistory = historyEntries && historyEntries.length > 0
-    ? historyEntries[historyEntries.length - 1]
+function evaluateRiskPanelState(currentRisk, historyEntries = []) {
+  const safeHistory = Array.isArray(historyEntries) ? historyEntries : []
+  const latestHistory = safeHistory.length > 0
+    ? safeHistory[safeHistory.length - 1]
     : null
-  const effectiveRisk = currentRisk || latestHistory
+
+  const isLiveScoreValid =
+    currentRisk?.risk_score != null &&
+    typeof currentRisk.risk_score !== 'boolean' &&
+    currentRisk.risk_score !== '' &&
+    Number.isFinite(Number(currentRisk.risk_score))
+
+  const effectiveRisk = isLiveScoreValid ? currentRisk : (latestHistory || currentRisk)
 
   const riskTier = effectiveRisk?.risk_tier || 'QUIESCENT'
-  const riskScore = effectiveRisk?.risk_score != null ? Number(effectiveRisk.risk_score) : null
-  const hasValidScore = typeof riskScore === 'number' && Number.isFinite(riskScore)
+  const riskScoreRaw = effectiveRisk?.risk_score
+  const hasValidScore =
+    riskScoreRaw != null &&
+    typeof riskScoreRaw !== 'boolean' &&
+    riskScoreRaw !== '' &&
+    Number.isFinite(Number(riskScoreRaw))
+  const riskScore = hasValidScore ? Number(riskScoreRaw) : null
+  const formattedScore = hasValidScore ? riskScore.toFixed(1) : '--'
 
   // Stale-prevention logic from RiskPanel.jsx
   const mlEvaluation = currentRisk ? currentRisk.ml_evaluation : latestHistory?.ml_evaluation
@@ -121,10 +135,36 @@ function evaluateRiskPanelState(currentRisk, historyEntries) {
     }
   }
 
+  // Trend points calculation mirror
+  const points = safeHistory
+    .filter((p) => p.risk_score != null && typeof p.risk_score !== 'boolean' && p.risk_score !== '' && Number.isFinite(Number(p.risk_score)))
+    .map((p) => ({
+      ...p,
+      risk_score: Number(p.risk_score),
+    }))
+    .slice(-15)
+
+  if (currentRisk && (points.length === 0 || points[points.length - 1].timestamp !== currentRisk.timestamp)) {
+    if (isLiveScoreValid) {
+      points.push({
+        timestamp: currentRisk.timestamp,
+        risk_score: Number(currentRisk.risk_score),
+        risk_tier: currentRisk.risk_tier,
+      })
+    }
+  }
+  const trendPoints = points.slice(-15)
+  const latestTrendScore = trendPoints.length > 0 ? trendPoints[trendPoints.length - 1].risk_score : null
+  const formattedTrendLatest = latestTrendScore != null ? latestTrendScore.toFixed(1) : '-'
+
   return {
     operationalRiskScore: riskScore,
     operationalRiskTier: riskTier,
     hasValidScore,
+    formattedScore,
+    trendPoints,
+    latestTrendScore,
+    formattedTrendLatest,
     isMlCardRendered,
     mlStatus,
     mlProbabilityFormatted,
@@ -364,4 +404,130 @@ test('9. RiskPanel preserves collecting/waiting state when no live evaluation ha
   assert.equal(state.mlStatus, 'INSUFFICIENT_EVIDENCE', 'Must show collecting/waiting status when currentRisk is null')
   assert.equal(state.mlDisplayMessage, 'Collecting telemetry', 'Must display Collecting telemetry message')
   assert.equal(state.mlProbabilityFormatted, null, 'Must NOT format probability as live prediction')
+})
+
+test('10. Blank current score regression: renders numeric score when valid, handles null/undefined/non-finite without fabricating zero', () => {
+  // Case A: Valid live float score (observed in demo: 22.9 with QUIESCENT)
+  const stateLiveValid = evaluateRiskPanelState({ risk_score: 22.9, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateLiveValid.hasValidScore, true)
+  assert.equal(stateLiveValid.operationalRiskScore, 22.9)
+  assert.equal(stateLiveValid.formattedScore, '22.9')
+  assert.equal(stateLiveValid.operationalRiskTier, 'QUIESCENT')
+
+  // Case B: Valid score of exactly 0.0 must NOT be treated as falsy/blank or fallback
+  const stateZero = evaluateRiskPanelState({ risk_score: 0, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateZero.hasValidScore, true)
+  assert.equal(stateZero.operationalRiskScore, 0)
+  assert.equal(stateZero.formattedScore, '0.0')
+
+  // Case C: Valid upper bound score (100.0)
+  const stateMax = evaluateRiskPanelState({ risk_score: 100.0, risk_tier: 'CRITICAL' }, [])
+  assert.equal(stateMax.hasValidScore, true)
+  assert.equal(stateMax.operationalRiskScore, 100.0)
+  assert.equal(stateMax.formattedScore, '100.0')
+
+  // Case D: Null score with no history must display placeholder '--' and NOT fabricate 0
+  const stateNull = evaluateRiskPanelState({ risk_score: null, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateNull.hasValidScore, false)
+  assert.equal(stateNull.operationalRiskScore, null)
+  assert.equal(stateNull.formattedScore, '--')
+
+  // Case E: Undefined score with no history must display placeholder '--'
+  const stateUndefined = evaluateRiskPanelState({ risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateUndefined.hasValidScore, false)
+  assert.equal(stateUndefined.operationalRiskScore, null)
+  assert.equal(stateUndefined.formattedScore, '--')
+
+  // Case F: Non-finite values (NaN, Infinity, string 'invalid', boolean) must NOT fabricate 0
+  const stateNaN = evaluateRiskPanelState({ risk_score: NaN, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateNaN.hasValidScore, false)
+  assert.equal(stateNaN.formattedScore, '--')
+
+  const stateInf = evaluateRiskPanelState({ risk_score: Infinity, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateInf.hasValidScore, false)
+  assert.equal(stateInf.formattedScore, '--')
+
+  const stateStr = evaluateRiskPanelState({ risk_score: 'invalid', risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateStr.hasValidScore, false)
+  assert.equal(stateStr.formattedScore, '--')
+
+  const stateBool = evaluateRiskPanelState({ risk_score: false, risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateBool.hasValidScore, false)
+  assert.equal(stateBool.formattedScore, '--')
+
+  const stateEmptyStr = evaluateRiskPanelState({ risk_score: '', risk_tier: 'QUIESCENT' }, [])
+  assert.equal(stateEmptyStr.hasValidScore, false)
+  assert.equal(stateEmptyStr.formattedScore, '--')
+})
+
+test('11. CSS specificity and contrast: prevents blank/invisible text on light background in RiskPanel', () => {
+  const cssPath = path.resolve(__dirname, '../src/index.css')
+  const cssContent = fs.readFileSync(cssPath, 'utf8')
+
+  // 1. Caregiver metrics must be scoped to .caregiver-metric-card, not leak global .metric-value: #f8fafc
+  assert.match(
+    cssContent,
+    /\.caregiver-metric-card\s+\.metric-value\s*\{/,
+    'Caregiver metric-value must be scoped to .caregiver-metric-card'
+  )
+
+  // 2. Risk metric card and metric-value-row must explicitly define high-contrast text color and size
+  assert.match(
+    cssContent,
+    /\.risk-metric-card\s+\.metric-value,\s*\r?\n?\.metric-value-row\s+\.metric-value\s*\{[\s\S]*?font-size:\s*32px;[\s\S]*?color:\s*#1f2937;/m,
+    'Risk metric card metric-value must define 32px font size and high-contrast #1f2937 color'
+  )
+
+  // 3. Tier text colors must be scoped to .risk-metric-card / .metric-value-row with higher specificity
+  assert.match(
+    cssContent,
+    /\.risk-metric-card\s+\.tier-text-QUIESCENT,\s*\r?\n?\.metric-value-row\s+\.tier-text-QUIESCENT\s*\{\s*color:\s*#0284c7;\s*\}/m,
+    'Must define scoped tier-text-QUIESCENT color (#0284c7)'
+  )
+  assert.match(
+    cssContent,
+    /\.risk-metric-card\s+\.tier-text-NORMAL_TRANSIT,\s*\r?\n?\.metric-value-row\s+\.tier-text-NORMAL_TRANSIT\s*\{\s*color:\s*#16a34a;\s*\}/m,
+    'Must define scoped tier-text-NORMAL_TRANSIT color (#16a34a)'
+  )
+  assert.match(
+    cssContent,
+    /\.risk-metric-card\s+\.tier-text-SUSPICIOUS,\s*\r?\n?\.metric-value-row\s+\.tier-text-SUSPICIOUS\s*\{\s*color:\s*#ea580c;\s*\}/m,
+    'Must define scoped tier-text-SUSPICIOUS color (#ea580c)'
+  )
+  assert.match(
+    cssContent,
+    /\.risk-metric-card\s+\.tier-text-CRITICAL,\s*\r?\n?\.metric-value-row\s+\.tier-text-CRITICAL\s*\{\s*color:\s*#dc2626;\s*\}/m,
+    'Must define scoped tier-text-CRITICAL color (#dc2626)'
+  )
+})
+
+test('12. Score and trend parity: Current Risk Score card and Trend Chart point to the same patient\'s latest accepted record', () => {
+  const history = [
+    { timestamp: '2026-10-18T10:45:00Z', risk_score: 20.0, risk_tier: 'QUIESCENT' },
+    { timestamp: '2026-10-18T10:46:00Z', risk_score: 22.9, risk_tier: 'QUIESCENT' },
+  ]
+
+  // Scenario 1: Live event arrives with valid score 24.5
+  const liveValid = { timestamp: '2026-10-18T10:47:00Z', risk_score: 24.5, risk_tier: 'QUIESCENT' }
+  const stateLive = evaluateRiskPanelState(liveValid, history)
+  assert.equal(stateLive.formattedScore, '24.5')
+  assert.equal(stateLive.formattedTrendLatest, '24.5')
+  assert.equal(stateLive.latestTrendScore, 24.5)
+
+  // Scenario 2: Live event arrives with null score (e.g. heartbeat or partial update)
+  // Card must fall back to latest accepted history record (22.9), keeping card and trend synchronized
+  const liveNullScore = { timestamp: '2026-10-18T10:47:00Z', risk_score: null, risk_tier: 'QUIESCENT' }
+  const stateFallback = evaluateRiskPanelState(liveNullScore, history)
+  assert.equal(stateFallback.hasValidScore, true)
+  assert.equal(stateFallback.operationalRiskScore, 22.9)
+  assert.equal(stateFallback.formattedScore, '22.9')
+  assert.equal(stateFallback.formattedTrendLatest, '22.9')
+  assert.equal(stateFallback.latestTrendScore, 22.9)
+
+  // Scenario 3: Neither live event nor history has score
+  const stateEmpty = evaluateRiskPanelState(null, [])
+  assert.equal(stateEmpty.hasValidScore, false)
+  assert.equal(stateEmpty.formattedScore, '--')
+  assert.equal(stateEmpty.formattedTrendLatest, '-')
+  assert.equal(stateEmpty.latestTrendScore, null)
 })

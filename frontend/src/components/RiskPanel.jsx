@@ -1,16 +1,33 @@
 import React from 'react'
 
-export default function RiskPanel({ currentRisk, historyEntries }) {
+export default function RiskPanel({ currentRisk, historyEntries = [] }) {
   // Derive effective risk evaluation: prefer live WebSocket currentRisk;
   // fall back to the most recent record from historyEntries when connected with existing history
-  const latestHistory = historyEntries && historyEntries.length > 0
-    ? historyEntries[historyEntries.length - 1]
+  const safeHistory = Array.isArray(historyEntries) ? historyEntries : []
+  const latestHistory = safeHistory.length > 0
+    ? safeHistory[safeHistory.length - 1]
     : null
-  const effectiveRisk = currentRisk || latestHistory
+
+  // Determine if live score is a valid finite number
+  const isLiveScoreValid =
+    currentRisk?.risk_score != null &&
+    typeof currentRisk.risk_score !== 'boolean' &&
+    currentRisk.risk_score !== '' &&
+    Number.isFinite(Number(currentRisk.risk_score))
+
+  // Determine effective risk record:
+  // Prefer live currentRisk when it contains a valid score; otherwise fall back to latest accepted history
+  const effectiveRisk = isLiveScoreValid ? currentRisk : (latestHistory || currentRisk)
 
   const riskTier = effectiveRisk?.risk_tier || 'QUIESCENT'
-  const riskScore = effectiveRisk?.risk_score != null ? Number(effectiveRisk.risk_score) : null
-  const hasValidScore = typeof riskScore === 'number' && Number.isFinite(riskScore)
+  const riskScoreRaw = effectiveRisk?.risk_score
+  const hasValidScore =
+    riskScoreRaw != null &&
+    typeof riskScoreRaw !== 'boolean' &&
+    riskScoreRaw !== '' &&
+    Number.isFinite(Number(riskScoreRaw))
+  const riskScore = hasValidScore ? Number(riskScoreRaw) : null
+
   const pollingMode = effectiveRisk?.polling_instruction?.mode || 'CONTINUOUS'
   const pollingTier = effectiveRisk?.polling_tier != null ? effectiveRisk.polling_tier : '-'
   const leadTimeSec = effectiveRisk?.predicted_lead_time_sec
@@ -25,13 +42,15 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
 
   // Prepare trend data: take the most recent 15 points (oldest first -> newest last),
   // plus include currentRisk if newer / not already represented
-  const points = [...historyEntries].slice(-15)
+  const points = [...safeHistory].slice(-15)
   if (currentRisk && (points.length === 0 || points[points.length - 1].timestamp !== currentRisk.timestamp)) {
-    points.push({
-      timestamp: currentRisk.timestamp,
-      risk_score: currentRisk.risk_score,
-      risk_tier: currentRisk.risk_tier,
-    })
+    if (isLiveScoreValid) {
+      points.push({
+        timestamp: currentRisk.timestamp,
+        risk_score: Number(currentRisk.risk_score),
+        risk_tier: currentRisk.risk_tier,
+      })
+    }
   }
   const trendPoints = points.slice(-15)
 
@@ -46,7 +65,8 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
   const plotH = svgHeight - padTop - padBottom
 
   const getY = (score) => {
-    const clamped = Math.max(0, Math.min(100, score || 0))
+    const num = Number(score)
+    const clamped = Math.max(0, Math.min(100, Number.isFinite(num) ? num : 0))
     return padTop + plotH - (clamped / 100) * plotH
   }
 
@@ -123,7 +143,12 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
           <span>Risk Score Trend (Last {trendPoints.length} Points)</span>
           {trendPoints.length > 0 && (
             <span className="mono" style={{ fontSize: '11px', color: '#6b7280' }}>
-              Latest: {trendPoints[trendPoints.length - 1].risk_score?.toFixed(1) || '-'}
+              Latest: {
+                trendPoints[trendPoints.length - 1].risk_score != null &&
+                Number.isFinite(Number(trendPoints[trendPoints.length - 1].risk_score))
+                  ? Number(trendPoints[trendPoints.length - 1].risk_score).toFixed(1)
+                  : '-'
+              }
             </span>
           )}
         </div>

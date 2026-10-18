@@ -289,6 +289,26 @@ body {
   line-height: 1;
 }
 
+.risk-metric-card .metric-value,
+.metric-value-row .metric-value {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  color: #1f2937;
+}
+
+.risk-metric-card .tier-text-QUIESCENT,
+.metric-value-row .tier-text-QUIESCENT { color: #0284c7; }
+
+.risk-metric-card .tier-text-NORMAL_TRANSIT,
+.metric-value-row .tier-text-NORMAL_TRANSIT { color: #16a34a; }
+
+.risk-metric-card .tier-text-SUSPICIOUS,
+.metric-value-row .tier-text-SUSPICIOUS { color: #ea580c; }
+
+.risk-metric-card .tier-text-CRITICAL,
+.metric-value-row .tier-text-CRITICAL { color: #dc2626; }
+
 .metric-scale {
   font-size: 14px;
   color: #9ca3af;
@@ -1444,7 +1464,7 @@ body.caregiver-dark-theme {
   min-width: 0;
 }
 
-.metric-eyebrow {
+.caregiver-metric-card .metric-eyebrow {
   font-size: 9.5px;
   font-weight: 800;
   text-transform: uppercase;
@@ -1452,7 +1472,7 @@ body.caregiver-dark-theme {
   color: #64748b;
 }
 
-.metric-value {
+.caregiver-metric-card .metric-value {
   font-size: 13.5px;
   font-weight: 800;
   color: #f8fafc;
@@ -1461,7 +1481,7 @@ body.caregiver-dark-theme {
   text-overflow: ellipsis;
 }
 
-.metric-hint {
+.caregiver-metric-card .metric-hint {
   font-size: 10px;
   color: #94a3b8;
   white-space: nowrap;
