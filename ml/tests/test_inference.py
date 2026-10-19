@@ -23,10 +23,15 @@ import os
 import sys
 from pathlib import Path
 
-# Ensure backend directory is in sys.path so `app.*` sub-imports resolve
-backend_dir = Path(__file__).resolve().parent.parent.parent / "backend"
+# Ensure repository root and backend directory are in sys.path so sub-imports resolve
+repo_dir = Path(__file__).resolve().parent.parent.parent
+backend_dir = repo_dir / "backend"
+if str(repo_dir) not in sys.path:
+    sys.path.insert(0, str(repo_dir))
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
+
+from datetime import datetime, timezone  # noqa: E402
 
 import pandas as pd  # noqa: E402
 import pytest  # noqa: E402
@@ -35,6 +40,12 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 from backend.app.main import app  # noqa: E402
 from backend.app.models import RiskScoreOutput  # noqa: E402
+from backend.scripts.trajectory_simulator import (  # noqa: E402
+    MovementGenerator,
+    build_telemetry_payload,
+    lat_lng_offset,
+)
+import ml.src.inference  # noqa: E402
 from ml.src.inference import RiskInferenceEngine  # noqa: E402
 from ml.src.manual_inference import run_manual_inference  # noqa: E402
 
@@ -261,7 +272,7 @@ def test_behavior_pattern_integration(engine):
         "path_distance_m": 250.0,
         "straight_line_displacement_m": 15.0,  # High closure/reversal
         "tortuosity_index": 16.6,
-        "entropy_directional": 1.8,
+        "entropy_directional": 0.5,
         "turn_frequency": 6.0,
         "loop_metric": 0.05,
         "pacing_tendency": 0.85,
@@ -280,7 +291,182 @@ def test_behavior_pattern_integration(engine):
 
     out = engine.predict_window(pacing_window, horizon_sec=120)
     assert "behavioral_indicator" in out["kinematic_features"]
-    assert out["kinematic_features"]["behavioral_indicator"] in ["PACING", "NORMAL", "RANDOM_DRIFT"]
+    assert out["kinematic_features"]["behavioral_indicator"] == "PACING"
+    assert out["kinematic_features"]["behavioral_confidence"] > 0.80
+
+
+def test_behavior_pattern_classes_mapping(engine):
+    """Verify all supported behavioral classes map accurately with their specific confidence columns."""
+    base_window = {
+        "user_id": "test_user_classes",
+        "start_time": "2008-10-23T02:53:04Z",
+        "end_time": "2008-10-23T02:55:04Z",
+        "point_count": 40,
+        "temporal_span_sec": 120.0,
+        "is_kinematically_evaluable": True,
+    }
+
+    # 1. NORMAL: Directed forward progression
+    normal_win = {
+        **base_window,
+        "window_id": "norm_001",
+        "mean_speed_mps": 1.5,
+        "speed_std_dev": 0.1,
+        "path_distance_m": 180.0,
+        "straight_line_displacement_m": 175.0,
+        "tortuosity_index": 1.03,
+        "entropy_directional": 0.1,
+        "turn_frequency": 0.0,
+        "loop_metric": 0.0,
+        "pacing_tendency": 0.0,
+        "backtracking_tendency": 0.0,
+        "heading_variability": 0.05,
+        "heading_change_mean": 2.0,
+        "path_closure_ratio": 0.03,
+        "bbox_diagonal_m": 180.0,
+    }
+    out_norm = engine.predict_window(normal_win, horizon_sec=120)
+    assert out_norm["kinematic_features"]["behavioral_indicator"] == "NORMAL"
+    assert out_norm["kinematic_features"]["behavioral_confidence"] > 0.80
+
+    # 2. LAPPING: Closed 2D circuit route without linear reversals
+    lapping_win = {
+        **base_window,
+        "window_id": "lap_001",
+        "mean_speed_mps": 1.5,
+        "speed_std_dev": 0.2,
+        "path_distance_m": 370.0,
+        "straight_line_displacement_m": 10.0,
+        "tortuosity_index": 37.0,
+        "entropy_directional": 0.4,
+        "turn_frequency": 1.0,
+        "loop_metric": 0.80,
+        "pacing_tendency": 0.05,
+        "backtracking_tendency": 0.0,
+        "heading_variability": 0.60,
+        "heading_change_mean": 6.0,
+        "path_closure_ratio": 0.95,
+        "bbox_diagonal_m": 120.0,
+        "bbox_width_m": 100.0,
+        "bbox_height_m": 100.0,
+    }
+    out_lap = engine.predict_window(lapping_win, horizon_sec=120)
+    assert out_lap["kinematic_features"]["behavioral_indicator"] == "LAPPING"
+    assert out_lap["kinematic_features"]["behavioral_confidence"] > 0.80
+
+    # 3. RANDOM_DRIFT: Erratic Brownian meandering
+    random_win = {
+        **base_window,
+        "window_id": "rand_001",
+        "mean_speed_mps": 1.5,
+        "speed_std_dev": 0.5,
+        "path_distance_m": 150.0,
+        "straight_line_displacement_m": 25.0,
+        "tortuosity_index": 6.0,
+        "entropy_directional": 0.85,
+        "turn_frequency": 6.5,
+        "loop_metric": 0.1,
+        "pacing_tendency": 0.2,
+        "backtracking_tendency": 0.2,
+        "heading_variability": 0.65,
+        "heading_change_mean": 75.0,
+        "path_closure_ratio": 0.40,
+        "bbox_diagonal_m": 45.0,
+    }
+    out_rand = engine.predict_window(random_win, horizon_sec=120)
+    assert out_rand["kinematic_features"]["behavioral_indicator"] == "RANDOM_DRIFT"
+    assert out_rand["kinematic_features"]["behavioral_confidence"] > 0.60
+
+    # 4. INSUFFICIENT_EVIDENCE: Non-evaluable / dwell segment
+    insufficient_win = {
+        **base_window,
+        "window_id": "ins_001",
+        "path_distance_m": 2.0,
+        "straight_line_displacement_m": 1.0,
+        "bbox_diagonal_m": 1.5,
+        "is_kinematically_evaluable": False,
+    }
+    out_ins = engine.predict_window(insufficient_win, horizon_sec=120)
+    assert out_ins["kinematic_features"]["behavioral_indicator"] == "INSUFFICIENT_EVIDENCE"
+    assert out_ins["kinematic_features"]["behavioral_confidence"] == 0.0
+
+
+def test_behavior_pattern_fallback_and_missing_columns(engine, monkeypatch):
+    """Verify inference engine safely falls back without crashing on unexpected or legacy classifier outputs."""
+    sample_win = {
+        "window_id": "fallback_test_win",
+        "user_id": "test_fallback_user",
+        "start_time": "2008-10-23T02:53:04Z",
+        "end_time": "2008-10-23T02:55:04Z",
+        "point_count": 40,
+        "temporal_span_sec": 120.0,
+        "is_kinematically_evaluable": True,
+    }
+
+    # Case A: Empty DataFrame returned by classifier -> fallback to NORMAL with confidence 1.0
+    monkeypatch.setattr(ml.src.inference, "classify_behavior_dataframe", lambda df, cfg: pd.DataFrame())
+    out_a = engine.predict_window(sample_win, horizon_sec=120)
+    assert out_a["kinematic_features"]["behavioral_indicator"] == "NORMAL"
+    assert out_a["kinematic_features"]["behavioral_confidence"] == 1.0
+
+    # Case B: Unexpected columns -> fallback safely to NORMAL with confidence 1.0
+    monkeypatch.setattr(
+        ml.src.inference,
+        "classify_behavior_dataframe",
+        lambda df, cfg: pd.DataFrame([{"unrelated_column": 999}]),
+    )
+    out_b = engine.predict_window(sample_win, horizon_sec=120)
+    assert out_b["kinematic_features"]["behavioral_indicator"] == "NORMAL"
+    assert out_b["kinematic_features"]["behavioral_confidence"] == 1.0
+
+    # Case C: Legacy assigned_behavior_pattern format -> correctly parsed with behavior_confidence
+    monkeypatch.setattr(
+        ml.src.inference,
+        "classify_behavior_dataframe",
+        lambda df, cfg: pd.DataFrame([{"assigned_behavior_pattern": "PACING", "behavior_confidence": 0.92}]),
+    )
+    out_c = engine.predict_window(sample_win, horizon_sec=120)
+    assert out_c["kinematic_features"]["behavioral_indicator"] == "PACING"
+    assert out_c["kinematic_features"]["behavioral_confidence"] == 0.92
+
+    # Case D: Modern behavior_class without class-specific confidence column -> falls back to behavior_confidence
+    monkeypatch.setattr(
+        ml.src.inference,
+        "classify_behavior_dataframe",
+        lambda df, cfg: pd.DataFrame([{"behavior_class": "PACING", "behavior_confidence": 0.88}]),
+    )
+    out_d = engine.predict_window(sample_win, horizon_sec=120)
+    assert out_d["kinematic_features"]["behavioral_indicator"] == "PACING"
+    assert out_d["kinematic_features"]["behavioral_confidence"] == 0.88
+
+
+def test_pacing_trajectory_simulator_streaming_detection(engine):
+    """Verify that streaming telemetry from the simulator's pacing generator is classified as PACING by the ML engine."""
+    gen = MovementGenerator(pattern="pacing", num_points=61, interval_seconds=2.0, speed_mps=1.2)
+    pts = gen.generate()
+    anchor_lat, anchor_lng = 39.9847, 116.3184
+    start_ts = 1700000000.0
+
+    out_stream = None
+    for i, (xm, ym, spd, heading) in enumerate(pts):
+        lat, lng = lat_lng_offset(anchor_lat, anchor_lng, xm, ym)
+        ts_iso = datetime.fromtimestamp(start_ts + i * 2.0, tz=timezone.utc).isoformat()
+        payload = build_telemetry_payload(
+            user_id="sim_pacing_test_user",
+            timestamp_iso=ts_iso,
+            lat=lat,
+            lng=lng,
+            speed_mps=spd,
+            heading_deg=heading,
+            battery_pct=80,
+            is_degraded=False,
+        )
+        out_stream = engine.predict_telemetry_reading(payload)
+
+    assert out_stream is not None
+    assert "kinematic_features" in out_stream
+    assert out_stream["kinematic_features"]["behavioral_indicator"] == "PACING"
+    assert out_stream["kinematic_features"]["behavioral_confidence"] > 0.80
 
 
 # 10. Backend FastAPI integration

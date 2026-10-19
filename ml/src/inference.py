@@ -426,6 +426,7 @@ class RiskInferenceEngine:
             "turn_frequency": 0.0,
             "heading_change_mean": 0.0,
             "straight_line_displacement_m": 0.0,
+            "mean_speed_mps": 0.0,
         }
         for col, default_val in behavior_req_cols.items():
             if col not in curr_df.columns:
@@ -433,9 +434,20 @@ class RiskInferenceEngine:
         behavior_df = classify_behavior_dataframe(curr_df, self.behavior_cfg)
         behavior_pattern = "NORMAL"
         behavior_conf = 1.0
-        if not behavior_df.empty and "assigned_behavior_pattern" in behavior_df.columns:
-            behavior_pattern = str(behavior_df.iloc[0]["assigned_behavior_pattern"])
-            behavior_conf = float(behavior_df.iloc[0].get("behavior_confidence", 1.0))
+        if not behavior_df.empty:
+            if "behavior_class" in behavior_df.columns and pd.notna(behavior_df.iloc[0]["behavior_class"]):
+                behavior_pattern = str(behavior_df.iloc[0]["behavior_class"])
+                conf_col = f"{behavior_pattern.lower()}_confidence"
+                if conf_col in behavior_df.columns and pd.notna(behavior_df.iloc[0][conf_col]):
+                    behavior_conf = float(behavior_df.iloc[0][conf_col])
+                elif "behavior_confidence" in behavior_df.columns and pd.notna(behavior_df.iloc[0]["behavior_confidence"]):
+                    behavior_conf = float(behavior_df.iloc[0]["behavior_confidence"])
+                elif behavior_pattern == "INSUFFICIENT_EVIDENCE":
+                    behavior_conf = 0.0
+            elif "assigned_behavior_pattern" in behavior_df.columns and pd.notna(behavior_df.iloc[0]["assigned_behavior_pattern"]):
+                behavior_pattern = str(behavior_df.iloc[0]["assigned_behavior_pattern"])
+                if "behavior_confidence" in behavior_df.columns and pd.notna(behavior_df.iloc[0]["behavior_confidence"]):
+                    behavior_conf = float(behavior_df.iloc[0]["behavior_confidence"])
 
         # 6. Extract top contributing features for explainability
         top_features = []
