@@ -103,6 +103,25 @@ test('CaregiverDashboard accurately separates active vs dismissed alerts and han
     /alert\.dismissal_count_in_window\s*\?\?\s*alert\.dismissal\?\.dismissal_count_in_window/,
     'Must extract dismissal count from either direct property or dismissal object'
   )
+
+  // Truthful offline empty alert badge display
+  assert.match(
+    caregiverCode,
+    /Monitoring Inactive · Connect to Sync Alerts/,
+    'Must display truthful status when offline and alert buffer is empty'
+  )
+
+  // Truthful offline empty alert card heading and description
+  assert.match(
+    caregiverCode,
+    /emptyAlertTitle\s*=\s*isRiskOffline\s*\?\s*['"]Alerts Unavailable While Disconnected['"]/,
+    'Offline title must state alerts are unavailable while disconnected'
+  )
+  assert.match(
+    caregiverCode,
+    /emptyAlertDesc\s*=\s*isRiskOffline\s*\?\s*['"]Reconnect monitoring to retrieve saved alerts\. Real-time safety status cannot be verified while disconnected\.['"]/,
+    'Offline description must instruct caregiver to reconnect monitoring'
+  )
 })
 
 test('AlertPanel supports hydrated dismissal metadata and suppression display', () => {
@@ -223,6 +242,9 @@ test('Badge count correctly calculates active vs dismissed alerts', () => {
     const dismissedCount = alertMessages.filter((a) => a.status === 'DISMISSED_SAFE').length
 
     if (isOffline) {
+      if (alertMessages.length === 0) {
+        return 'Monitoring Inactive · Connect to Sync Alerts'
+      }
       return `${pendingCount} active · ${dismissedCount} dismissed (Stream Offline)`
     }
     if (isConnecting || isLoading) {
@@ -263,4 +285,10 @@ test('Badge count correctly calculates active vs dismissed alerts', () => {
 
   // Case 6: Error
   assert.equal(computeBadgeText([], false, false, false, true), 'Alerts unavailable')
+
+  // Case 7: Offline with empty alert messages
+  assert.equal(computeBadgeText([], true, false, false, false), 'Monitoring Inactive · Connect to Sync Alerts')
+
+  // Case 8: Offline with existing alert messages in buffer
+  assert.equal(computeBadgeText(mixed, true, false, false, false), '2 active · 1 dismissed (Stream Offline)')
 })

@@ -390,9 +390,9 @@ export default function CaregiverDashboard({
     emptyAlertDiscClass = 'disc-critical'
     emptyAlertIcon = '⚠️'
   } else if (isAlertOffline) {
-    emptyAlertTitle = isRiskOffline ? 'No Alerts Recorded — Stream Offline' : 'Alert Monitoring Unavailable'
+    emptyAlertTitle = isRiskOffline ? 'Alerts Unavailable While Disconnected' : 'Alert Monitoring Unavailable'
     emptyAlertDesc = isRiskOffline
-      ? 'Telemetry and alert streams are disconnected. Real-time safety safeguards cannot be verified.'
+      ? 'Reconnect monitoring to retrieve saved alerts. Real-time safety status cannot be verified while disconnected.'
       : 'The alert stream is disconnected while movement telemetry is flowing. Critical safety notifications are currently unavailable.'
     emptyAlertPillText = 'Stream Offline'
     emptyAlertZoneText = 'Alerts inactive'
@@ -1106,7 +1106,9 @@ export default function CaregiverDashboard({
               <h2 className="panel-title">Active Safety Alerts</h2>
               <span className="badge-count">
                 {isAlertOffline
-                  ? `${pendingCount} active · ${dismissedCount} dismissed (Stream Offline)`
+                  ? alertMessages.length === 0
+                    ? 'Monitoring Inactive · Connect to Sync Alerts'
+                    : `${pendingCount} active · ${dismissedCount} dismissed (Stream Offline)`
                   : isAlertConnecting || alertsLoading
                   ? 'Syncing alerts...'
                   : alertsError && alertMessages.length === 0
