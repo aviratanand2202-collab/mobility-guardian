@@ -19,3 +19,22 @@ def is_ml_inference_enabled() -> bool:
     if env_val is not None:
         return env_val.lower() in ("true", "1", "yes")
     return ENABLE_ML_INFERENCE_ENGINE
+
+
+# Centralized configuration flag for behavioral risk escalation bridge (disabled by default)
+ENABLE_BEHAVIORAL_RISK_ESCALATION: bool = (
+    os.getenv("ENABLE_BEHAVIORAL_RISK_ESCALATION", "false").lower() in ("true", "1", "yes")
+)
+
+
+def is_behavioral_risk_escalation_enabled() -> bool:
+    """Return whether behavioral risk escalation to operational decisions is enabled.
+
+    Reads the ENABLE_BEHAVIORAL_RISK_ESCALATION environment variable dynamically,
+    falling back to module-level ENABLE_BEHAVIORAL_RISK_ESCALATION.
+    Escalation requires ML inference to be enabled as well.
+    """
+    env_val = os.getenv("ENABLE_BEHAVIORAL_RISK_ESCALATION")
+    if env_val is not None:
+        return env_val.lower() in ("true", "1", "yes")
+    return ENABLE_BEHAVIORAL_RISK_ESCALATION

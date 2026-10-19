@@ -12,17 +12,23 @@ from app.models import (
     AlertRecord,
     AlertStatus,
     PDRTierState,
+    PollingInstruction,
+    PollingMode,
     RiskTier,
     SignalState,
     TelemetryPayload,
 )
+from app.config import is_behavioral_risk_escalation_enabled
 from app.routers.consent import is_consented
 from app.services.geospatial import location_to_h3_cell
 from app.services.inference_service import evaluate_shadow_inference
-from app.services.mock_risk_engine import compute_risk
+from app.services.mock_risk_engine import compute_risk, TopFeature
+from app.state_machines.battery_pulse import compute_polling_instruction
+from app.state_machines.behavioral_escalation import evaluate_behavioral_escalation
 from app.state_machines.dismissal_quarantine import get_or_create_cell_state
 from app.state_machines.pdr_hysteresis import get_or_create_state, save_state
 from app.websocket.risk_stream import push_alert_update, push_risk_update
+
 
 router = APIRouter()
 
@@ -61,7 +67,47 @@ async def ingest_telemetry(payload: TelemetryPayload):
     if ml_eval is not None:
         risk_output.ml_evaluation = ml_eval
 
+    # Behavioral operational bridge (governed by ENABLE_BEHAVIORAL_RISK_ESCALATION)
+    if is_behavioral_risk_escalation_enabled():
+        escalated, reason = evaluate_behavioral_escalation(payload, ml_eval)
+        if escalated:
+            # Additive escalation: clamp operational score to at least SUSPICIOUS (65.0)
+            if risk_output.risk_tier in (RiskTier.QUIESCENT, RiskTier.NORMAL_TRANSIT):
+                risk_output.risk_tier = RiskTier.SUSPICIOUS
+                risk_output.risk_score = max(risk_output.risk_score, 65.0)
+                risk_output.polling_tier = max(risk_output.polling_tier, 2)
+                if risk_output.predicted_lead_time_sec is None:
+                    risk_output.predicted_lead_time_sec = round(
+                        max(240.0, 900.0 - (risk_output.risk_score - 65.0) * 15.0), 1
+                    )
+
+            # Recompute polling instruction to ensure consistency with final operational tier and battery state
+            battery_pct = payload.sensor_metrics.battery_pct
+            polling_inst_dc = compute_polling_instruction(risk_output.risk_tier.value, battery_pct)
+            risk_output.battery_override_active = polling_inst_dc.mode != "CONTINUOUS"
+            risk_output.polling_instruction = PollingInstruction(
+                mode=PollingMode(polling_inst_dc.mode),
+                burst_seconds=polling_inst_dc.burst_seconds,
+                burst_hz=polling_inst_dc.burst_hz,
+                sleep_seconds=polling_inst_dc.sleep_seconds,
+            )
+
+            # Prepend behavioral top feature for explainability if present
+            if hasattr(risk_output, "explainability") and risk_output.explainability:
+                top_feats = getattr(risk_output.explainability, "top_features", None)
+                if isinstance(top_feats, list):
+                    top_feats.insert(
+                        0,
+                        TopFeature(
+                            feature="behavioral_trajectory_anomaly",
+                            shap_value=0.45,
+                            human_readable=reason or "Sustained anomalous movement pattern detected.",
+                        ),
+                    )
+
     await push_risk_update(payload.user_id, risk_output.model_dump(mode="json"))
+
+
 
     # If risk is Tier 2 (SUSPICIOUS) or Tier 3 (CRITICAL), create or update an AlertRecord
     if risk_output.risk_tier in (RiskTier.SUSPICIOUS, RiskTier.CRITICAL):

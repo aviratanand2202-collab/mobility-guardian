@@ -52,13 +52,19 @@ def get_inference_engine() -> RiskInferenceEngine:
 
 
 def reset_inference_engine() -> None:
-    """Reset the singleton engine and per-user locks (useful for testing and isolation)."""
+    """Reset the singleton engine, per-user locks, and behavioral state (useful for testing and isolation)."""
     global _engine
     with _engine_init_lock:
         _engine = None
     _user_locks.clear()
     with _thread_locks_guard:
         _user_thread_locks.clear()
+    try:
+        from app.state_machines.behavioral_escalation import reset_behavioral_state
+        reset_behavioral_state()
+    except Exception:
+        pass
+
 
 
 def warmup_inference_engine() -> bool:
@@ -257,6 +263,13 @@ async def evaluate_shadow_inference(
 
             ml_risk_tier = raw_out.get("risk_tier")
 
+        kin_feats = raw_out.get("kinematic_features", {}) if isinstance(raw_out.get("kinematic_features"), dict) else {}
+        metadata = raw_out.get("metadata", {}) if isinstance(raw_out.get("metadata"), dict) else {}
+        behavioral_indicator = kin_feats.get("behavioral_indicator")
+        behavioral_confidence = kin_feats.get("behavioral_confidence")
+        window_id = metadata.get("window_id")
+        safe_area_state = raw_out.get("safe_area_state") or raw_out.get("geospatial_context", {}).get("safe_area_state")
+
         return {
             "engine_status": "ACTIVE",
             "evidence_status": evidence_status,
@@ -270,7 +283,13 @@ async def evaluate_shadow_inference(
             "trigger_state": trigger_st,
             "explainability": raw_out.get("explainability"),
             "location": raw_out.get("location"),
+            "behavioral_indicator": behavioral_indicator,
+            "behavioral_confidence": behavioral_confidence,
+            "window_id": window_id,
+            "safe_area_state": safe_area_state,
+            "kinematic_features": kin_feats,
         }
+
 
     except asyncio.TimeoutError:
         logger.warning(
