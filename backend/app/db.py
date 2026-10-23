@@ -91,6 +91,7 @@ class AlertRecordRow(Base):
     dismissed_at = Column(DateTime(timezone=True), nullable=True)
     dismissal_decay_clock_start = Column(DateTime(timezone=True), nullable=True)
     dismissal_count_in_window = Column(Integer, nullable=True)
+    zone_id = Column(String, nullable=True, index=True)
 
 
 # ---------- Risk score history table ----------
@@ -178,6 +179,136 @@ async def save_risk_history(
         return row
 
 
+# ---------- Wearable Readings table ----------
+
+class WearableReadingRow(Base):
+    """
+    Persisted wearable biometric and device readings (e.g. heart rate).
+    Decoupled from kinematic GPS telemetry, linked by user_id and timestamp.
+    """
+    __tablename__ = "wearable_readings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
+    heart_rate_bpm = Column(Integer, nullable=False)
+    wear_state = Column(String, nullable=False, default="UNKNOWN")
+    sensor_status = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_wearable_readings_user_timestamp", "user_id", "timestamp"),
+    )
+
+
+# ---------- Patient-Specific Safe Zones table ----------
+
+class SafeZoneRow(Base):
+    """
+    Caregiver-configured patient safe zones (e.g. Home, Company, Medical Center).
+    Supports circular boundaries (center + radius) and arbitrary polygons (vertices list).
+    """
+    __tablename__ = "safe_zones"
+
+    zone_id = Column(String, primary_key=True)
+    user_id = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    geometry_type = Column(String, nullable=False, default="circle")
+    center_lat = Column(Float, nullable=True)
+    center_lng = Column(Float, nullable=True)
+    radius_m = Column(Float, nullable=True)
+    polygon_vertices_json = Column(Text, nullable=True)
+    is_enabled = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+
+async def save_wearable_reading(
+    user_id: str,
+    timestamp: datetime,
+    heart_rate_bpm: int,
+    wear_state: str = "UNKNOWN",
+    sensor_status: str | None = None,
+) -> WearableReadingRow:
+    """Persist a single valid wearable reading."""
+    async with async_session() as session:
+        row = WearableReadingRow(
+            user_id=user_id,
+            timestamp=timestamp,
+            heart_rate_bpm=heart_rate_bpm,
+            wear_state=wear_state,
+            sensor_status=sensor_status,
+            created_at=datetime.now(timezone.utc),
+        )
+        session.add(row)
+        await session.commit()
+        return row
+
+
+# ---------- Geofence Boundary State table ----------
+
+class GeofenceStateRow(Base):
+    """
+    Persisted state machine state per patient per zone.
+    Tracks boundary transitions (INSIDE, EXIT_PENDING, BREACHED, REENTRY_PENDING, RESOLVED).
+    """
+    __tablename__ = "geofence_states"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, nullable=False, index=True)
+    zone_id = Column(String, nullable=False, index=True)
+    state = Column(String, nullable=False, default="OUTSIDE")
+    consecutive_outside = Column(Integer, nullable=False, default=0)
+    consecutive_inside = Column(Integer, nullable=False, default=0)
+    last_distance_m = Column(Float, nullable=True)
+    last_evaluated_at = Column(DateTime(timezone=True), nullable=True)
+    active_alert_id = Column(String, nullable=True)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        Index("ix_geofence_states_user_zone", "user_id", "zone_id", unique=True),
+    )
+
+
+# ---------- Persistent Looping State table ----------
+
+class LoopStateRow(Base):
+    """
+    Persisted state machine state for trajectory looping sessions.
+    Tracks active looping alerts, debouncing, and auto-resolution.
+    """
+    __tablename__ = "loop_states"
+
+    user_id = Column(String, primary_key=True)
+    is_looping = Column(Boolean, nullable=False, default=False)
+    active_alert_id = Column(String, nullable=True)
+    consecutive_non_looping = Column(Integer, nullable=False, default=0)
+    last_pattern = Column(String, nullable=True)
+    alert_tier = Column(Integer, nullable=False, default=2)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+# ---------- Group Separation State table ----------
+
+class GroupSeparationStateRow(Base):
+    """
+    Persisted state machine state for group/companion separation monitoring.
+    Tracks accompaniment status, debouncing, physiological corroboration, and auto-resolution.
+    """
+    __tablename__ = "group_separation_states"
+
+    patient_id = Column(String, primary_key=True)
+    session_id = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="ACCOMPANIMENT_UNVERIFIED")
+    consecutive_separated = Column(Integer, nullable=False, default=0)
+    consecutive_united = Column(Integer, nullable=False, default=0)
+    last_distance_m = Column(Float, nullable=True)
+    active_alert_id = Column(String, nullable=True)
+    last_evaluated_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+
+
 # ---------- Lifecycle ----------
 
 async def init_db() -> None:
@@ -193,6 +324,11 @@ async def init_db() -> None:
                 connection.execute(text("ALTER TABLE companion_sessions ADD COLUMN companion_user_id TEXT"))
             if "relationship" not in cols:
                 connection.execute(text("ALTER TABLE companion_sessions ADD COLUMN relationship TEXT DEFAULT 'trusted_companion'"))
+
+            res_alerts = connection.execute(text("PRAGMA table_info(alert_records)"))
+            alert_cols = [row[1] for row in res_alerts.fetchall()]
+            if "zone_id" not in alert_cols:
+                connection.execute(text("ALTER TABLE alert_records ADD COLUMN zone_id TEXT"))
 
         await conn.run_sync(_migrate_columns)
 

@@ -17,6 +17,20 @@ from app.state_machines.dismissal_quarantine import (
 router = APIRouter()
 
 
+@router.get("/user/{user_id}", response_model=list[AlertRecord])
+async def get_user_alerts(user_id: str, limit: int = 50):
+    """Retrieve historical and active alert records for a patient ordered newest first."""
+    async with async_session() as session:
+        result = await session.execute(
+            select(AlertRecordRow)
+            .where(AlertRecordRow.user_id == user_id)
+            .order_by(AlertRecordRow.timestamp.desc())
+            .limit(limit)
+        )
+        rows = result.scalars().all()
+    return [_row_to_alert_record(r) for r in rows]
+
+
 @router.get("/{alert_id}")
 async def get_alert(alert_id: str):
     async with async_session() as session:
@@ -95,4 +109,5 @@ def _row_to_alert_record(row: AlertRecordRow) -> AlertRecord:
         alert_tier=row.alert_tier,
         status=AlertStatus(row.status),
         dismissal=dismissal,
+        zone_id=getattr(row, "zone_id", None),
     )

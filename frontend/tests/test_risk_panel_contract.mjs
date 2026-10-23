@@ -89,7 +89,7 @@ function evaluateRiskPanelState(currentRisk, historyEntries) {
   const latestHistory = historyEntries && historyEntries.length > 0
     ? historyEntries[historyEntries.length - 1]
     : null
-  const effectiveRisk = currentRisk || latestHistory
+  const effectiveRisk = (currentRisk && currentRisk.risk_score != null) ? currentRisk : (latestHistory || currentRisk)
 
   const riskTier = effectiveRisk?.risk_tier || 'QUIESCENT'
   const riskScore = effectiveRisk?.risk_score != null ? Number(effectiveRisk.risk_score) : null
@@ -364,4 +364,59 @@ test('9. RiskPanel preserves collecting/waiting state when no live evaluation ha
   assert.equal(state.mlStatus, 'INSUFFICIENT_EVIDENCE', 'Must show collecting/waiting status when currentRisk is null')
   assert.equal(state.mlDisplayMessage, 'Collecting telemetry', 'Must display Collecting telemetry message')
   assert.equal(state.mlProbabilityFormatted, null, 'Must NOT format probability as live prediction')
+})
+
+
+test('10. Current Risk Score renders valid positive score correctly on 0-100 scale', () => {
+  const currentRisk = {
+    user_id: 'sim_01',
+    risk_score: 51.3,
+    risk_tier: 'SUSPICIOUS',
+  }
+  const state = evaluateRiskPanelState(currentRisk, [])
+  assert.equal(state.hasValidScore, true, 'Positive score 51.3 must be marked valid')
+  assert.equal(state.operationalRiskScore, 51.3, 'Operational score must equal 51.3')
+  assert.equal(state.operationalRiskTier, 'SUSPICIOUS')
+})
+
+test('11. Current Risk Score handles exact zero (0.0) correctly without treating zero as missing', () => {
+  const currentRisk = {
+    user_id: 'sim_01',
+    risk_score: 0.0,
+    risk_tier: 'QUIESCENT',
+  }
+  const state = evaluateRiskPanelState(currentRisk, [])
+  assert.equal(state.hasValidScore, true, 'Zero score 0.0 must be valid, not treated as missing')
+  assert.equal(state.operationalRiskScore, 0.0, 'Operational score must equal 0.0')
+  assert.equal(state.operationalRiskTier, 'QUIESCENT')
+})
+
+test('12. Current Risk Score flags null, undefined, or non-finite values as invalid/missing', () => {
+  const nullRisk = { user_id: 'sim_01', risk_score: null, risk_tier: 'QUIESCENT' }
+  const stateNull = evaluateRiskPanelState(nullRisk, [])
+  assert.equal(stateNull.hasValidScore, false, 'null risk_score must be marked invalid')
+  assert.equal(stateNull.operationalRiskScore, null)
+
+  const nanRisk = { user_id: 'sim_01', risk_score: NaN, risk_tier: 'QUIESCENT' }
+  const stateNaN = evaluateRiskPanelState(nanRisk, [])
+  assert.equal(stateNaN.hasValidScore, false, 'NaN risk_score must be marked invalid')
+})
+
+test('13. Risk score fallback prefers live score when valid, and falls back to latest history when live is null', () => {
+  const history = [
+    { id: 1, timestamp: '2026-10-23T10:00:00Z', risk_score: 51.3, risk_tier: 'SUSPICIOUS' },
+  ]
+
+  // Case A: live event has null risk_score (e.g. before calculation completes) -> falls back to history
+  const liveNull = { user_id: 'sim_01', risk_score: null, risk_tier: 'QUIESCENT' }
+  const stateFallback = evaluateRiskPanelState(liveNull, history)
+  assert.equal(stateFallback.hasValidScore, true, 'Must fall back to history score 51.3')
+  assert.equal(stateFallback.operationalRiskScore, 51.3)
+  assert.equal(stateFallback.operationalRiskTier, 'SUSPICIOUS')
+
+  // Case B: live event has valid new score (e.g. 23.4) -> live score takes precedence
+  const liveValid = { user_id: 'sim_01', risk_score: 23.4, risk_tier: 'QUIESCENT' }
+  const stateLive = evaluateRiskPanelState(liveValid, history)
+  assert.equal(stateLive.hasValidScore, true, 'Live score must take precedence')
+  assert.equal(stateLive.operationalRiskScore, 23.4)
 })

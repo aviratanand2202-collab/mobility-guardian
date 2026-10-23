@@ -17,13 +17,14 @@ from __future__ import annotations
 import math
 import secrets
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
+from pydantic import BaseModel
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select, desc
 
-from app.db import async_session, CompanionSessionRow, RiskScoreHistoryRow
+from app.db import async_session, CompanionSessionRow, RiskScoreHistoryRow, save_wearable_reading, WearableReadingRow
 from app.models import (
     AccompanimentStatus,
     CompanionConsentRequest,
@@ -34,6 +35,8 @@ from app.models import (
 )
 from app.routers.consent import is_consented
 from app.routers.risk_history import _extract_location
+from app.db import GroupSeparationStateRow
+from app.state_machines.group_separation import evaluate_group_separation, GroupSeparationConfig
 
 router = APIRouter()
 
@@ -184,6 +187,14 @@ async def get_invite_details(invite_token: str):
 
         if row.status in (CompanionSessionStatus.ENDED.value, CompanionSessionStatus.REVOKED.value):
             raise HTTPException(status_code=400, detail="This companion session has already concluded.")
+
+        sep_alert_id = None
+        state_res = await session.execute(
+            select(GroupSeparationStateRow).where(GroupSeparationStateRow.patient_id == row.patient_id)
+        )
+        sep_row = state_res.scalar_one_or_none()
+        if sep_row:
+            sep_alert_id = sep_row.active_alert_id
 
         return {
             "session_id": row.session_id,
@@ -484,6 +495,29 @@ async def get_active_companion_session(
             else:
                 accompaniment_status = AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED
 
+        sep_state_res = await session.execute(
+            select(GroupSeparationStateRow).where(GroupSeparationStateRow.patient_id == row.patient_id)
+        )
+        sep_state = sep_state_res.scalar_one_or_none()
+        sep_alert_id = sep_state.active_alert_id if sep_state else None
+
+        if row.status != CompanionSessionStatus.ACTIVE.value:
+            accompaniment_status = AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED
+        elif is_stale or row.last_companion_lat is None or patient_lat is None or patient_lng is None:
+            accompaniment_status = AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED
+        elif sep_state is not None and sep_state.status:
+            status_map = {
+                "WITH_COMPANION": AccompanimentStatus.WITH_COMPANION,
+                "SEPARATION_PENDING": AccompanimentStatus.SEPARATION_PENDING,
+                "SEPARATED": AccompanimentStatus.SEPARATED,
+                "REUNITE_PENDING": AccompanimentStatus.REJOINING,
+                "COMPANION_OFFLINE": AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED,
+                "LOCATION_UNAVAILABLE": AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED,
+                "ACCOMPANIMENT_UNVERIFIED": AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED,
+            }
+            if sep_state.status in status_map:
+                accompaniment_status = status_map[sep_state.status]
+
         return {
             "active_session": {
                 "session_id": row.session_id,
@@ -502,10 +536,12 @@ async def get_active_companion_session(
                 "last_companion_accuracy_m": row.last_companion_accuracy_m,
                 "last_companion_timestamp": row.last_companion_timestamp.isoformat() if row.last_companion_timestamp else None,
                 "accompaniment_status": accompaniment_status.value,
+                "display_status": "Together" if accompaniment_status == AccompanimentStatus.WITH_COMPANION else ("Location Unavailable" if accompaniment_status == AccompanimentStatus.ACCOMPANIMENT_UNVERIFIED else accompaniment_status.value),
                 "separation_distance_m": separation_distance_m,
                 "is_location_stale": is_stale,
                 "safe_zone_departure_accompanied": safe_zone_departure_accompanied,
                 "safe_zone": safe_zone_info,
+                "active_alert_id": sep_alert_id,
             }
         }
 
@@ -552,3 +588,237 @@ async def companion_stop_sharing(session_id: str, companion_token: str = Query(.
         await session.commit()
 
         return {"status": "revoked", "session_id": row.session_id, "message": "Location sharing stopped."}
+
+
+@router.post("/group-separation/evaluate")
+async def trigger_group_separation_evaluation(
+    patient_id: str = Query(..., description="Patient ID to evaluate"),
+    patient_lat: float = Query(..., description="Current patient latitude"),
+    patient_lng: float = Query(..., description="Current patient longitude"),
+    patient_accuracy_m: float = Query(5.0, description="Patient GPS horizontal accuracy in meters"),
+    separation_distance_m: float = Query(50.0, description="Cohesion distance threshold"),
+    persistence_readings: int = Query(2, description="Consecutive readings to confirm separation"),
+):
+    """
+    Explicitly trigger group separation evaluation and manage persistent alert lifecycle.
+    """
+    cfg = GroupSeparationConfig(
+        separation_distance_m=separation_distance_m,
+        persistence_readings=persistence_readings,
+    )
+    result = await evaluate_group_separation(
+        patient_id=patient_id,
+        patient_lat=patient_lat,
+        patient_lng=patient_lng,
+        patient_accuracy_m=patient_accuracy_m,
+        patient_timestamp=datetime.now(timezone.utc),
+        config=cfg,
+    )
+    return result.to_dict()
+
+
+class CompanionSimulationStepRequest(BaseModel):
+    """Development-only request payload for companion walking simulation."""
+    patient_id: str
+    scenario: str = "WALKING_TOGETHER"  # "WALKING_TOGETHER" | "SEPARATING" | "REJOINING"
+    step_number: int = 1
+    companion_id: Optional[str] = "comp_alex"
+    companion_alias: Optional[str] = "Family Guide (Alex)"
+    heart_rate_bpm: Optional[int] = None
+    heart_rate_state: Optional[str] = "ON_WRIST"
+
+
+@router.post("/simulation/step")
+async def simulate_companion_walking_step(payload: CompanionSimulationStepRequest):
+    """
+    Development-only endpoint to simulate an authorized companion walking alongside a patient.
+    Generates independent companion coordinates, timestamps, and telemetry.
+    Supports 3 scenarios: WALKING_TOGETHER, SEPARATING, REJOINING.
+    Enforces authorization/consent and active companion session.
+    Never reuses patient coordinates for companion.
+    Evaluates group separation and wearable physiological corroboration.
+    """
+    now = datetime.now(timezone.utc)
+    patient_id = payload.patient_id.strip()
+    if not patient_id:
+        raise HTTPException(status_code=400, detail="Patient ID is required.")
+
+    # 1. Enforce patient authorization / consent
+    if not await is_consented(patient_id):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Patient consent required: '{patient_id}' does not have authorized consent on file.",
+        )
+
+    comp_id = (payload.companion_id or "comp_alex").strip()
+    comp_alias = payload.companion_alias or "Family Guide (Alex)"
+
+    async with async_session() as session:
+        # 2. Query or create active companion session
+        sess_res = await session.execute(
+            select(CompanionSessionRow)
+            .where(
+                CompanionSessionRow.patient_id == patient_id,
+                CompanionSessionRow.status.in_([
+                    CompanionSessionStatus.ACTIVE.value,
+                    CompanionSessionStatus.PENDING_INVITE.value,
+                ]),
+            )
+            .order_by(desc(CompanionSessionRow.created_at))
+        )
+        comp_session = sess_res.scalars().first()
+
+        if comp_session is None:
+            # Create a development companion session
+            session_id = uuid4().hex
+            comp_session = CompanionSessionRow(
+                session_id=session_id,
+                patient_id=patient_id,
+                caregiver_id="caregiver_primary",
+                invite_token=f"sim_tok_{uuid4().hex[:8]}",
+                status=CompanionSessionStatus.ACTIVE.value,
+                created_at=now,
+                expires_at=now + timedelta(hours=24),
+                consent_granted=True,
+                consent_granted_at=now,
+                companion_alias=comp_alias,
+                companion_user_id=comp_id,
+                relationship="family",
+            )
+            session.add(comp_session)
+            await session.commit()
+        elif comp_session.status == CompanionSessionStatus.PENDING_INVITE.value:
+            comp_session.status = CompanionSessionStatus.ACTIVE.value
+            comp_session.consent_granted = True
+            comp_session.consent_granted_at = now
+            comp_session.companion_user_id = comp_id
+            comp_session.companion_alias = comp_alias
+            await session.commit()
+
+        # 3. Retrieve patient baseline position
+        pat_res = await session.execute(
+            select(RiskScoreHistoryRow)
+            .where(RiskScoreHistoryRow.user_id == patient_id)
+            .order_by(desc(RiskScoreHistoryRow.timestamp))
+            .limit(1)
+        )
+        pat_hist = pat_res.scalar_one_or_none()
+
+        # Default anchor is Bengaluru center if no history exists
+        anchor_lat = 12.9716
+        anchor_lng = 77.5946
+
+        if pat_hist:
+            loc = _extract_location(pat_hist.raw_output_json)
+            if loc and loc.lat is not None and loc.lng is not None:
+                # Check for historical Beijing coords vs Bengaluru
+                if abs(loc.lat - 12.97) < 5.0:
+                    anchor_lat = loc.lat
+                    anchor_lng = loc.lng
+
+        # Advance patient slightly with step_number (simulate walking along path)
+        step = max(1, payload.step_number)
+        walk_disp_m = (step - 1) * 1.5
+        # Move slightly North-East
+        pat_lat = anchor_lat + (walk_disp_m * 0.707 / 111320.0)
+        meters_per_deg_lng = 111320.0 * math.cos(math.radians(pat_lat))
+        pat_lng = anchor_lng + (walk_disp_m * 0.707 / meters_per_deg_lng)
+
+        # 4. Generate independent companion coordinates (NEVER duplicate patient coords)
+        scenario_upper = payload.scenario.upper()
+        if "TOGETHER" in scenario_upper:
+            # Companion walking side-by-side within 6-10 meters
+            east_offset_m = 7.0 + ((step % 3) * 0.6)
+            north_offset_m = 3.5 - ((step % 2) * 0.4)
+        elif "SEPARAT" in scenario_upper:
+            # Scenario: Gradually separating
+            # Step 1: ~58 meters (exceeds 50m threshold -> reading 1: SEPARATION_PENDING)
+            # Step 2+: ~115 meters (reading 2+: SEPARATED -> triggers persistent Alert)
+            if step <= 1:
+                east_offset_m = 42.0
+                north_offset_m = 40.0  # distance = sqrt(42^2 + 40^2) = 58.0m
+            else:
+                east_offset_m = 80.0
+                north_offset_m = 85.0  # distance = sqrt(80^2 + 85^2) = 116.7m
+        elif "REJOIN" in scenario_upper or "REUNITE" in scenario_upper:
+            # Scenario: Rejoining
+            # Step 1: ~35 meters (under 50m threshold -> reading 1: REUNITE_PENDING)
+            # Step 2+: ~7.5 meters (reading 2+: WITH_COMPANION -> auto-resolves Alert)
+            if step <= 1:
+                east_offset_m = 26.0
+                north_offset_m = 24.0  # distance = sqrt(26^2 + 24^2) = 35.4m
+            else:
+                east_offset_m = 6.0
+                north_offset_m = 4.0   # distance = sqrt(6^2 + 4^2) = 7.2m
+        else:
+            east_offset_m = 7.5
+            north_offset_m = 3.0
+
+        comp_lat = pat_lat + (north_offset_m / 111320.0)
+        comp_lng = pat_lng + (east_offset_m / meters_per_deg_lng)
+
+        # Update companion session record with fresh coordinates
+        comp_session.last_companion_lat = comp_lat
+        comp_session.last_companion_lng = comp_lng
+        comp_session.last_companion_accuracy_m = 5.0
+        comp_session.last_companion_timestamp = now
+        await session.commit()
+
+    # 5. Ingest heart rate reading if provided or relevant
+    if payload.heart_rate_bpm is not None:
+        await save_wearable_reading(
+            user_id=patient_id,
+            timestamp=now,
+            heart_rate_bpm=payload.heart_rate_bpm,
+            sensor_status="SIMULATED_TEST_STREAM",
+            wear_state=payload.heart_rate_state or "ON_WRIST",
+            
+        )
+
+    # 6. Evaluate group separation state machine
+    result = await evaluate_group_separation(
+        patient_id=patient_id,
+        patient_lat=pat_lat,
+        patient_lng=pat_lng,
+        patient_accuracy_m=5.0,
+        patient_timestamp=now,
+    )
+
+    display_map = {
+        "WITH_COMPANION": "Together",
+        "SEPARATION_PENDING": "Separation Pending",
+        "SEPARATED": "Separated",
+        "REUNITE_PENDING": "Rejoining",
+        "COMPANION_OFFLINE": "Location Unavailable",
+        "LOCATION_UNAVAILABLE": "Location Unavailable",
+        "ACCOMPANIMENT_UNVERIFIED": "Location Unavailable",
+    }
+    display_status = display_map.get(result.status, result.status)
+
+    return {
+        "status": "success",
+        "scenario": payload.scenario,
+        "step_number": step,
+        "group_status": result.status,
+        "display_status": display_status,
+        "distance_meters": result.distance_m,
+        "patient_coords": [round(pat_lat, 6), round(pat_lng, 6)],
+        "companion_coords": [round(comp_lat, 6), round(comp_lng, 6)],
+        "action": result.action,
+        "alert_id": result.alert_id,
+        "alert_tier": result.alert_tier,
+        "heart_rate": {
+            "bpm": result.heart_rate_bpm,
+            "z_score": result.heart_rate_z_score,
+            "is_arousal": result.is_physiological_arousal,
+            "provenance": result.heart_rate_provenance,
+        },
+        "companion_info": {
+            "companion_id": comp_id,
+            "companion_alias": comp_alias,
+            "timestamp": now.isoformat(),
+        },
+        "data_provenance": "SIMULATED_COMPANION_DATA",
+        "disclaimer": "Simulated companion demonstration data. Does not represent a real physical companion or clinical emergency monitoring.",
+        "message": result.message,
+    }

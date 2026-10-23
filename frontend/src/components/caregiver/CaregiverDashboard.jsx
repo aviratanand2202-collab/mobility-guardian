@@ -36,6 +36,9 @@ export default function CaregiverDashboard({
   alertMessages,
   handleAlertUpdate,
   patientStatus = null,
+  latestWearable = null,
+  safeZones = [],
+  refreshSafeZones = null,
   onSwitchToTechnical,
 }) {
   const [inputUserId, setInputUserId] = useState(userId)
@@ -153,6 +156,52 @@ export default function CaregiverDashboard({
       : null
   const isTelemetryStale = telemetryAgeSec != null && telemetryAgeSec > 45
   const isLiveTelemetryFresh = isRiskOnline && latestRisk != null && !isTelemetryStale
+
+  // Patient Heartbeat Biometrics derivation & Provenance Tracking
+  const activeWearable = latestWearable || effectiveRisk?.wearable_metrics || null
+  const heartRateBpm = activeWearable?.heart_rate_bpm ?? null
+  const wearState = activeWearable?.wear_state || 'UNKNOWN'
+  const isHrStale = activeWearable?.is_stale || false
+  const hrEvidence = activeWearable?.evidence || effectiveRisk?.ml_evaluation?.heart_rate_evidence || null
+  const sensorStatus = activeWearable?.sensor_status || 'UNKNOWN'
+  const isSimulated = sensorStatus === 'SIMULATED_TEST_STREAM' || (Boolean(activeWearable?.evidence?.disclaimer) && !sensorStatus.includes('BLE'))
+  const provenanceLabel = isSimulated ? 'Simulated Stream' : sensorStatus === 'BLE_WEARABLE_DEVICE' ? 'Hardware Wearable' : 'Wearable'
+
+  let hrValueDisplay = 'Unavailable'
+  let hrHintDisplay = 'No wearable telemetry received'
+
+  if (!isRiskOnline && !hasHistoricalOnly) {
+    hrValueDisplay = 'Stream Offline'
+    hrHintDisplay = 'Biometric stream disconnected'
+  } else if (heartRateBpm != null) {
+    const rawAge = activeWearable?.age_seconds != null
+      ? activeWearable.age_seconds
+      : (activeWearable?.timestamp ? Math.max(0, Math.floor((now - new Date(activeWearable.timestamp).getTime()) / 1000)) : null)
+    const ageText = rawAge != null ? (rawAge < 10 ? 'Fresh' : rawAge < 60 ? `${Math.round(rawAge)}s ago` : `${Math.floor(rawAge / 60)}m ago`) : 'Fresh'
+    const provSuffix = isSimulated ? ' (Simulated)' : ' (Live)'
+
+    if (wearState === 'OFF_WRIST') {
+      hrValueDisplay = `${heartRateBpm} BPM (Off-wrist)`
+      hrHintDisplay = `Sensor off wrist · Baseline suspended · ${provenanceLabel}`
+    } else {
+      hrValueDisplay = `${heartRateBpm} BPM${provSuffix}`
+      if (isHrStale || (rawAge != null && rawAge > 60)) {
+        hrHintDisplay = `Stale reading (${ageText}) · ${isSimulated ? 'Simulated stream' : 'Hardware device'}`
+      } else if (hrEvidence?.response_pattern === 'ELEVATED_UNUSUAL_RESTING') {
+        hrHintDisplay = `⚠️ Unusual resting elevation (${ageText}) · ${provenanceLabel}`
+      } else if (hrEvidence?.response_pattern === 'EXERTION_CONCORDANT') {
+        hrHintDisplay = `⚡ Normal physical exertion (${ageText}) · ${provenanceLabel}`
+      } else {
+        hrHintDisplay = `Normal baseline (${ageText}) · ${isSimulated ? 'Simulated test stream' : 'Hardware sensor on wrist'}`
+      }
+    }
+  } else if (isRiskConnecting) {
+    hrValueDisplay = 'Connecting...'
+    hrHintDisplay = 'Establishing biometric stream...'
+  } else if (isAwaitingTelemetry) {
+    hrValueDisplay = 'Awaiting Fix'
+    hrHintDisplay = 'Awaiting wearable sensor fix'
+  }
   const telemetryAge = telemetryTimestamp ? getRelativeTime(telemetryTimestamp, now) : null
 
   const hasValidLocation = Boolean(
@@ -614,6 +663,24 @@ export default function CaregiverDashboard({
 
         {/* Live Status Indicators Bar */}
         <div className="caregiver-header-badges">
+          {/* Patient Safe Zone Status Pill */}
+          {safeZones && safeZones.length > 0 ? (
+            <span
+              className="caregiver-status-pill pill-active"
+              title={`Configured Safe Zone: ${safeZones[0].name} (${safeZones[0].radius_m ? `${safeZones[0].radius_m}m radius` : 'Polygonal perimeter'})`}
+            >
+              <span className="pill-dot"></span>
+              🛡️ Safe Zone: {safeZones[0].name}
+            </span>
+          ) : (
+            <span
+              className="caregiver-status-pill pill-subtle"
+              title="No patient safe zone configured in database"
+            >
+              🛡️ No Safe Zone Configured
+            </span>
+          )}
+
           {/* Patient Consent Status Pill */}
           {patientConsent?.isConsented ? (
             <span
@@ -890,6 +957,35 @@ export default function CaregiverDashboard({
             </span>
           </div>
         </div>
+
+        <div className="caregiver-metric-card" data-testid="caregiver-metric-heartbeat">
+          <div className={`metric-icon-disc metric-disc-heart ${heartRateBpm != null && wearState === 'ON_WRIST' ? 'heartbeat-pulsing' : ''}`}>
+            ❤️
+          </div>
+          <div className="metric-content">
+            <div className="metric-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+              <span className="metric-eyebrow">Patient Heartbeat</span>
+              {heartRateBpm != null && (
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    background: isSimulated ? '#fef3c7' : '#dcfce7',
+                    color: isSimulated ? '#b45309' : '#15803d',
+                    border: `1px solid ${isSimulated ? '#fde68a' : '#bbf7d0'}`,
+                  }}
+                >
+                  {isSimulated ? 'Simulated' : 'Hardware'}
+                </span>
+              )}
+            </div>
+            <span className="metric-value">{hrValueDisplay}</span>
+            <span className="metric-hint">{hrHintDisplay}</span>
+          </div>
+        </div>
       </div>
 
       {/* Main Grid: Map (Left) and Caregiver Insights & Alerts (Right) */}
@@ -912,6 +1008,8 @@ export default function CaregiverDashboard({
             telemetryAge={telemetryAge}
             actionTrigger={mapActionTrigger}
             activeCompanion={activeCompanion}
+            configuredSafeZone={activeCompanion?.safe_zone}
+            patientSafeZones={safeZones}
             patientStatus={patientStatus}
           />
         </div>

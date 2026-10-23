@@ -239,6 +239,9 @@ async def evaluate_shadow_inference(
             "trigger_state": trigger_st,
             "explainability": raw_out.get("explainability"),
             "location": raw_out.get("location"),
+            "loop_evidence": raw_out.get("loop_evidence"),
+            "heart_rate_evidence": raw_out.get("heart_rate_evidence"),
+            "decision": raw_out.get("decision"),
         }
 
     except asyncio.TimeoutError:

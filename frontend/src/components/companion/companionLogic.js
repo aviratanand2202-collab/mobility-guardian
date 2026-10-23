@@ -52,7 +52,11 @@ export function isInsideGeofence(coord, geofence = DEFAULT_GEOFENCE) {
 
 export const ACCOMPANIMENT_STATUS = {
   WITH_COMPANION: 'With Companion',
+  TOGETHER: 'Together',
+  SEPARATION_PENDING: 'Separation Pending',
   SEPARATED: 'Separated',
+  REJOINING: 'Rejoining',
+  LOCATION_UNAVAILABLE: 'Location Unavailable',
   ACCOMPANIMENT_UNVERIFIED: 'Accompaniment Unverified',
 }
 

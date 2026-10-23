@@ -7,3 +7,4 @@ shap>=0.46
 h3>=4.1
 pyarrow>=16.0
 torch>=2.3
+lightgbm>=4.0

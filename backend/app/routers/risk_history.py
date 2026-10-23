@@ -15,7 +15,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 
 from app.db import async_session, RiskScoreHistoryRow
-from app.models import Location
+from app.models import Location, WearableMetrics
 
 router = APIRouter()
 
@@ -29,6 +29,7 @@ class RiskHistoryEntry(BaseModel):
     grid_cell_id: Optional[str] = None
     location: Optional[Location] = None
     ml_evaluation: Optional[dict[str, Any]] = None
+    wearable_metrics: Optional[WearableMetrics] = None
 
 
 def _extract_ml_evaluation(raw_json: Optional[str]) -> Optional[dict[str, Any]]:
@@ -45,6 +46,21 @@ def _extract_ml_evaluation(raw_json: Optional[str]) -> Optional[dict[str, Any]]:
             ml_eval = data.get("ml_evaluation")
             if isinstance(ml_eval, dict):
                 return ml_eval
+    except Exception:
+        return None
+    return None
+
+
+def _extract_wearable_metrics(raw_json: Optional[str]) -> Optional[WearableMetrics]:
+    """Extract WearableMetrics from raw_output_json if present."""
+    if not raw_json:
+        return None
+    try:
+        data = json.loads(raw_json)
+        if isinstance(data, dict):
+            w = data.get("wearable_metrics")
+            if isinstance(w, dict):
+                return WearableMetrics(**w)
     except Exception:
         return None
     return None
@@ -144,6 +160,7 @@ async def get_user_risk_history(
             grid_cell_id=row.grid_cell_id,
             location=_extract_location(row.raw_output_json),
             ml_evaluation=_extract_ml_evaluation(row.raw_output_json),
+            wearable_metrics=_extract_wearable_metrics(row.raw_output_json),
         )
         for row in rows
     ]

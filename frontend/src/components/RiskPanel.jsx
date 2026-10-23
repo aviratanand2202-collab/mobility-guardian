@@ -1,12 +1,22 @@
 import React from 'react'
 
-export default function RiskPanel({ currentRisk, historyEntries }) {
+export default function RiskPanel({ currentRisk, historyEntries, latestWearable = null }) {
   // Derive effective risk evaluation: prefer live WebSocket currentRisk;
   // fall back to the most recent record from historyEntries when connected with existing history
   const latestHistory = historyEntries && historyEntries.length > 0
     ? historyEntries[historyEntries.length - 1]
     : null
-  const effectiveRisk = currentRisk || latestHistory
+  const effectiveRisk = (currentRisk && currentRisk.risk_score != null) ? currentRisk : (latestHistory || currentRisk)
+
+  // Derive active wearable biometrics reading
+  const activeWearable = latestWearable || effectiveRisk?.wearable_metrics || null
+  const heartRateBpm = activeWearable?.heart_rate_bpm ?? null
+  const wearState = activeWearable?.wear_state || 'UNKNOWN'
+  const hrEvidence = activeWearable?.evidence || effectiveRisk?.ml_evaluation?.heart_rate_evidence || null
+  const isHrStale = activeWearable?.is_stale || false
+  const sensorStatus = activeWearable?.sensor_status || 'UNKNOWN'
+  const isSimulated = sensorStatus === 'SIMULATED_TEST_STREAM' || (Boolean(activeWearable?.evidence?.disclaimer) && !sensorStatus.includes('BLE'))
+  const provenanceLabel = isSimulated ? 'Simulated Stream' : sensorStatus === 'BLE_WEARABLE_DEVICE' ? 'Hardware BLE Device' : 'Wearable'
 
   const riskTier = effectiveRisk?.risk_tier || 'QUIESCENT'
   const riskScore = effectiveRisk?.risk_score != null ? Number(effectiveRisk.risk_score) : null
@@ -294,6 +304,89 @@ export default function RiskPanel({ currentRisk, historyEntries }) {
           </div>
         </div>
       )}
+
+      {/* Patient Heartbeat & Wearable Biometrics */}
+      <div className="biometrics-card" data-testid="biometrics-card">
+        <div className="biometrics-header">
+          <span className="biometrics-title">
+            <span className="heartbeat-pulsing" aria-hidden="true">❤️</span> Patient Heartbeat &amp; Biometrics
+          </span>
+          <span
+            className={`biometrics-pill ${
+              wearState === 'ON_WRIST'
+                ? isHrStale ? 'biometrics-pill-stale' : 'biometrics-pill-active'
+                : wearState === 'OFF_WRIST'
+                ? 'biometrics-pill-offwrist'
+                : 'biometrics-pill-unknown'
+            }`}
+          >
+            {wearState === 'ON_WRIST'
+              ? isHrStale ? 'Stale Signal (>60s)' : 'On Wrist'
+              : wearState === 'OFF_WRIST'
+              ? 'Off Wrist'
+              : 'Sensor Inactive'}
+          </span>
+        </div>
+
+        <div className="biometrics-body">
+          <div className="biometrics-metric">
+            <div className="biometrics-bpm-row">
+              <span className="biometrics-bpm-val">
+                {heartRateBpm != null ? heartRateBpm : '--'}
+              </span>
+              <span className="biometrics-bpm-unit">BPM</span>
+            </div>
+            <div className="biometrics-bpm-hint">
+              {heartRateBpm == null
+                ? 'No wearable telemetry received'
+                : wearState !== 'ON_WRIST'
+                ? 'Device removed from wrist'
+                : isHrStale
+                ? 'Reading is stale (> 60s)'
+                : hrEvidence?.response_pattern === 'ELEVATED_UNUSUAL_RESTING'
+                ? '⚠️ Unusual resting elevation'
+                : hrEvidence?.response_pattern === 'EXERTION_CONCORDANT'
+                ? '⚡ Exertion concordant'
+                : 'Normal resting baseline'}
+            </div>
+          </div>
+
+          <div className="biometrics-details-block">
+            <div className="detail-item">
+              <span className="detail-label">Data Provenance:</span>
+              <span className="detail-val mono" style={{ color: isSimulated ? '#b45309' : '#15803d', fontWeight: 600 }}>
+                {provenanceLabel}
+              </span>
+            </div>
+            <div className="detail-item">
+              <span className="detail-label">Wear State:</span>
+              <span className="detail-val mono">{wearState}</span>
+            </div>
+            {hrEvidence?.baseline_mean_bpm != null && (
+              <div className="detail-item">
+                <span className="detail-label">Baseline Mean:</span>
+                <span className="detail-val mono">{hrEvidence.baseline_mean_bpm} BPM</span>
+              </div>
+            )}
+            {hrEvidence?.z_score != null && (
+              <div className="detail-item">
+                <span className="detail-label">Z-Score:</span>
+                <span className="detail-val mono">
+                  {hrEvidence.z_score > 0 ? `+${hrEvidence.z_score.toFixed(2)}` : hrEvidence.z_score.toFixed(2)}
+                </span>
+              </div>
+            )}
+            <div className="detail-item">
+              <span className="detail-label">Sensor Status:</span>
+              <span className="detail-val mono">{activeWearable?.sensor_status || 'NOMINAL'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="biometrics-disclaimer">
+          Associational wearable biometrics. Non-clinical monitoring only. Missing or normal heart rate never suppresses mobility alerts.
+        </div>
+      </div>
 
       {/* TreeSHAP Explainability Top Features */}
       <div className="explainability-section">

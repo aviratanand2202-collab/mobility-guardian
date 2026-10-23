@@ -46,6 +46,8 @@ ml/data/processed/
 ml/models/*.pkl
 ml/models/*.onnx
 ml/models/*.joblib
+ml/models/**/cache/
+*.parquet
 *.ckpt
 
 # =========================

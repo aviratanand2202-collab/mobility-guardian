@@ -1,0 +1,174 @@
+{
+  "timestamp": "2026-10-23 09:55:55",
+  "methodology": "Constrained Clinical Optimization (Recall Floor + FPR Minimization)",
+  "recall_floors": {
+    "120": 0.75,
+    "360": 0.85,
+    "600": 0.88,
+    "840": 0.88
+  },
+  "models": {
+    "xgboost_improved": {
+      "120s": {
+        "horizon_sec": 120,
+        "baseline_threshold": 0.66,
+        "revised_threshold": 0.69,
+        "target_recall_floor": 0.75,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.799037,
+        "val_revised_recall": 0.760554,
+        "val_baseline_fpr": 0.478438,
+        "val_revised_fpr": 0.424237,
+        "val_baseline_balanced_acc": 0.660299,
+        "val_revised_balanced_acc": 0.668158
+      },
+      "360s": {
+        "horizon_sec": 360,
+        "baseline_threshold": 0.73,
+        "revised_threshold": 0.78,
+        "target_recall_floor": 0.85,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.904468,
+        "val_revised_recall": 0.859323,
+        "val_baseline_fpr": 0.568875,
+        "val_revised_fpr": 0.478359,
+        "val_baseline_balanced_acc": 0.667797,
+        "val_revised_balanced_acc": 0.690482
+      },
+      "600s": {
+        "horizon_sec": 600,
+        "baseline_threshold": 0.73,
+        "revised_threshold": 0.82,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.946746,
+        "val_revised_recall": 0.886143,
+        "val_baseline_fpr": 0.649024,
+        "val_revised_fpr": 0.500217,
+        "val_baseline_balanced_acc": 0.648861,
+        "val_revised_balanced_acc": 0.692963
+      },
+      "840s": {
+        "horizon_sec": 840,
+        "baseline_threshold": 0.72,
+        "revised_threshold": 0.8599999999999999,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.966061,
+        "val_revised_recall": 0.890368,
+        "val_baseline_fpr": 0.655273,
+        "val_revised_fpr": 0.454102,
+        "val_baseline_balanced_acc": 0.655394,
+        "val_revised_balanced_acc": 0.718133
+      }
+    },
+    "random_forest": {
+      "120s": {
+        "horizon_sec": 120,
+        "baseline_threshold": 0.66,
+        "revised_threshold": 0.69,
+        "target_recall_floor": 0.75,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.798599,
+        "val_revised_recall": 0.756784,
+        "val_baseline_fpr": 0.493637,
+        "val_revised_fpr": 0.43708,
+        "val_baseline_balanced_acc": 0.652481,
+        "val_revised_balanced_acc": 0.659852
+      },
+      "360s": {
+        "horizon_sec": 360,
+        "baseline_threshold": 0.72,
+        "revised_threshold": 0.79,
+        "target_recall_floor": 0.85,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.915697,
+        "val_revised_recall": 0.855675,
+        "val_baseline_fpr": 0.608393,
+        "val_revised_fpr": 0.489838,
+        "val_baseline_balanced_acc": 0.653652,
+        "val_revised_balanced_acc": 0.682918
+      },
+      "600s": {
+        "horizon_sec": 600,
+        "baseline_threshold": 0.71,
+        "revised_threshold": 0.84,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.966408,
+        "val_revised_recall": 0.881541,
+        "val_baseline_fpr": 0.704121,
+        "val_revised_fpr": 0.507158,
+        "val_baseline_balanced_acc": 0.631143,
+        "val_revised_balanced_acc": 0.687191
+      },
+      "840s": {
+        "horizon_sec": 840,
+        "baseline_threshold": 0.79,
+        "revised_threshold": 0.8699999999999999,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.954483,
+        "val_revised_recall": 0.88827,
+        "val_baseline_fpr": 0.619141,
+        "val_revised_fpr": 0.488281,
+        "val_baseline_balanced_acc": 0.667671,
+        "val_revised_balanced_acc": 0.699994
+      }
+    },
+    "lightgbm": {
+      "120s": {
+        "horizon_sec": 120,
+        "baseline_threshold": 0.66,
+        "revised_threshold": 0.69,
+        "target_recall_floor": 0.75,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.800769,
+        "val_revised_recall": 0.762439,
+        "val_baseline_fpr": 0.479675,
+        "val_revised_fpr": 0.427536,
+        "val_baseline_balanced_acc": 0.660547,
+        "val_revised_balanced_acc": 0.667451
+      },
+      "360s": {
+        "horizon_sec": 360,
+        "baseline_threshold": 0.72,
+        "revised_threshold": 0.79,
+        "target_recall_floor": 0.85,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.912434,
+        "val_revised_recall": 0.850022,
+        "val_baseline_fpr": 0.582612,
+        "val_revised_fpr": 0.459164,
+        "val_baseline_balanced_acc": 0.664911,
+        "val_revised_balanced_acc": 0.695429
+      },
+      "600s": {
+        "horizon_sec": 600,
+        "baseline_threshold": 0.7,
+        "revised_threshold": 0.83,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.960312,
+        "val_revised_recall": 0.881177,
+        "val_baseline_fpr": 0.692842,
+        "val_revised_fpr": 0.495879,
+        "val_baseline_balanced_acc": 0.633735,
+        "val_revised_balanced_acc": 0.692649
+      },
+      "840s": {
+        "horizon_sec": 840,
+        "baseline_threshold": 0.77,
+        "revised_threshold": 0.8799999999999999,
+        "target_recall_floor": 0.88,
+        "floor_achieved": true,
+        "val_baseline_recall": 0.949635,
+        "val_revised_recall": 0.880889,
+        "val_baseline_fpr": 0.591797,
+        "val_revised_fpr": 0.446289,
+        "val_baseline_balanced_acc": 0.678919,
+        "val_revised_balanced_acc": 0.7173
+      }
+    }
+  }
+}

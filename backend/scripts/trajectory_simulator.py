@@ -258,6 +258,7 @@ def build_telemetry_payload(
     degraded_since_iso: Optional[str] = None,
     net_displacement_m: float = 0.0,
     step_count: int = 0,
+    wearable_metrics: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Construct a TelemetryPayload conforming strictly to /shared/schema.json.
@@ -281,6 +282,7 @@ def build_telemetry_payload(
             "state": "DEGRADED_SIGNAL" if is_degraded else "VALID",
             "degraded_since": degraded_since_iso if is_degraded else None,
         },
+        "wearable_metrics": wearable_metrics,
     }
 
     if is_degraded:
@@ -501,6 +503,24 @@ def main() -> None:
         action="store_true",
         help="Disable automatic CSV export",
     )
+    parser.add_argument(
+        "--heart-rate",
+        type=int,
+        default=None,
+        help="Simulated heart rate in BPM (default: dynamic ~74-88 BPM with speed modulation)",
+    )
+    parser.add_argument(
+        "--wear-state",
+        type=str,
+        default="ON_WRIST",
+        choices=["ON_WRIST", "OFF_WRIST", "UNKNOWN"],
+        help="Simulated wearable device state (default: ON_WRIST)",
+    )
+    parser.add_argument(
+        "--no-wearable",
+        action="store_true",
+        help="Omit wearable metrics entirely to test backward compatibility",
+    )
 
     args = parser.parse_args()
 
@@ -518,6 +538,8 @@ def main() -> None:
     print(f"Battery:        {args.battery_start_pct}% (-{args.battery_drain_rate}%/pt)")
     if degraded_range:
         print(f"Degraded Win:   Points {degraded_range[0]} to {degraded_range[1]}")
+    hr_str = 'None' if args.no_wearable else (f'{args.heart_rate} BPM' if args.heart_rate else 'Dynamic (~74-85 BPM)')
+    print(f"Wearable HR:    {hr_str} [{args.wear_state}]")
     print(f"Backend URL:    {args.backend_url}")
 
     # 1. Register consent
@@ -566,6 +588,21 @@ def main() -> None:
             else 0
         )
 
+        wearable = None
+        if not args.no_wearable:
+            if args.heart_rate is not None:
+                hr_val = args.heart_rate
+            else:
+                hr_base = 74 if spd < 0.3 else 82
+                hr_variance = int(3 * math.sin(i * 0.4))
+                hr_val = max(50, min(180, hr_base + hr_variance))
+            wearable = {
+                "heart_rate_bpm": hr_val,
+                "timestamp": pt_time_iso,
+                "wear_state": args.wear_state,
+                "sensor_status": "SIMULATED_TEST_STREAM",
+            }
+
         payload = build_telemetry_payload(
             user_id=args.user_id,
             timestamp_iso=pt_time_iso,
@@ -578,6 +615,7 @@ def main() -> None:
             degraded_since_iso=degraded_start_time_iso,
             net_displacement_m=net_displacement,
             step_count=step_count,
+            wearable_metrics=wearable,
         )
         payloads.append(payload)
 

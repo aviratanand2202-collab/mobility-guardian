@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.db import init_db, dispose_engine
-from app.routers import telemetry, consent, alerts, risk_history, companion
+from app.routers import telemetry, consent, alerts, risk_history, companion, safe_zones, model_comparison, wearable
 from app.websocket import risk_stream
 
 
@@ -32,6 +32,9 @@ app.include_router(consent.router, prefix="/api/consent", tags=["consent"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
 app.include_router(risk_history.router, prefix="/api/risk-history", tags=["risk-history"])
 app.include_router(companion.router, prefix="/api/companion", tags=["companion"])
+app.include_router(safe_zones.router, prefix="/api/safe-zones", tags=["safe-zones"])
+app.include_router(model_comparison.router, prefix="/api/models", tags=["models"])
+app.include_router(wearable.router, prefix="/api/wearable", tags=["wearable"])
 app.include_router(risk_stream.router, prefix="/ws", tags=["websocket"])
 
 

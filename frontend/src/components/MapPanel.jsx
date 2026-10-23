@@ -8,6 +8,7 @@ import {
   CircleMarker,
   Tooltip,
   Circle,
+  Polygon,
   useMap,
 } from 'react-leaflet'
 import L from 'leaflet'
@@ -53,6 +54,36 @@ function haversineMeters(coord1, coord2) {
       Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return Math.round(R * c * 10) / 10
+}
+
+// Split coordinates into contiguous segments to prevent drawing misleading lines across distant sessions
+function splitIntoContinuousSegments(coords, metadata = [], maxGapMeters = 5000, maxGapMinutes = 15) {
+  if (!coords || coords.length === 0) return []
+  const segments = []
+  let currentSeg = [coords[0]]
+
+  for (let i = 1; i < coords.length; i++) {
+    const prevCoord = coords[i - 1]
+    const currCoord = coords[i]
+    const dist = haversineMeters(prevCoord, currCoord)
+    let timeDiffMin = 0
+    if (metadata[i]?.timestamp && metadata[i - 1]?.timestamp) {
+      timeDiffMin = Math.abs(new Date(metadata[i].timestamp) - new Date(metadata[i - 1].timestamp)) / 60000
+    }
+    // If distance jump > 5km or time gap > 15 min, break into a new segment
+    if (dist > maxGapMeters || timeDiffMin > maxGapMinutes) {
+      if (currentSeg.length > 0) {
+        segments.push(currentSeg)
+      }
+      currentSeg = [currCoord]
+    } else {
+      currentSeg.push(currCoord)
+    }
+  }
+  if (currentSeg.length > 0) {
+    segments.push(currentSeg)
+  }
+  return segments
 }
 
 // Helpers for truthful presentation
@@ -229,6 +260,7 @@ export default function MapPanel({
   actionTrigger = null,
   activeCompanion = null,
   configuredSafeZone = null,
+  patientSafeZones = [],
   patientStatus = null,
 }) {
   const [selectedPointIndex, setSelectedPointIndex] = useState(null)
@@ -238,7 +270,15 @@ export default function MapPanel({
 
   // Real Multi-Patient Tracking view state (replaces fake Group Demo)
   const [isMultiPatientView, setIsMultiPatientView] = useState(false)
-  const [multiPatientIds, setMultiPatientIds] = useState(['test_user_000', 'test_user_2'])
+  const [multiPatientIds, setMultiPatientIds] = useState([])
+
+  // Selected comparison patient IDs (excluding the primary user)
+  const comparisonPatientIds = useMemo(() => {
+    const primary = (userId || '').trim()
+    return multiPatientIds.filter((pid) => pid && pid.trim() && pid.trim() !== primary)
+  }, [multiPatientIds, userId])
+
+  const hasComparisonSelection = comparisonPatientIds.length > 0
   const [newPatientInput, setNewPatientInput] = useState('')
   const [multiPatientData, setMultiPatientData] = useState({})
   const [multiPatientLoading, setMultiPatientLoading] = useState(false)
@@ -301,14 +341,38 @@ export default function MapPanel({
             }
           }
 
+          // Isolate latest contiguous session to prevent cross-continent straight lines
+          const sessionCoords = []
+          const sessionMeta = []
+          if (validCoords.length > 0) {
+            const lastIdx = validCoords.length - 1
+            let startIdx = lastIdx
+            for (let j = lastIdx - 1; j >= 0; j--) {
+              const dLat = Math.abs(validCoords[j + 1][0] - validCoords[j][0])
+              const dLng = Math.abs(validCoords[j + 1][1] - validCoords[j][1])
+              const t1 = new Date(validMeta[j]?.timestamp || 0)
+              const t2 = new Date(validMeta[j + 1]?.timestamp || 0)
+              const diffMin = Math.abs(t2 - t1) / 60000
+              if (dLat > 0.45 || dLng > 0.45 || diffMin > 30) {
+                startIdx = j + 1
+                break
+              }
+              startIdx = j
+            }
+            for (let j = startIdx; j <= lastIdx; j++) {
+              sessionCoords.push(validCoords[j])
+              sessionMeta.push(validMeta[j])
+            }
+          }
+
           results[pid] = {
             id: pid,
             color: palette.color,
             dashArray: palette.dashArray,
             badge: palette.badge,
             records: data,
-            coords: validCoords,
-            trailMetadata: validMeta,
+            coords: sessionCoords,
+            trailMetadata: sessionMeta,
             exists,
             hasData: validCoords.length > 0,
           }
@@ -358,6 +422,23 @@ export default function MapPanel({
     }
     return null
   }, [allMultiPatientCoords])
+
+  // Split single-patient location history into continuous segments
+  const trajectorySegments = useMemo(
+    () => splitIntoContinuousSegments(locationHistory, trailMetadata),
+    [locationHistory, trailMetadata]
+  )
+
+  // Derive bounding box for active session (not spanning across disparate historical sessions)
+  const activeSessionBounds = useMemo(() => {
+    if (!locationHistory || locationHistory.length === 0) return null
+    const segments = splitIntoContinuousSegments(locationHistory, trailMetadata)
+    const latestSegment = segments.length > 0 ? segments[segments.length - 1] : locationHistory
+    if (latestSegment.length > 1) {
+      return L.latLngBounds(latestSegment)
+    }
+    return null
+  }, [locationHistory, trailMetadata])
 
   // Active single-patient position
   const activePosition =
@@ -746,7 +827,26 @@ export default function MapPanel({
 
       {/* Map Canvas Wrapper */}
       <div className="map-wrapper">
-        {isMultiPatientView && allMultiPatientCoords.length === 0 ? (
+        {isMultiPatientView && !hasComparisonSelection ? (
+          <div className="map-empty-telemetry-container" role="status" aria-label="No comparison patient selected">
+            <div className="map-radar-graphic">
+              <div className="radar-circle radar-circle-outer"></div>
+              <div className="radar-circle radar-circle-mid"></div>
+              <div className="radar-circle radar-circle-inner"></div>
+              <div className="radar-scanner"></div>
+              <div className="radar-center-beacon">
+                <span className="beacon-icon">👥</span>
+              </div>
+            </div>
+            <div className="map-empty-telemetry-content">
+              <span className="map-empty-pill">Multi-Patient Tracking</span>
+              <h3 className="map-empty-title">No comparison patient selected</h3>
+              <p className="map-empty-desc">
+                Enter a comparison patient ID (e.g. test_user_2) in the bar above and click "+ Add Patient" to track and compare trajectories side-by-side.
+              </p>
+            </div>
+          </div>
+        ) : isMultiPatientView && allMultiPatientCoords.length === 0 ? (
           <div className="map-empty-telemetry-container" role="status" aria-label="No recorded location data for selected patients">
             <div className="map-radar-graphic">
               <div className="radar-circle radar-circle-outer"></div>
@@ -866,6 +966,9 @@ export default function MapPanel({
                 <span className="empty-tag">Patient ID: <strong>{userId || 'None'}</strong></span>
                 <span className="empty-tag">Status: <strong>{patientStatus && !patientStatus.exists ? 'Unknown Patient ID (Unregistered)' : 'No recorded location data for this patient'}</strong></span>
                 <span className="empty-tag">Trail: <strong>0 points</strong></span>
+                <span className="empty-tag">
+                  Safe Zone: <strong>{patientSafeZones && patientSafeZones.length > 0 ? `${patientSafeZones[0].name} (${patientSafeZones[0].radius_m ? `${patientSafeZones[0].radius_m}m` : 'Polygon'})` : 'No Safe Zone Configured'}</strong>
+                </span>
               </div>
             </div>
           </div>
@@ -1008,19 +1111,79 @@ export default function MapPanel({
                   </Circle>
                 )}
 
-                {/* Trail Polyline */}
-                {locationHistory.length > 1 && (
-                  <Polyline
-                    positions={locationHistory}
-                    pathOptions={{
-                      color: isCaregiverMode ? '#244a38' : trailColor,
-                      weight: isCaregiverMode ? 3.5 : 4,
-                      opacity: 0.85,
-                      dashArray: isCaregiverMode ? '4, 6' : '3, 6',
-                      lineJoin: 'round',
-                    }}
-                  />
-                )}
+                {/* Patient Persistent Database Safe Zones (Circular & Polygonal from /api/safe-zones) */}
+                {patientSafeZones && patientSafeZones.length > 0 && patientSafeZones.map((zone) => {
+                  if (zone.is_enabled === false) return null
+                  if (zone.geometry_type === 'polygon' && zone.polygon_vertices && zone.polygon_vertices.length >= 3) {
+                    return (
+                      <Polygon
+                        key={zone.zone_id || 'poly'}
+                        positions={zone.polygon_vertices}
+                        pathOptions={{
+                          color: '#2563eb',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.12,
+                          dashArray: '6, 8',
+                          weight: 2.5,
+                        }}
+                      >
+                        <Tooltip direction="top" opacity={0.95}>
+                          <div style={{ fontSize: '11px', fontWeight: 600 }}>
+                            🛡️ {zone.name || 'Safe Zone Boundary'}
+                            <br />
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>
+                              Polygonal Safe Zone ({zone.polygon_vertices.length} vertices)
+                            </span>
+                          </div>
+                        </Tooltip>
+                      </Polygon>
+                    )
+                  }
+                  if (zone.center_lat != null && zone.center_lng != null) {
+                    return (
+                      <Circle
+                        key={zone.zone_id || 'circle'}
+                        center={[zone.center_lat, zone.center_lng]}
+                        radius={zone.radius_m || 200}
+                        pathOptions={{
+                          color: '#2563eb',
+                          fillColor: '#3b82f6',
+                          fillOpacity: 0.12,
+                          dashArray: '6, 8',
+                          weight: 2.5,
+                        }}
+                      >
+                        <Tooltip direction="top" opacity={0.95}>
+                          <div style={{ fontSize: '11px', fontWeight: 600 }}>
+                            🛡️ {zone.name || 'Safe Zone Perimeter'}
+                            <br />
+                            <span style={{ fontSize: '10px', color: '#64748b' }}>
+                              Radius: {zone.radius_m}m · Configured Safe Boundary
+                            </span>
+                          </div>
+                        </Tooltip>
+                      </Circle>
+                    )
+                  }
+                  return null
+                })}
+
+                {/* Trail Polyline(s) - Segmented to prevent cross-continent straight lines */}
+                {trajectorySegments.map((segment, segIdx) => (
+                  segment.length > 1 && (
+                    <Polyline
+                      key={`trail-seg-${segIdx}`}
+                      positions={segment}
+                      pathOptions={{
+                        color: isCaregiverMode ? '#244a38' : trailColor,
+                        weight: isCaregiverMode ? 3.5 : 4,
+                        opacity: 0.85,
+                        dashArray: isCaregiverMode ? '4, 6' : '3, 6',
+                        lineJoin: 'round',
+                      }}
+                    />
+                  )
+                ))}
 
                 {/* Selectable Trail CircleMarkers */}
                 {locationHistory.map((coords, idx) => {
@@ -1220,6 +1383,35 @@ export default function MapPanel({
           </div>
         )}
 
+        {/* Map Legend Overlay */}
+        <div className="map-legend-overlay" aria-label="Map Legend">
+          <div className="map-legend-header">Map Legend</div>
+          <div className="map-legend-item">
+            <span className="legend-symbol">🔴</span>
+            <span className="legend-label">Patient Position ({isLive ? 'Live GPS' : 'Last Known'})</span>
+          </div>
+          <div className="map-legend-item">
+            <span className="legend-symbol" style={{ color: '#10b981', fontWeight: 900 }}>━━━</span>
+            <span className="legend-label">Live Trajectory Trail ({locationHistory.length} pts)</span>
+          </div>
+          <div className="map-legend-item">
+            <span className="legend-symbol">🛡️</span>
+            <span className="legend-label">
+              {patientSafeZones && patientSafeZones.length > 0
+                ? `Safe Zone: ${patientSafeZones[0].name} (${patientSafeZones[0].radius_m ? `${patientSafeZones[0].radius_m}m` : 'Polygon'})`
+                : configuredSafeZone && configuredSafeZone.configured
+                ? `Safe Zone: ${configuredSafeZone.name || 'Active'}`
+                : 'No Safe Zone Configured'}
+            </span>
+          </div>
+          {activeCompanion && (
+            <div className="map-legend-item">
+              <span className="legend-symbol">🤝</span>
+              <span className="legend-label">Trusted Companion ({activeCompanion.status || 'Active'})</span>
+            </div>
+          )}
+        </div>
+
         {/* Floating Controls Overlay */}
         {isMultiPatientView ? (
           multiPatientBounds && (
@@ -1401,8 +1593,19 @@ export default function MapPanel({
               </span>
             </div>
           </div>
-          <div className="multi-patient-summary-grid">
-            {multiPatientIds.map((pid, idx) => {
+          {!hasComparisonSelection ? (
+            <div className="multi-patient-empty-notice" role="status" aria-label="Awaiting comparison patient selection" style={{ padding: '24px', textAlign: 'center', background: '#f8fafc', borderRadius: '10px', margin: '16px 0', border: '1px dashed #cbd5e1' }}>
+              <div className="empty-notice-icon" style={{ fontSize: '32px', marginBottom: '8px' }}>👥</div>
+              <div className="empty-notice-text">
+                <h4 style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: 600, color: '#334155' }}>No Comparison Patient Selected</h4>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                  Add at least one comparison patient ID in the controls bar above to view side-by-side trajectory metrics, distance deltas, and risk tiers.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="multi-patient-summary-grid">
+              {multiPatientIds.map((pid, idx) => {
               const p = multiPatientData[pid]
               const color = p?.color || MULTI_PATIENT_PALETTE[idx % MULTI_PATIENT_PALETTE.length].color
               return (
@@ -1443,7 +1646,8 @@ export default function MapPanel({
                 </div>
               )
             })}
-          </div>
+            </div>
+          )}
         </div>
       ) : (
         (isCaregiverMode || locationHistory.length > 0) && (
