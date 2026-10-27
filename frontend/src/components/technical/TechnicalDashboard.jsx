@@ -24,6 +24,12 @@ export default function TechnicalDashboard({
   historyError,
   fetchHistory,
   patientStatus = null,
+  latestWearable = null,
+  safeZones = [],
+  refreshSafeZones = null,
+  alertsLoading = false,
+  alertsError = null,
+  fetchAlerts = null,
 }) {
   const [inputUserId, setInputUserId] = useState(userId)
   const [activeCompanion, setActiveCompanion] = useState(null)
@@ -34,6 +40,56 @@ export default function TechnicalDashboard({
   const [companionRelationship, setCompanionRelationship] = useState('family')
   const [isAssociating, setIsAssociating] = useState(false)
   const [associationError, setAssociationError] = useState(null)
+  const [simStep, setSimStep] = useState(0)
+  const [isSimulating, setIsSimulating] = useState(false)
+  const [simFeedback, setSimFeedback] = useState(null)
+  const [elevatedHrSim, setElevatedHrSim] = useState(false)
+
+  const handleSimulateCompanionStep = async (scenario) => {
+    if (!userId || !userId.trim()) return
+    setIsSimulating(true)
+    setSimFeedback(null)
+    const nextStep = simStep + 1
+    setSimStep(nextStep)
+
+    try {
+      const payload = {
+        patient_id: userId.trim(),
+        scenario: scenario,
+        step_number: nextStep,
+        companion_id: activeCompanion?.companion_user_id || 'comp_alex',
+        companion_alias: activeCompanion?.companion_alias || 'Family Guide (Alex)',
+        heart_rate_bpm: elevatedHrSim ? 105 : 75,
+      }
+      const res = await fetch('/api/companion/simulation/step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.detail || `HTTP ${res.status}`)
+      }
+      const data = await res.json()
+      setSimFeedback({
+        scenario,
+        status: data.display_status,
+        distance: data.distance_meters,
+        action: data.action,
+        alertId: data.alert_id,
+        tier: data.alert_tier,
+      })
+      await fetchActiveCompanion(userId)
+      if (fetchAlerts) {
+        await fetchAlerts(userId)
+      }
+    } catch (err) {
+      console.error('Simulation step error:', err)
+      setSimFeedback({ error: err.message })
+    } finally {
+      setIsSimulating(false)
+    }
+  }
 
   useEffect(() => {
     setInputUserId(userId)
@@ -400,7 +456,72 @@ export default function TechnicalDashboard({
               </div>
             )}
 
-            <div className="tech-acc-actions-row">
+            <div className="tech-acc-sim-card" style={{ marginTop: '14px', padding: '12px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}>
+                  🧪 Companion Walking Simulation (Development Test)
+                </span>
+                <span style={{ fontSize: '11px', background: 'rgba(30, 41, 59, 0.08)', padding: '2px 6px', borderRadius: '4px', color: '#475569' }}>
+                  [Simulated Companion Data]
+                </span>
+              </div>
+              <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 10px 0' }}>
+                Test multi-person companion walking alongside <strong>{userId}</strong> across three distinct test scenarios:
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={isSimulating}
+                  onClick={() => handleSimulateCompanionStep('WALKING_TOGETHER')}
+                  title="Simulate companion walking side-by-side (<10m)"
+                >
+                  🚶‍♂️🚶‍♀️ Walk Together (&lt;10m)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={isSimulating}
+                  onClick={() => handleSimulateCompanionStep('SEPARATING')}
+                  title="Simulate companion separating beyond 50m (step 1 -> Pending, step 2 -> Separated)"
+                >
+                  ↗️ Separate (&gt;50m)
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={isSimulating}
+                  onClick={() => handleSimulateCompanionStep('REJOINING')}
+                  title="Simulate companion rejoining patient (<10m auto-resolves alert)"
+                >
+                  🤝 Rejoin (&lt;10m)
+                </button>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#334155', cursor: 'pointer', marginLeft: '6px' }}>
+                  <input
+                    type="checkbox"
+                    checked={elevatedHrSim}
+                    onChange={(e) => setElevatedHrSim(e.target.checked)}
+                  />
+                  <span>Simulate HR Arousal (105 BPM)</span>
+                </label>
+              </div>
+
+              {simFeedback && (
+                <div style={{ marginTop: '10px', fontSize: '12px', padding: '6px 10px', borderRadius: '6px', background: simFeedback.error ? '#fef2f2' : '#f0fdf4', color: simFeedback.error ? '#dc2626' : '#166534', border: `1px solid ${simFeedback.error ? '#fecaca' : '#bbf7d0'}` }}>
+                  {simFeedback.error ? (
+                    <span>⚠️ {simFeedback.error}</span>
+                  ) : (
+                    <span>
+                      Result: Status <strong>{simFeedback.status}</strong> | Distance: <strong>{simFeedback.distance ? `${Math.round(simFeedback.distance)}m` : '—'}</strong>
+                      {simFeedback.action !== 'NONE' && ` | Action: ${simFeedback.action}`}
+                      {simFeedback.alertId && ` (Alert ID: ${simFeedback.alertId.slice(0, 8)}... Tier ${simFeedback.tier})`}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="tech-acc-actions-row" style={{ marginTop: '12px' }}>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -511,6 +632,7 @@ export default function TechnicalDashboard({
             userId={userId}
             activeCompanion={activeCompanion}
             configuredSafeZone={activeCompanion?.safe_zone}
+            patientSafeZones={safeZones}
             patientStatus={patientStatus}
           />
         </div>
@@ -519,11 +641,19 @@ export default function TechnicalDashboard({
           <RiskPanel
             currentRisk={latestRisk}
             historyEntries={historyEntries}
+            alertMessages={alertMessages}
+            isConnected={isConnected}
+            trailMetadata={trailMetadata}
+            userId={userId}
+            latestWearable={latestWearable}
           />
 
           <AlertPanel
             alerts={alertMessages}
             onAlertUpdate={handleAlertUpdate}
+            userId={userId}
+            isLoading={alertsLoading}
+            error={alertsError}
           />
         </div>
       </div>

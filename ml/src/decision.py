@@ -4,13 +4,16 @@ Synthesizes:
 1. Safe-Area State (INSIDE_SAFE_AREA, OUTSIDE_SAFE_AREA, SAFE_AREA_UNAVAILABLE)
 2. Familiarity State (FAMILIAR_LOCATION, UNFAMILIAR_LOCATION, INSUFFICIENT_EVIDENCE, NO_HISTORY)
 3. Behavioral ML Risk Tier (QUIESCENT, NORMAL_TRANSIT, SUSPICIOUS, CRITICAL)
+4. Trajectory Looping Evidence (PERSISTENT_LOOP, SHORT_DETOUR, PROGRESSIVE_TRANSIT, etc.)
+5. Physiological Heart-Rate Evidence (ELEVATED_UNUSUAL_RESTING, EXERTION_CONCORDANT, etc.)
 
 Methodological & Behavioral Guarantees:
 - INSIDE safe area + normal behavior must remain SAFE / NORMAL.
 - OUTSIDE safe area alone must NOT become SUSPICIOUS or CRITICAL.
 - FAMILIAR location alone must NOT imply safety if behavioral risk is high.
 - UNFAMILIAR location alone must NOT imply danger.
-- Existing behavioral ML risk remains the exclusive source of behavioral anomaly severity.
+- Persistent looping produces distinct interpretable states (PERSISTENT_LOOPING or LOOPING_WITH_PHYSIOLOGICAL_AROUSAL).
+- Non-Suppression: Normal, missing, or stale heart-rate data must NEVER suppress or lower an alert.
 - Zero clinical, dementia, wandering, or ground-truth safety claims.
 """
 
@@ -34,6 +37,8 @@ class DecisionState(str, Enum):
     FAMILIAR_MOVEMENT = "FAMILIAR_MOVEMENT"
     UNFAMILIAR_MOVEMENT = "UNFAMILIAR_MOVEMENT"
     SUSPICIOUS = "SUSPICIOUS"
+    PERSISTENT_LOOPING = "PERSISTENT_LOOPING"
+    LOOPING_WITH_PHYSIOLOGICAL_AROUSAL = "LOOPING_WITH_PHYSIOLOGICAL_AROUSAL"
     CRITICAL = "CRITICAL"
 
 
@@ -53,8 +58,8 @@ class DecisionConfig:
 
     # Standardized non-clinical disclaimer
     disclaimer: str = (
-        "Associational kinematic and geospatial decision output. "
-        "Reflects mathematical outlier probabilities and configured geographic boundaries. "
+        "Associational kinematic, geospatial, and wearable decision output. "
+        "Reflects mathematical outlier probabilities, spatial boundaries, and physiological metrics. "
         "Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, "
         "or ground-truth safety guarantees."
     )
@@ -102,6 +107,10 @@ class DecisionOutput:
     # 5. Methodological Notice
     disclaimer: str
 
+    # 6. Physiological & Trajectory Evidence (Phase 3 additions)
+    loop_evidence: Optional[Dict[str, Any]] = None
+    heart_rate_evidence: Optional[Dict[str, Any]] = None
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert decision output to deterministic dictionary."""
         return asdict(self)
@@ -116,14 +125,19 @@ def interpret_decision(
     risk_output: Dict[str, Any],
     config: DecisionConfig = DecisionConfig(),
 ) -> DecisionOutput:
-    """Deterministically interpret combined ML risk, geospatial state, and familiarity.
+    """Deterministically interpret combined ML risk, geospatial state, familiarity, looping, and heart rate.
 
     Evaluates exact rules:
     1. If Behavioral ML tier is CRITICAL:
        -> State: CRITICAL (behavioral severity dominates; location does not override).
-    2. If Behavioral ML tier is SUSPICIOUS:
-       -> State: SUSPICIOUS (behavioral anomaly elevated; location provides context).
-    3. If Behavioral ML tier is Normal (QUIESCENT / NORMAL_TRANSIT):
+    2. If Persistent Looping is confirmed:
+       - If physiological arousal (elevated resting HR) is corroborating:
+         -> State: LOOPING_WITH_PHYSIOLOGICAL_AROUSAL (severity ALERT)
+       - Else (HR normal, missing, stale, or exertion):
+         -> State: PERSISTENT_LOOPING (severity WARNING, non-suppression active)
+    3. If Behavioral ML tier is SUSPICIOUS:
+       -> State: SUSPICIOUS (behavioral anomaly elevated; HR corroboration noted if present).
+    4. If Behavioral ML tier is Normal (QUIESCENT / NORMAL_TRANSIT):
        - If OUTSIDE_SAFE_AREA:
          -> State: OUTSIDE_SAFE_AREA (never promoted to SUSPICIOUS/CRITICAL solely by location).
        - If INSIDE_SAFE_AREA:
@@ -156,8 +170,8 @@ def interpret_decision(
 
     trigger_state = risk_output.get("trigger_state", {})
     horizon_sec = int(trigger_state.get("horizon_sec", 120))
-    cal_prob = float(trigger_state.get("calibrated_probability", 0.0))
-    raw_prob = float(trigger_state.get("raw_probability", 0.0))
+    cal_prob = float(trigger_state.get("calibrated_probability", 0.0) or 0.0)
+    raw_prob = float(trigger_state.get("raw_probability", 0.0) or 0.0)
     binary_alert = bool(trigger_state.get("binary_alert", False))
     risk_score = float(risk_output.get("risk_score", 0.0))
 
@@ -167,20 +181,90 @@ def interpret_decision(
     explainability = risk_output.get("explainability", {})
     top_features = explainability.get("top_features", [])
 
-    geo_ctx = risk_output.get("geospatial_context", {})
     dist_safe = geo_ctx.get("distance_to_safe_boundary_m")
     safe_name = geo_ctx.get("matched_safe_area_name")
     anchor_id = geo_ctx.get("nearest_anchor_id")
     dist_anchor = geo_ctx.get("distance_to_nearest_anchor_m")
     confirmed_anchor = bool(geo_ctx.get("is_caregiver_confirmed", False))
 
+    # Phase 3 Evidence Extraction
+    raw_loop = risk_output.get("loop_evidence")
+    if hasattr(raw_loop, "to_dict"):
+        loop_dict = raw_loop.to_dict()
+    elif isinstance(raw_loop, dict):
+        loop_dict = raw_loop
+    else:
+        loop_dict = None
+
+    raw_hr = risk_output.get("heart_rate_evidence")
+    if hasattr(raw_hr, "to_dict"):
+        hr_dict = raw_hr.to_dict()
+    elif isinstance(raw_hr, dict):
+        hr_dict = raw_hr
+    else:
+        hr_dict = None
+
+    is_looping = bool(loop_dict and loop_dict.get("is_looping"))
+    is_hr_corroborating = bool(hr_dict and hr_dict.get("is_corroborating_risk"))
+
     # 2. Rule evaluation
-    # RULE 1: CRITICAL behavioral risk takes precedence
-    if config.critical_takes_precedence and behavioral_tier == "CRITICAL":
+
+    # RULE 1: Confirmed Persistent Looping Trajectory
+    # Looping is an explicit spatial/geometric movement pattern that produces distinct decision states:
+    # - LOOPING_WITH_PHYSIOLOGICAL_AROUSAL (when corroborated by elevated resting heart rate)
+    # - PERSISTENT_LOOPING (standalone or with normal/missing heart rate)
+    if is_looping:
+        cycles = float(loop_dict.get("loop_cycles", 0.0) if loop_dict else 0.0)
+        dur = float(loop_dict.get("duration_sec", 0.0) if loop_dict else 0.0)
+        p_dist = float(loop_dict.get("path_distance_m", 0.0) if loop_dict else 0.0)
+        c_ratio = float(loop_dict.get("closure_ratio", 0.0) if loop_dict else 0.0)
+
+        if is_hr_corroborating:
+            decision_state = DecisionState.LOOPING_WITH_PHYSIOLOGICAL_AROUSAL.value
+            display_state = "PERSISTENT LOOPING WITH PHYSIOLOGICAL AROUSAL"
+            severity_level = "ALERT"
+            headline = "Repetitive Trajectory with Elevated Heart Rate"
+            hr_bpm = hr_dict.get("current_hr_bpm")
+            z_score = hr_dict.get("z_score")
+            reason = (
+                f"Persistent repetitive route detected ({cycles:.1f} cycles, {dur:.0f}s duration, "
+                f"{p_dist:.0f}m path, closure ratio {c_ratio:.2f}). Corroborated by unusual resting "
+                f"heart rate elevation ({hr_bpm} bpm, z={z_score}) without concurrent physical exertion. "
+                f"Pattern indicates localized repetitive transit with physiological arousal."
+            )
+        else:
+            decision_state = DecisionState.PERSISTENT_LOOPING.value
+            display_state = "PERSISTENT LOOPING DETECTED"
+            severity_level = "ALERT" if behavioral_tier == "CRITICAL" else "WARNING"
+            headline = "Sustained Repetitive Trajectory Detected"
+
+            hr_status = hr_dict.get("status") if hr_dict else "NO_DEVICE"
+            hr_pattern = hr_dict.get("response_pattern") if hr_dict else "UNAVAILABLE"
+            if hr_status in ("MISSING_DATA", "NO_DEVICE", None):
+                hr_note = "Wearable biometric telemetry is absent; non-suppression active."
+            elif hr_status in ("INSUFFICIENT_BASELINE", "STALE_READING", "OFF_WRIST"):
+                hr_note = f"Wearable telemetry status is {hr_status}; non-suppression active."
+            elif hr_pattern == "EXERTION_CONCORDANT":
+                hr_note = "Wearable heart rate is elevated concordant with physical movement exertion."
+            else:
+                hr_note = "Heart rate remains within normal personal baseline limits; non-suppression active."
+
+            reason = (
+                f"Persistent repetitive route detected ({cycles:.1f} cycles, {dur:.0f}s duration, "
+                f"{p_dist:.0f}m path, closure ratio {c_ratio:.2f}). {hr_note} "
+                f"Pattern indicates sustained localized circular transit."
+            )
+
+    # RULE 2: CRITICAL behavioral risk (non-looping acute excursion)
+    elif config.critical_takes_precedence and behavioral_tier == "CRITICAL":
         decision_state = DecisionState.CRITICAL.value
-        display_state = "CRITICAL KINEMATIC EXCURSION"
         severity_level = "ALERT"
-        headline = "Critical Kinematic Excursion Detected"
+        if is_hr_corroborating:
+            display_state = "CRITICAL EXCURSION (PHYSIOLOGICAL AROUSAL)"
+            headline = "Critical Kinematic Excursion with Physiological Arousal"
+        else:
+            display_state = "CRITICAL KINEMATIC EXCURSION"
+            headline = "Critical Kinematic Excursion Detected"
 
         # Context-aware factual reason
         if safe_area_state == "INSIDE_SAFE_AREA":
@@ -207,12 +291,21 @@ def interpret_decision(
                 f"Kinematic pattern indicates anomalous excursion ({behavioral_pattern})."
             )
 
-    # RULE 2: SUSPICIOUS behavioral risk takes precedence
+        if is_hr_corroborating:
+            reason += (
+                f" Corroborated by unusual resting heart rate elevation ({hr_dict.get('current_hr_bpm')} bpm, "
+                f"z={hr_dict.get('z_score')}) relative to baseline."
+            )
+    # RULE 3: SUSPICIOUS behavioral risk takes precedence (when not looping)
     elif config.suspicious_takes_precedence and behavioral_tier == "SUSPICIOUS":
         decision_state = DecisionState.SUSPICIOUS.value
-        display_state = "SUSPICIOUS MOVEMENT PATTERN"
         severity_level = "WARNING"
-        headline = "Elevated Kinematic Deviation Detected"
+        if is_hr_corroborating:
+            display_state = "SUSPICIOUS MOVEMENT (PHYSIOLOGICAL AROUSAL)"
+            headline = "Elevated Kinematic Deviation with Physiological Arousal"
+        else:
+            display_state = "SUSPICIOUS MOVEMENT PATTERN"
+            headline = "Elevated Kinematic Deviation Detected"
 
         if safe_area_state == "OUTSIDE_SAFE_AREA":
             reason = (
@@ -235,14 +328,25 @@ def interpret_decision(
                 f"Pattern: {behavioral_pattern}."
             )
 
-    # RULE 3: Normal behavioral kinematics (QUIESCENT / NORMAL_TRANSIT)
+        if is_hr_corroborating:
+            reason += (
+                f" Corroborated by unusual resting heart rate elevation ({hr_dict.get('current_hr_bpm')} bpm, "
+                f"z={hr_dict.get('z_score')})."
+            )
+
+    # RULE 4: Normal behavioral kinematics (QUIESCENT / NORMAL_TRANSIT)
     else:
-        # Sub-rule 3A: OUTSIDE safe area alone must NOT become SUSPICIOUS or CRITICAL
+        # Sub-rule 4A: OUTSIDE safe area alone must NOT become SUSPICIOUS or CRITICAL
         if safe_area_state == "OUTSIDE_SAFE_AREA":
             decision_state = DecisionState.OUTSIDE_SAFE_AREA.value
             display_state = "OUTSIDE SAFE AREA (NORMAL KINEMATICS)"
             severity_level = "ADVISORY"
             headline = "Outside Configured Safe Area Boundary"
+
+            if is_hr_corroborating:
+                headline = "Outside Safe Area with Elevated Heart Rate"
+                display_state = "OUTSIDE SAFE AREA (PHYSIOLOGICAL AROUSAL)"
+                severity_level = "WARNING"
 
             if familiarity_state == "FAMILIAR_LOCATION":
                 reason = (
@@ -260,7 +364,13 @@ def interpret_decision(
                     f"Kinematic metrics (score: {risk_score:.1f}/100) indicate normal transit without excursion."
                 )
 
-        # Sub-rule 3B: INSIDE safe area + normal behavior must remain SAFE/NORMAL
+            if is_hr_corroborating:
+                reason += (
+                    f" Note: Unusual resting heart rate ({hr_dict.get('current_hr_bpm')} bpm, "
+                    f"z={hr_dict.get('z_score')}) observed."
+                )
+
+        # Sub-rule 4B: INSIDE safe area + normal behavior must remain SAFE/NORMAL
         elif config.inside_safe_area_guarantees_safe_normal and safe_area_state == "INSIDE_SAFE_AREA":
             decision_state = DecisionState.SAFE_NORMAL.value
             display_state = "SAFE / NORMAL"
@@ -283,7 +393,7 @@ def interpret_decision(
                     f"Kinematic indicators are routine."
                 )
 
-        # Sub-rule 3C: Safe area is unavailable / unconfigured
+        # Sub-rule 4C: Safe area is unavailable / unconfigured
         else:
             if familiarity_state == "FAMILIAR_LOCATION":
                 decision_state = DecisionState.FAMILIAR_MOVEMENT.value
@@ -339,4 +449,6 @@ def interpret_decision(
         is_caregiver_confirmed_anchor=confirmed_anchor,
         trip_count=trip_count,
         disclaimer=config.disclaimer,
+        loop_evidence=loop_dict,
+        heart_rate_evidence=hr_dict,
     )

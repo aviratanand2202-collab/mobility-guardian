@@ -39,6 +39,9 @@ export default function CaregiverDashboard({
   alertsError = null,
   fetchAlerts,
   patientStatus = null,
+  latestWearable = null,
+  safeZones = [],
+  refreshSafeZones = null,
   onSwitchToTechnical,
 }) {
   const [inputUserId, setInputUserId] = useState(userId)
@@ -156,6 +159,53 @@ export default function CaregiverDashboard({
       : null
   const isTelemetryStale = telemetryAgeSec != null && telemetryAgeSec > 45
   const isLiveTelemetryFresh = isRiskOnline && latestRisk != null && !isTelemetryStale
+
+  // Patient Heartbeat Biometrics derivation & Provenance Tracking
+  const activeWearable = latestWearable || effectiveRisk?.wearable_metrics || null
+  const heartRateBpm = activeWearable?.heart_rate_bpm ?? null
+  const wearState = activeWearable?.wear_state || 'UNKNOWN'
+  const isHrStale = activeWearable?.is_stale || false
+  const hrEvidence = activeWearable?.evidence || effectiveRisk?.ml_evaluation?.heart_rate_evidence || null
+  const sensorStatus = activeWearable?.sensor_status || 'UNKNOWN'
+  const isSimulated = sensorStatus === 'SIMULATED_TEST_STREAM'
+  const isHardware = sensorStatus === 'BLE_WEARABLE_DEVICE' || sensorStatus === 'HARDWARE'
+  const provenanceLabel = isSimulated ? 'Simulated Stream' : isHardware ? 'Hardware Wearable' : 'Wearable'
+
+  let hrValueDisplay = 'Unavailable'
+  let hrHintDisplay = 'No wearable telemetry received'
+
+  if (!isRiskOnline && !hasHistoricalOnly) {
+    hrValueDisplay = 'Stream Offline'
+    hrHintDisplay = 'Biometric stream disconnected'
+  } else if (heartRateBpm != null) {
+    const rawAge = activeWearable?.age_seconds != null
+      ? activeWearable.age_seconds
+      : (activeWearable?.timestamp ? Math.max(0, Math.floor((now - new Date(activeWearable.timestamp).getTime()) / 1000)) : null)
+    const ageText = rawAge != null ? (rawAge < 10 ? 'Fresh' : rawAge < 60 ? `${Math.round(rawAge)}s ago` : `${Math.floor(rawAge / 60)}m ago`) : 'Fresh'
+    const provSuffix = isSimulated ? ' (Simulated)' : isHardware ? ' (Live Hardware)' : ' (Live)'
+
+    if (wearState === 'OFF_WRIST') {
+      hrValueDisplay = `${heartRateBpm} BPM (Off-wrist)`
+      hrHintDisplay = `Sensor off wrist · Baseline suspended · ${provenanceLabel}`
+    } else {
+      hrValueDisplay = `${heartRateBpm} BPM${provSuffix}`
+      if (isHrStale || (rawAge != null && rawAge > 60)) {
+        hrHintDisplay = `Stale reading (${ageText}) · ${isSimulated ? 'Simulated stream' : isHardware ? 'Hardware device' : 'Wearable'}`
+      } else if (hrEvidence?.response_pattern === 'ELEVATED_UNUSUAL_RESTING') {
+        hrHintDisplay = `⚠️ Unusual resting elevation (${ageText}) · ${provenanceLabel}`
+      } else if (hrEvidence?.response_pattern === 'EXERTION_CONCORDANT') {
+        hrHintDisplay = `⚡ Normal physical exertion (${ageText}) · ${provenanceLabel}`
+      } else {
+        hrHintDisplay = `Normal baseline (${ageText}) · ${isSimulated ? 'Simulated test stream' : isHardware ? 'Hardware sensor on wrist' : 'Wearable sensor on wrist'}`
+      }
+    }
+  } else if (isRiskConnecting) {
+    hrValueDisplay = 'Connecting...'
+    hrHintDisplay = 'Establishing biometric stream...'
+  } else if (isAwaitingTelemetry) {
+    hrValueDisplay = 'Awaiting Fix'
+    hrHintDisplay = 'Awaiting wearable sensor fix'
+  }
   const telemetryAge = telemetryTimestamp ? getRelativeTime(telemetryTimestamp, now) : null
 
   const hasValidLocation = Boolean(
@@ -914,6 +964,36 @@ export default function CaregiverDashboard({
             </span>
           </div>
         </div>
+
+        <div className="caregiver-metric-card" data-testid="caregiver-metric-heartbeat">
+          <div className={`metric-icon-disc metric-disc-heart ${heartRateBpm != null && wearState === 'ON_WRIST' ? 'heartbeat-pulsing' : ''}`}>
+            💓
+          </div>
+          <div className="metric-content">
+            <div className="metric-header-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+              <span className="metric-eyebrow">Patient Heartbeat</span>
+              {heartRateBpm != null && (
+                <span
+                  className="provenance-badge"
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    background: isSimulated ? '#fef3c7' : isHardware ? '#dcfce7' : '#f1f5f9',
+                    color: isSimulated ? '#b45309' : isHardware ? '#15803d' : '#64748b',
+                    border: `1px solid ${isSimulated ? '#fde68a' : isHardware ? '#bbf7d0' : '#cbd5e1'}`,
+                  }}
+                >
+                  {isSimulated ? 'Simulated' : isHardware ? 'Hardware' : 'Unverified'}
+                </span>
+              )}
+            </div>
+            <span className="metric-value">{hrValueDisplay}</span>
+            <span className="metric-hint">{hrHintDisplay}</span>
+          </div>
+        </div>
       </div>
 
       {/* Main Grid: Map (Left) and Caregiver Insights & Alerts (Right) */}
@@ -936,6 +1016,8 @@ export default function CaregiverDashboard({
             telemetryAge={telemetryAge}
             actionTrigger={mapActionTrigger}
             activeCompanion={activeCompanion}
+            configuredSafeZone={activeCompanion?.safe_zone}
+            patientSafeZones={safeZones}
             patientStatus={patientStatus}
           />
         </div>

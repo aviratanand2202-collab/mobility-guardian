@@ -6372,3 +6372,721 @@ button.caregiver-status-pill.pill-consent-required:hover {
   margin-right: 2px;
 }
 
+
+/* ==========================================================================
+   Risk Interpretation & Decision Rationale Panel (Technical View)
+   ========================================================================== */
+.risk-interpretation-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.interpretation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.interpretation-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.interpretation-icon {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.interpretation-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.interpretation-subtitle {
+  font-size: 11.5px;
+  color: #64748b;
+  margin: 3px 0 0 0;
+}
+
+.live-telemetry-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.final-summary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* Outputs Comparison Grid */
+.outputs-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  .outputs-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comparison-card {
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ml-comparison-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #6366f1;
+}
+
+.op-comparison-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0284c7;
+}
+
+.comparison-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.card-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ml-card-badge {
+  color: #4f46e5;
+}
+
+.op-card-badge {
+  color: #0369a1;
+}
+
+.status-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.status-tag-window_evaluated {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.status-tag-insufficient_evidence,
+.status-tag-collecting {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status-tag-unavailable,
+.status-tag-error {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.metric-primary-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.metric-big-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #1e293b;
+}
+
+.metric-sublabel {
+  font-size: 11.5px;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.comparison-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.comp-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11.5px;
+  gap: 8px;
+}
+
+.comp-label {
+  color: #64748b;
+}
+
+.comp-val {
+  color: #0f172a;
+}
+
+.comparison-card-footer {
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+.footer-note {
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-style: italic;
+  line-height: 1.3;
+  display: block;
+}
+
+/* Decision Pipeline Trace Stepper */
+.decision-trace-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.trace-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.trace-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+
+.trace-subtitle {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.trace-stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+@media (max-width: 768px) {
+  .trace-stepper {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .trace-arrow {
+    transform: rotate(90deg);
+    align-self: center;
+    margin: 2px 0;
+  }
+}
+
+.trace-step {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.trace-step-number {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.trace-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.trace-step-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.trace-step-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  align-self: flex-start;
+}
+
+.trace-badge-success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.trace-badge-warning {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.trace-badge-danger {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.trace-badge-info {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.trace-badge-amber {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.trace-badge-neutral {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.trace-step-desc {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.trace-arrow {
+  color: #cbd5e1;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dynamic Rationale Card */
+.rationale-explanation-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.rationale-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.rationale-heading-icon {
+  font-size: 14px;
+}
+
+.rationale-alert-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.banner-divergent {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.banner-escalated {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.banner-concordant {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.banner-collecting {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.banner-unavailable {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.rationale-bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.rationale-plain-text {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.rationale-feature-highlight {
+  background: #f8fafc;
+  border-left: 3px solid #6366f1;
+  padding: 4px 8px;
+  border-radius: 0 4px 4px 0;
+  font-style: italic;
+  color: #475569;
+}
+
+/* Run Evidence Grid */
+.run-evidence-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.evidence-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.evidence-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+
+.evidence-subtitle {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .evidence-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.evidence-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ev-label {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.ev-val {
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.ev-desc {
+  font-size: 10px;
+  color: #94a3b8;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+/* Final Run Summary Box */
+.final-run-summary-box {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #0f172a;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-top: 14px;
+}
+
+.final-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.summary-timestamp {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.final-summary-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.final-summary-body p {
+  margin: 0;
+}
+
+.final-verdict-text {
+  margin-top: 6px !important;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.final-summary-badge.completed-badge {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.final-summary-badge.disconnected-badge {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.final-run-summary-box.incomplete-run-box {
+  background: #fffdf5;
+  border: 1px solid #fde68a;
+}
+
+/* ==========================================================================
+   Patient Heartbeat & Wearable Biometrics Styles
+   ========================================================================== */
+@keyframes pulse-heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.18); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.18); }
+  70% { transform: scale(1); }
+}
+
+.heartbeat-pulsing {
+  display: inline-block;
+  animation: pulse-heartbeat 1.8s infinite ease-in-out;
+}
+
+.biometrics-card {
+  margin-top: 14px;
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.biometrics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.biometrics-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.biometrics-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.biometrics-pill-active {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.biometrics-pill-stale {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.biometrics-pill-offwrist {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.biometrics-pill-unknown {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+  border: 1px solid rgba(107, 114, 128, 0.4);
+}
+
+.biometrics-body {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.biometrics-metric {
+  flex: 1;
+}
+
+.biometrics-bpm-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.biometrics-bpm-val {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ef4444;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.biometrics-bpm-unit {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.biometrics-bpm-hint {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.biometrics-details-block {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+}
+
+.biometrics-disclaimer {
+  font-size: 10px;
+  color: #6b7280;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 6px;
+  font-style: italic;
+}

@@ -75,6 +75,33 @@
               "description": "Timestamp signal degradation began. Null if state == VALID."
             }
           }
+        },
+        "wearable_metrics": {
+          "type": ["object", "null"],
+          "description": "Optional wearable device metrics (e.g. smartwatch heart rate). Null or omitted when client lacks wearable hardware.",
+          "properties": {
+            "heart_rate_bpm": {
+              "type": "integer",
+              "minimum": 30,
+              "maximum": 250,
+              "description": "Heart rate reading in beats per minute. Valid physiological range [30, 250]."
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 UTC timestamp of wearable measurement."
+            },
+            "wear_state": {
+              "type": "string",
+              "enum": ["ON_WRIST", "OFF_WRIST", "UNKNOWN"],
+              "description": "Physical contact state of the wearable device."
+            },
+            "sensor_status": {
+              "type": ["string", "null"],
+              "description": "Optional diagnostic code or status message from sensor SDK."
+            }
+          },
+          "required": ["heart_rate_bpm", "timestamp", "wear_state"]
         }
       }
     },
@@ -283,6 +310,10 @@
         "battery_override_active": {
           "type": "boolean",
           "description": "DEPRECATED: Use polling_instruction.mode != 'CONTINUOUS' instead. True when battery < 15% and Tier 2 low-battery pulse logic (§2.6) is in effect. Tier 3 always overrides this."
+        },
+        "wearable_metrics": {
+          "$ref": "#/definitions/WearableMetrics",
+          "description": "Optional wearable biometric telemetry (smartwatch heart rate) associated with this evaluation window."
         }
       }
     },
@@ -319,6 +350,10 @@
               "description": "4th dismissal forces formal safe-zone recalibration UI flow instead of quick-dismiss."
             }
           }
+        },
+        "zone_id": {
+          "type": ["string", "null"],
+          "description": "Optional patient safe zone ID associated with boundary breach alerts."
         }
       }
     },
@@ -354,6 +389,62 @@
           "type": "boolean",
           "description": "Confirms guardian acknowledges 30-day raw-coordinate deletion / H3 aggregation policy."
         }
+      }
+    },
+
+    "WearableMetrics": {
+      "type": "object",
+      "description": "Optional wearable device metrics (e.g. smart wristband). Decoupled from core GPS mobility telemetry.",
+      "required": ["heart_rate_bpm", "timestamp", "wear_state"],
+      "properties": {
+        "heart_rate_bpm": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 250,
+          "description": "Heart rate reading in beats per minute (physiologically valid range: 30-250)."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of the wearable measurement."
+        },
+        "wear_state": {
+          "type": "string",
+          "enum": ["ON_WRIST", "OFF_WRIST", "UNKNOWN"],
+          "description": "Physical contact state of the wearable device."
+        },
+        "sensor_status": {
+          "type": ["string", "null"],
+          "description": "Optional diagnostic code or status message from sensor SDK."
+        }
+      }
+    },
+
+    "SafeZoneRecord": {
+      "type": "object",
+      "description": "Patient-specific safe zone (Home, Company, etc.) configuration.",
+      "required": ["zone_id", "user_id", "name", "geometry_type", "is_enabled"],
+      "properties": {
+        "zone_id": { "type": "string" },
+        "user_id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "geometry_type": { "type": "string", "enum": ["circle", "polygon"] },
+        "center_lat": { "type": ["number", "null"], "minimum": -90, "maximum": 90 },
+        "center_lng": { "type": ["number", "null"], "minimum": -180, "maximum": 180 },
+        "radius_m": { "type": ["number", "null"], "minimum": 0 },
+        "polygon_vertices": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "array",
+            "items": { "type": "number" },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "is_enabled": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" }
       }
     }
   }

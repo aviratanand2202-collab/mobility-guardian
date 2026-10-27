@@ -153,6 +153,39 @@ export default function TrustedCompanionPanel({
     return `${mins}m ${secs}s remaining`
   }
 
+  const [simStepIdx, setSimStepIdx] = useState(0)
+
+  const handleSimulateStep = async (scenario) => {
+    if (!userId || !userId.trim()) return
+    setTestSimulating(true)
+    const nextStep = simStepIdx + 1
+    setSimStepIdx(nextStep)
+    try {
+      const res = await fetch('/api/companion/simulation/step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patient_id: userId.trim(),
+          scenario: scenario,
+          step_number: nextStep,
+          companion_id: activeSession?.companion_user_id || 'comp_alex',
+          companion_alias: activeSession?.companion_alias || 'Trusted Companion',
+          heart_rate_bpm: scenario === 'SEPARATING' && nextStep >= 2 ? 105 : 75,
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.detail || `HTTP ${res.status}`)
+      }
+      await fetchActiveSession()
+    } catch (err) {
+      console.error('Failed simulation step:', err)
+      setErrorMsg(`Simulation error: ${err.message}`)
+    } finally {
+      setTestSimulating(false)
+    }
+  }
+
   // Test simulation helper: transmit real timestamped coordinates as consenting companion
   const handleTransmitTestLocation = async (offsetMeters = 15) => {
     if (!activeSession?.session_id || !inviteToken) return
@@ -349,15 +382,17 @@ export default function TrustedCompanionPanel({
               <div className="accompaniment-status-pill-group">
                 <span
                   className={`accompaniment-badge ${
-                    accompaniment.status === ACCOMPANIMENT_STATUS.WITH_COMPANION
+                    activeSession.display_status === 'Together' || activeSession.accompaniment_status === 'With Companion' || accompaniment.status === ACCOMPANIMENT_STATUS.WITH_COMPANION
                       ? 'badge-with-companion'
-                      : accompaniment.status === ACCOMPANIMENT_STATUS.SEPARATED
+                      : activeSession.display_status === 'Separated' || activeSession.accompaniment_status === 'Separated' || accompaniment.status === ACCOMPANIMENT_STATUS.SEPARATED
+                      ? 'badge-separated'
+                      : activeSession.display_status === 'Separation Pending' || activeSession.display_status === 'Rejoining'
                       ? 'badge-separated'
                       : 'badge-unverified'
                   }`}
                 >
                   <span className="badge-dot" />
-                  {accompaniment.status}
+                  {activeSession.display_status || activeSession.accompaniment_status || accompaniment.status}
                 </span>
               </div>
             </div>
@@ -416,34 +451,53 @@ export default function TrustedCompanionPanel({
               </div>
             </div>
 
-            {/* Active Companion Actions */}
-            <div className="active-actions-row">
-              <button
-                type="button"
-                className="companion-btn companion-btn-sim-quick"
-                onClick={() => handleTransmitTestLocation(10)}
-                disabled={testSimulating}
-                title="Send updated location fix near patient"
-              >
-                📍 Send GPS Fix Near Patient (10m)
-              </button>
-              <button
-                type="button"
-                className="companion-btn companion-btn-sim-quick"
-                onClick={() => handleTransmitTestLocation(120)}
-                disabled={testSimulating}
-                title="Send updated location fix separated from patient"
-              >
-                🚶 Send Separated Fix (120m)
-              </button>
-              <button
-                type="button"
-                className="companion-btn companion-btn-danger"
-                onClick={handleEndSession}
-                disabled={isLoading}
-              >
-                End Companion Session
-              </button>
+            {/* Simulated Companion Walking Demonstration Controls (Requirement 1-2) */}
+            <div className="companion-sim-block" style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(255, 255, 255, 0.65)', border: '1px solid rgba(0, 0, 0, 0.08)', borderRadius: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>
+                  🧪 Companion Walking Simulation (Dev Test)
+                </span>
+                <span style={{ fontSize: '10px', background: 'rgba(0, 0, 0, 0.05)', padding: '1px 5px', borderRadius: '4px', color: '#64748b' }}>
+                  [Simulated Data]
+                </span>
+              </div>
+              <div className="active-actions-row" style={{ gap: '6px' }}>
+                <button
+                  type="button"
+                  className="companion-btn companion-btn-sim-quick"
+                  onClick={() => handleSimulateStep('WALKING_TOGETHER')}
+                  disabled={testSimulating}
+                  title="Simulate independent parallel trajectory alongside patient (<10m)"
+                >
+                  🚶‍♂️ Walk Together (&lt;10m)
+                </button>
+                <button
+                  type="button"
+                  className="companion-btn companion-btn-sim-quick"
+                  onClick={() => handleSimulateStep('SEPARATING')}
+                  disabled={testSimulating}
+                  title="Simulate companion diverging beyond 50m (step 1 -> Pending, step 2 -> Separated)"
+                >
+                  ↗️ Separate (&gt;50m)
+                </button>
+                <button
+                  type="button"
+                  className="companion-btn companion-btn-sim-quick"
+                  onClick={() => handleSimulateStep('REJOINING')}
+                  disabled={testSimulating}
+                  title="Simulate companion rejoining patient (<10m auto-resolves alert)"
+                >
+                  🤝 Rejoin (&lt;10m)
+                </button>
+                <button
+                  type="button"
+                  className="companion-btn companion-btn-danger"
+                  onClick={handleEndSession}
+                  disabled={isLoading}
+                >
+                  End Session
+                </button>
+              </div>
             </div>
           </div>
         )}

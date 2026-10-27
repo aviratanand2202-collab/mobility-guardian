@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import CaregiverDashboard from './components/caregiver/CaregiverDashboard'
 import TechnicalDashboard from './components/technical/TechnicalDashboard'
 import CompanionInvitePortal from './components/companion/CompanionInvitePortal'
+import ModelComparisonDashboard from './components/modelComparison/ModelComparisonDashboard'
 
 export default function App() {
   const [activeView, setActiveView] = useState('caregiver')
@@ -32,6 +33,8 @@ export default function App() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyError, setHistoryError] = useState(null)
   const [patientStatus, setPatientStatus] = useState(null)
+  const [latestWearable, setLatestWearable] = useState(null)
+  const [safeZones, setSafeZones] = useState([])
 
   // Track active fetch ID to discard stale responses from previously selected patients
   const activeFetchIdRef = useRef(0)
@@ -75,7 +78,8 @@ export default function App() {
     setAlertWsStatus('disconnected')
     setIsConnected(false)
     setRiskMessages([])
-    setAlertMessages([])
+    setLatestWearable(null)
+    setSafeZones([])
     setAlertsLoading(false)
     setAlertsError(null)
     console.info('[Dashboard] disconnectSockets() complete.')
@@ -89,7 +93,6 @@ export default function App() {
 
     disconnectSockets()
     setRiskMessages([])
-    setAlertMessages([])
     setIsConnected(true)
     setRiskWsStatus('connecting')
     setAlertWsStatus('connecting')
@@ -98,8 +101,8 @@ export default function App() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host || 'localhost:5173'
 
-    const riskUrl = `${protocol}//${host}/ws/risk/${targetUserId.trim()}`
-    const alertsUrl = `${protocol}//${host}/ws/alerts/${targetUserId.trim()}`
+    const riskUrl = `${protocol}//${host}/ws/risk/${trimmedUser}`
+    const alertsUrl = `${protocol}//${host}/ws/alerts/${trimmedUser}`
 
     // 1. Risk WebSocket
     const riskWs = new WebSocket(riskUrl)
@@ -113,20 +116,51 @@ export default function App() {
         const payload = JSON.parse(event.data)
         setRiskMessages((prev) => [payload, ...prev].slice(0, 20))
 
+        // Update wearable biometrics state if present in RiskScoreOutput
+        if (payload.wearable_metrics) {
+          setLatestWearable(payload.wearable_metrics)
+        }
+
         // Update spatial tracking state if location is present in RiskScoreOutput
         if (payload.location && payload.location.lat != null && payload.location.lng != null) {
           const loc = { lat: payload.location.lat, lng: payload.location.lng }
           setCurrentLocation(loc)
-          setLocationHistory((prev) => [...prev, [loc.lat, loc.lng]].slice(-30))
-          setTrailMetadata((prev) => [
-            ...prev,
-            {
-              timestamp: payload.timestamp || null,
-              riskTier: payload.risk_tier || null,
-              riskScore: payload.risk_score != null ? payload.risk_score : null,
-              speed: payload.sensor_metrics?.speed_mps != null ? payload.sensor_metrics.speed_mps : null,
-            },
-          ].slice(-30))
+          setLocationHistory((prev) => {
+            if (prev.length > 0) {
+              const last = prev[prev.length - 1]
+              const dLat = Math.abs(last[0] - loc.lat)
+              const dLng = Math.abs(last[1] - loc.lng)
+              if (dLat > 0.45 || dLng > 0.45) {
+                return [[loc.lat, loc.lng]]
+              }
+            }
+            return [...prev, [loc.lat, loc.lng]].slice(-30)
+          })
+          setTrailMetadata((prev) => {
+            if (prev.length > 0) {
+              const lastTs = prev[prev.length - 1]?.timestamp
+              if (lastTs && payload.timestamp) {
+                const diffMin = Math.abs(new Date(payload.timestamp) - new Date(lastTs)) / 60000
+                if (diffMin > 30) {
+                  return [{
+                    timestamp: payload.timestamp || null,
+                    riskTier: payload.risk_tier || null,
+                    riskScore: payload.risk_score != null ? payload.risk_score : null,
+                    speed: payload.sensor_metrics?.speed_mps != null ? payload.sensor_metrics.speed_mps : null,
+                  }]
+                }
+              }
+            }
+            return [
+              ...prev,
+              {
+                timestamp: payload.timestamp || null,
+                riskTier: payload.risk_tier || null,
+                riskScore: payload.risk_score != null ? payload.risk_score : null,
+                speed: payload.sensor_metrics?.speed_mps != null ? payload.sensor_metrics.speed_mps : null,
+              },
+            ].slice(-30)
+          })
         }
       } catch (err) {
         console.error('Failed to parse risk websocket message', err)
@@ -171,8 +205,8 @@ export default function App() {
     }
 
     // 3. Fetch recent history via REST (through Vite proxy /api)
-    fetchHistory(targetUserId.trim())
-    fetchAlerts(targetUserId.trim())
+    fetchHistory(trimmedUser)
+    fetchAlerts(trimmedUser)
   }
 
   // Synchronize persisted location history whenever selected userId changes
@@ -183,6 +217,8 @@ export default function App() {
       setTrailMetadata([])
       setHistoryEntries([])
       setPatientStatus(null)
+      setLatestWearable(null)
+      setSafeZones([])
       return
     }
     fetchHistory(userId.trim())
@@ -195,9 +231,13 @@ export default function App() {
       setLocationHistory([])
       setTrailMetadata([])
       setPatientStatus(null)
+      setLatestWearable(null)
+      setSafeZones([])
       return
     }
 
+    const trimmedId = targetUserId.trim()
+    activeUserRef.current = trimmedId
     const fetchId = ++activeFetchIdRef.current
 
     // On patient change, immediately clear previous patient's displayed location points,
@@ -207,13 +247,14 @@ export default function App() {
     setTrailMetadata([])
     setHistoryEntries([])
     setRiskMessages([])
-    setAlertMessages([])
     setPatientStatus(null)
+    setLatestWearable(null)
+    setSafeZones([])
 
     setHistoryLoading(true)
     setHistoryError(null)
     try {
-      const res = await fetch(`/api/risk-history/${targetUserId}?limit=100`)
+      const res = await fetch(`/api/risk-history/${encodeURIComponent(trimmedId)}?limit=100`)
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       }
@@ -226,7 +267,7 @@ export default function App() {
       let exists = false
       let isConsented = false
       try {
-        const consentRes = await fetch(`/api/consent/${encodeURIComponent(targetUserId)}`)
+        const consentRes = await fetch(`/api/consent/${encodeURIComponent(trimmedId)}`)
         if (consentRes.ok) {
           const consentData = await consentRes.json()
           if (consentData.status !== 'not_found') {
@@ -248,20 +289,45 @@ export default function App() {
       setHistoryEntries(data)
 
       // Seed location history and trail metadata from historical location data
-      const chronological = [...data].sort(
-        (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
-      )
-      const seededCoords = []
-      const seededMeta = []
+      const allCoords = []
+      const allMeta = []
+      // data is newest first, reverse so oldest first for chronological trail
+      const chronological = [...data].reverse()
       for (const entry of chronological) {
         if (entry.location && entry.location.lat != null && entry.location.lng != null) {
-          seededCoords.push([entry.location.lat, entry.location.lng])
-          seededMeta.push({
+          allCoords.push([entry.location.lat, entry.location.lng])
+          allMeta.push({
             timestamp: entry.timestamp || null,
             riskTier: entry.risk_tier || null,
             riskScore: entry.risk_score != null ? entry.risk_score : null,
             speed: entry.sensor_metrics?.speed_mps != null ? entry.sensor_metrics.speed_mps : null,
           })
+        }
+      }
+
+      // Isolate the latest contiguous session segment (prevents connecting distant historical locations)
+      const seededCoords = []
+      const seededMeta = []
+      if (allCoords.length > 0) {
+        const lastIdx = allCoords.length - 1
+        let sessionStartIdx = lastIdx
+        for (let i = lastIdx - 1; i >= 0; i--) {
+          const pt = allCoords[i]
+          const nextPt = allCoords[i + 1]
+          const dLat = Math.abs(nextPt[0] - pt[0])
+          const dLng = Math.abs(nextPt[1] - pt[1])
+          const t1 = new Date(allMeta[i]?.timestamp || 0)
+          const t2 = new Date(allMeta[i + 1]?.timestamp || 0)
+          const timeDiffMin = Math.abs(t2 - t1) / 60000
+          if (dLat > 0.45 || dLng > 0.45 || timeDiffMin > 30) {
+            sessionStartIdx = i + 1
+            break
+          }
+          sessionStartIdx = i
+        }
+        for (let i = sessionStartIdx; i <= lastIdx; i++) {
+          seededCoords.push(allCoords[i])
+          seededMeta.push(allMeta[i])
         }
       }
       if (seededCoords.length > 0) {
@@ -274,6 +340,61 @@ export default function App() {
         setLocationHistory([])
         setTrailMetadata([])
       }
+
+      // Query latest wearable biometrics for patient
+      try {
+        const wearRes = await fetch(`/api/wearable/${trimmedId}/latest`)
+        if (wearRes.ok) {
+          const wearData = await wearRes.json()
+          if (fetchId === activeFetchIdRef.current) {
+            if (wearData.status === 'SUCCESS' && wearData.reading) {
+              setLatestWearable({
+                ...wearData.reading,
+                evidence: wearData.evidence,
+                age_seconds: wearData.age_seconds,
+                is_stale: wearData.is_stale,
+              })
+            } else {
+              setLatestWearable(null)
+            }
+          }
+        }
+      } catch (wearErr) {
+        console.warn('Wearable fetch non-blocking warning:', wearErr)
+      }
+
+      // Query patient safe zones from database
+      try {
+        const szRes = await fetch(`/api/safe-zones/${encodeURIComponent(trimmedId)}`)
+        if (szRes.ok) {
+          const szData = await szRes.json()
+          if (fetchId === activeFetchIdRef.current) {
+            setSafeZones(Array.isArray(szData) ? szData : [])
+          }
+        } else {
+          if (fetchId === activeFetchIdRef.current) {
+            setSafeZones([])
+          }
+        }
+      } catch (szErr) {
+        console.warn('Safe zones fetch non-blocking warning:', szErr)
+        if (fetchId === activeFetchIdRef.current) {
+          setSafeZones([])
+        }
+      }
+
+      // Query recent alerts for patient from database
+      try {
+        const alRes = await fetch(`/api/alerts/user/${encodeURIComponent(trimmedId)}?limit=20`)
+        if (alRes.ok) {
+          const alData = await alRes.json()
+          if (fetchId === activeFetchIdRef.current && Array.isArray(alData)) {
+            setAlertMessages(alData)
+          }
+        }
+      } catch (alErr) {
+        console.warn('Alerts fetch non-blocking warning:', alErr)
+      }
     } catch (err) {
       if (fetchId !== activeFetchIdRef.current) return
       console.error('Error fetching risk history:', err)
@@ -283,6 +404,8 @@ export default function App() {
       setTrailMetadata([])
       setHistoryEntries([])
       setPatientStatus({ exists: false, isConsented: false })
+      setLatestWearable(null)
+      setSafeZones([])
     } finally {
       if (fetchId === activeFetchIdRef.current) {
         setHistoryLoading(false)
@@ -290,9 +413,10 @@ export default function App() {
     }
   }
 
-  const fetchAlerts = async (targetUserId) => {
-    if (!targetUserId || !targetUserId.trim()) return
-    const user = targetUserId.trim()
+  // Polling helper to keep active alerts synchronized with backend SQLite database
+  const fetchAlerts = async (targetId) => {
+    const id = (targetId || userId || '').trim()
+    if (!id) return
 
     // Abort previous in-flight alert fetch
     if (alertFetchAbortControllerRef.current) {
@@ -305,7 +429,7 @@ export default function App() {
     setAlertsError(null)
 
     try {
-      const res = await fetch(`/api/alerts/user/${encodeURIComponent(user)}?limit=50`, {
+      const res = await fetch(`/api/alerts/user/${encodeURIComponent(id)}?limit=50`, {
         signal: abortController.signal,
       })
       if (!res.ok) {
@@ -314,43 +438,68 @@ export default function App() {
       const data = await res.json()
 
       // Guard against delayed responses from prior user selections
-      if (activeUserRef.current !== user) {
+      if (activeUserRef.current !== id) {
         return
       }
 
-      setAlertMessages((prev) => {
-        // Merge persisted alerts with any real-time WebSocket alerts already received
-        const alertMap = new Map()
-        // 1. Seed with persisted alerts from backend
-        for (const alert of data) {
-          alertMap.set(alert.alert_id, alert)
-        }
-        // 2. Overlay any real-time WebSocket alerts already captured in state
-        for (const existing of prev) {
-          if (alertMap.has(existing.alert_id)) {
-            alertMap.set(existing.alert_id, { ...alertMap.get(existing.alert_id), ...existing })
-          } else {
-            alertMap.set(existing.alert_id, existing)
+      if (Array.isArray(data)) {
+        setAlertMessages((prev) => {
+          // Merge persisted alerts with any real-time WebSocket alerts already received
+          const alertMap = new Map()
+          // 1. Seed with persisted alerts from backend
+          for (const alert of data) {
+            alertMap.set(alert.alert_id, alert)
           }
-        }
-        // 3. Return sorted descending by timestamp (newest first), max 20
-        return Array.from(alertMap.values())
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-          .slice(0, 20)
-      })
+          // 2. Overlay any real-time WebSocket alerts already captured in state
+          for (const existing of prev) {
+            if (alertMap.has(existing.alert_id)) {
+              alertMap.set(existing.alert_id, { ...alertMap.get(existing.alert_id), ...existing })
+            } else {
+              alertMap.set(existing.alert_id, existing)
+            }
+          }
+          // 3. Return sorted descending by timestamp (newest first), max 20
+          return Array.from(alertMap.values())
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+            .slice(0, 20)
+        })
+      }
     } catch (err) {
       if (err.name === 'AbortError') {
-        // Deliberately aborted due to user switch or newer request
         return
       }
-      console.error(`Error fetching alerts for user ${user}:`, err)
-      if (activeUserRef.current === user) {
+      console.warn('Alert polling warning:', err)
+      if (activeUserRef.current === id) {
         setAlertsError(err.message)
       }
     } finally {
-      if (activeUserRef.current === user) {
+      if (activeUserRef.current === id) {
         setAlertsLoading(false)
       }
+    }
+  }
+
+  // Periodic polling for active alerts and companion state
+  useEffect(() => {
+    if (!userId || !userId.trim()) return
+    fetchAlerts(userId)
+    const interval = setInterval(() => {
+      fetchAlerts(userId)
+    }, 2500)
+    return () => clearInterval(interval)
+  }, [userId])
+
+  const refreshSafeZones = async (targetId) => {
+    const id = targetId || userId
+    if (!id || !id.trim()) return
+    try {
+      const res = await fetch(`/api/safe-zones/${encodeURIComponent(id.trim())}`)
+      if (res.ok) {
+        const data = await res.json()
+        setSafeZones(Array.isArray(data) ? data : [])
+      }
+    } catch (err) {
+      console.warn('Refresh safe zones warning:', err)
     }
   }
 
@@ -486,11 +635,20 @@ export default function App() {
           >
             🛠️ Technical Inspector
           </button>
+          <button
+            type="button"
+            className={`view-toggle-btn ${activeView === 'comparison' ? 'active' : ''}`}
+            onClick={() => setActiveView('comparison')}
+          >
+            📊 Model Comparison
+          </button>
         </div>
       </div>
 
       {/* Render active interface: pure React render branch without reconnecting */}
-      {activeView === 'caregiver' ? (
+      {activeView === 'comparison' ? (
+        <ModelComparisonDashboard />
+      ) : activeView === 'caregiver' ? (
         <CaregiverDashboard
           userId={userId}
           setUserId={setUserId}
@@ -511,10 +669,13 @@ export default function App() {
           historyLoading={historyLoading}
           historyError={historyError}
           fetchHistory={fetchHistory}
+          patientStatus={patientStatus}
+          latestWearable={latestWearable}
+          safeZones={safeZones}
+          refreshSafeZones={refreshSafeZones}
           alertsLoading={alertsLoading}
           alertsError={alertsError}
           fetchAlerts={fetchAlerts}
-          patientStatus={patientStatus}
           onSwitchToTechnical={() => setActiveView('technical')}
         />
       ) : (
@@ -538,10 +699,13 @@ export default function App() {
           historyLoading={historyLoading}
           historyError={historyError}
           fetchHistory={fetchHistory}
+          patientStatus={patientStatus}
+          latestWearable={latestWearable}
+          safeZones={safeZones}
+          refreshSafeZones={refreshSafeZones}
           alertsLoading={alertsLoading}
           alertsError={alertsError}
           fetchAlerts={fetchAlerts}
-          patientStatus={patientStatus}
         />
       )}
     </div>

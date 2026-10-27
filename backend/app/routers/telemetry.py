@@ -7,7 +7,8 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from app.db import async_session, AlertRecordRow, save_risk_history
+from app.db import async_session, AlertRecordRow, save_risk_history, save_wearable_reading
+
 from app.models import (
     AlertRecord,
     AlertStatus,
@@ -18,7 +19,12 @@ from app.models import (
     SignalState,
     TelemetryPayload,
 )
-from app.config import is_behavioral_risk_escalation_enabled
+try:
+    from app.config import is_behavioral_risk_escalation_enabled
+except ImportError:
+    def is_behavioral_risk_escalation_enabled() -> bool:
+        import os
+        return os.getenv("ENABLE_BEHAVIORAL_RISK_ESCALATION", "true").lower() in ("1", "true", "yes")
 from app.routers.consent import is_consented
 from app.services.geospatial import location_to_h3_cell
 from app.services.inference_service import evaluate_shadow_inference
@@ -27,6 +33,11 @@ from app.state_machines.battery_pulse import compute_polling_instruction
 from app.state_machines.behavioral_escalation import evaluate_behavioral_escalation
 from app.state_machines.dismissal_quarantine import get_or_create_cell_state
 from app.state_machines.pdr_hysteresis import get_or_create_state, save_state
+
+from app.state_machines.geofence_boundary import evaluate_patient_geofence_boundaries
+from app.state_machines.loop_lifecycle import evaluate_loop_alert_lifecycle
+from app.state_machines.group_separation import evaluate_group_separation
+
 from app.websocket.risk_stream import push_alert_update, push_risk_update
 
 
@@ -41,6 +52,21 @@ async def ingest_telemetry(payload: TelemetryPayload):
             status_code=403,
             detail="Consent not granted for this user. "
                    "Record consent before sending telemetry.",
+        )
+
+    # Persist optional wearable metrics reading if provided (decoupled from GPS risk engine)
+    wearable_m = getattr(payload, "wearable_metrics", None)
+    if wearable_m is not None and save_wearable_reading is not None:
+        await save_wearable_reading(
+            user_id=payload.user_id,
+            timestamp=wearable_m.timestamp,
+            heart_rate_bpm=wearable_m.heart_rate_bpm,
+            wear_state=(
+                wearable_m.wear_state.value
+                if hasattr(wearable_m.wear_state, "value")
+                else str(wearable_m.wear_state)
+            ),
+            sensor_status=wearable_m.sensor_status,
         )
 
     # Derive H3 grid cell ID (resolution 9) once from telemetry coordinates
@@ -61,6 +87,12 @@ async def ingest_telemetry(payload: TelemetryPayload):
 
     # Compute risk with suppression multiplier applied from cell dismissal state
     risk_output = compute_risk(payload, pdr_tier, cell_dismissal_state=cell_state)
+
+    # Attach live wearable and sensor metrics to risk_output so downstream WS clients receive them
+    if wearable_m is not None and hasattr(risk_output, "wearable_metrics"):
+        risk_output.wearable_metrics = wearable_m
+    if getattr(payload, "sensor_metrics", None) is not None and hasattr(risk_output, "sensor_metrics"):
+        risk_output.sensor_metrics = payload.sensor_metrics
 
     # Observational shadow-mode ML inference (governed by ENABLE_ML_INFERENCE_ENGINE)
     ml_eval = await evaluate_shadow_inference(payload)
@@ -105,9 +137,52 @@ async def ingest_telemetry(payload: TelemetryPayload):
                         ),
                     )
 
+    # Phase 2: Evaluate safe-zone boundary transition state machine
+    geofence_eval = None
+    if evaluate_patient_geofence_boundaries is not None:
+        geofence_eval = await evaluate_patient_geofence_boundaries(
+            user_id=payload.user_id,
+            lat=payload.location.lat,
+            lng=payload.location.lng,
+            accuracy_m=payload.sensor_metrics.horizontal_accuracy_m,
+            timestamp=payload.timestamp,
+            is_signal_degraded=(payload.signal_status.state == SignalState.DEGRADED_SIGNAL),
+        )
+
+    # Phase 3: Evaluate trajectory persistent looping lifecycle
+    if evaluate_loop_alert_lifecycle is not None:
+        loop_ev = None
+        hr_ev = None
+        if getattr(risk_output, "ml_evaluation", None):
+            loop_ev = risk_output.ml_evaluation.get("loop_evidence")
+            hr_ev = risk_output.ml_evaluation.get("heart_rate_evidence")
+
+        is_inside_safe = False
+        if geofence_eval and hasattr(geofence_eval, "zone_states"):
+            is_inside_safe = any(zs.get("state") == "INSIDE" for zs in geofence_eval.zone_states)
+
+        await evaluate_loop_alert_lifecycle(
+            user_id=payload.user_id,
+            lat=payload.location.lat,
+            lng=payload.location.lng,
+            timestamp=payload.timestamp,
+            loop_evidence=loop_ev,
+            hr_evidence=hr_ev,
+            is_inside_safe_zone=is_inside_safe,
+        )
+
+    # Phase 4: Evaluate group/companion separation lifecycle and physiological escalation
+    if evaluate_group_separation is not None:
+        await evaluate_group_separation(
+            patient_id=payload.user_id,
+            patient_lat=payload.location.lat,
+            patient_lng=payload.location.lng,
+            patient_accuracy_m=payload.sensor_metrics.horizontal_accuracy_m,
+            patient_timestamp=payload.timestamp,
+            patient_is_degraded=(payload.signal_status.state == SignalState.DEGRADED_SIGNAL),
+        )
+
     await push_risk_update(payload.user_id, risk_output.model_dump(mode="json"))
-
-
 
     # If risk is Tier 2 (SUSPICIOUS) or Tier 3 (CRITICAL), create or update an AlertRecord
     if risk_output.risk_tier in (RiskTier.SUSPICIOUS, RiskTier.CRITICAL):

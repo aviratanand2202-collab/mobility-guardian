@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import joblib
 import numpy as np
 import pandas as pd
 import xgboost as xgb
@@ -32,6 +33,13 @@ from ml.src.features import FeatureConfig, compute_window_features_dict
 from ml.src.decision import (
     DecisionConfig,
     interpret_decision,
+)
+from ml.src.loop_detection import LoopDetectorConfig, LoopEvidence, PersistentLoopDetector
+from ml.src.heart_rate import (
+    HeartRateConfig,
+    HeartRateEvidence,
+    evaluate_heart_rate,
+    load_user_baseline_from_db,
 )
 from ml.src.geofence import (
     GeospatialConfig,
@@ -54,6 +62,7 @@ class InferenceConfig:
     """Centralized inference configuration."""
 
     model_dir: str = "ml/models/xgboost"
+    model_type: str = "xgboost"  # "xgboost" or "random_forest"
     profiles_dir: str = "ml/models/profiles"
     metadata_filename: str = "model_metadata.json"
     population_baseline_filename: str = "population_baseline.json"
@@ -97,8 +106,9 @@ class RiskInferenceEngine:
         self.risk_cfg = RiskConfig()
         self.feature_cfg = FeatureConfig()
         self.behavior_cfg = BehaviorConfig()
+        self.model_type: str = getattr(config, "model_type", "xgboost")
 
-        self.models: Dict[int, xgb.Booster] = {}
+        self.models: Dict[int, Any] = {}
         self.thresholds: Dict[int, float] = {}
         self.calibrators: Dict[int, Dict[str, Any]] = {}
         self.feature_names: List[str] = []
@@ -119,6 +129,10 @@ class RiskInferenceEngine:
         self.user_profiles: Dict[str, Dict[str, Any]] = {}
         self.geospatial_cfg = GeospatialConfig()
         self.decision_cfg = DecisionConfig()
+        self.loop_detector = PersistentLoopDetector()
+        self.hr_config = HeartRateConfig()
+        self.user_hr_baselines: Dict[str, Tuple[float, float, int]] = {}
+        self.trajectory_history_buffers: Dict[str, List[Dict[str, Any]]] = {}
         self.user_safe_areas: Dict[str, Any] = {}
         self.profiles_dir: Path = Path(self.config.profiles_dir)
         self.profiles_dir.mkdir(parents=True, exist_ok=True)
@@ -225,6 +239,17 @@ class RiskInferenceEngine:
         if not self.feature_names:
             raise ValueError("Model metadata does not contain feature_names.")
 
+        meta_model_family = self.metadata.get("model_family", "")
+        if meta_model_family == "lightgbm" or self.config.model_type == "lightgbm":
+            self.model_type = "lightgbm"
+        elif meta_model_family == "random_forest" or self.config.model_type == "random_forest":
+            self.model_type = "random_forest"
+        else:
+            self.model_type = "xgboost"
+
+        if len(self.feature_names) > 49:
+            self.risk_cfg = RiskConfig(include_extended_features=True)
+
         # Load models and thresholds per horizon
         horizons_meta = self.metadata.get("horizons", {})
         for h in self.config.supported_horizons:
@@ -233,15 +258,31 @@ class RiskInferenceEngine:
                 continue
 
             h_info = horizons_meta[h_key]
-            model_file = h_info.get("model_file", f"xgb_horizon_{h}s.json")
+            if self.model_type == "lightgbm":
+                default_ext = "txt"
+                default_prefix = "lgb"
+            elif self.model_type == "random_forest":
+                default_ext = "joblib"
+                default_prefix = "rf"
+            else:
+                default_ext = "json"
+                default_prefix = "xgb"
+
+            model_file = h_info.get("model_file", f"{default_prefix}_horizon_{h}s.{default_ext}")
             model_path = os.path.join(self.config.model_dir, model_file)
 
             if not os.path.exists(model_path):
                 raise FileNotFoundError(f"Model artifact not found for horizon {h}s at {model_path}")
 
-            booster = xgb.Booster()
-            booster.load_model(model_path)
-            self.models[h] = booster
+            if self.model_type == "lightgbm":
+                import lightgbm as lgb
+                self.models[h] = lgb.Booster(model_file=model_path)
+            elif self.model_type == "random_forest":
+                self.models[h] = joblib.load(model_path)
+            else:
+                booster = xgb.Booster()
+                booster.load_model(model_path)
+                self.models[h] = booster
             self.thresholds[h] = float(h_info.get("optimal_threshold", 0.5))
             self.calibrators[h] = h_info.get("calibrator", {})
 
@@ -384,14 +425,20 @@ class RiskInferenceEngine:
             config=self.risk_cfg,
         )
 
-        # 2. Construct DMatrix with exact feature ordering
+        # 2. Construct feature vector and DataFrame with exact feature ordering
         feature_vector = [feats.get(c, np.nan) for c in self.feature_names]
         feat_df = pd.DataFrame([feature_vector], columns=self.feature_names)
-        dmatrix = xgb.DMatrix(feat_df)
 
         # 3. Model inference
-        booster = self.models[horizon_sec]
-        raw_prob = float(booster.predict(dmatrix)[0])
+        if self.model_type == "lightgbm":
+            raw_prob = float(self.models[horizon_sec].predict(feat_df)[0])
+        elif self.model_type == "random_forest":
+            probs = self.models[horizon_sec].predict_proba(feat_df)
+            raw_prob = float(probs[0, 1])
+        else:
+            dmatrix = xgb.DMatrix(feat_df)
+            booster = self.models[horizon_sec]
+            raw_prob = float(booster.predict(dmatrix)[0])
         cal_prob = self.compute_calibrated_probability(raw_prob, horizon_sec)
         threshold = self.thresholds[horizon_sec]
         binary_pred = 1 if cal_prob >= threshold else 0
@@ -560,6 +607,42 @@ class RiskInferenceEngine:
         lon_val = float(loc.get("lng")) if "lng" in loc and loc.get("lng") is not None else None
         effective_safe = safe_area if safe_area is not None else self.get_user_safe_area(user_id)
 
+        sensor = payload.get("sensor_metrics", {})
+        speed_val = float(sensor.get("speed_mps", 0.0))
+        acc_val = float(sensor.get("horizontal_accuracy_m", 5.0))
+        wearable_metrics = payload.get("wearable_metrics")
+
+        # Update trajectory history buffer for persistent looping detection
+        hist_buf = self.trajectory_history_buffers.setdefault(user_id, [])
+        if lat_val is not None and lon_val is not None:
+            hist_buf.append({
+                "latitude": lat_val,
+                "longitude": lon_val,
+                "timestamp": pd.to_datetime(timestamp_str),
+                "speed_mps": speed_val,
+                "horizontal_accuracy_m": acc_val,
+            })
+            if len(hist_buf) > 1:
+                t_latest = hist_buf[-1]["timestamp"]
+                cutoff = t_latest - pd.Timedelta(seconds=1200)
+                hist_buf[:] = [p for p in hist_buf if p["timestamp"] >= cutoff][-500:]
+
+        loop_evidence = self.loop_detector.evaluate_points(hist_buf)
+
+        # Evaluate wearable heart rate telemetry against personal baseline
+        if user_id not in self.user_hr_baselines:
+            db_base = load_user_baseline_from_db(user_id)
+            if db_base:
+                self.user_hr_baselines[user_id] = db_base
+        user_hr_base = self.user_hr_baselines.get(user_id)
+        hr_evidence = evaluate_heart_rate(
+            reading=wearable_metrics,
+            current_speed_mps=speed_val,
+            baseline=user_hr_base,
+            current_timestamp=timestamp_str,
+            config=self.hr_config,
+        )
+
         # 1. Check Signal Degradation Contract
         if sig_state == "DEGRADED_SIGNAL":
             last_out = self.last_risk_outputs.get(user_id)
@@ -604,6 +687,8 @@ class RiskInferenceEngine:
                     "familiarity_state": geo_ctx["familiarity_state"],
                 },
             }
+            degraded_out["loop_evidence"] = loop_evidence.to_dict()
+            degraded_out["heart_rate_evidence"] = hr_evidence.to_dict()
             dec = interpret_decision(degraded_out, self.decision_cfg)
             degraded_out["decision_state"] = dec.decision_state
             degraded_out["display_state"] = dec.display_state
@@ -737,6 +822,17 @@ class RiskInferenceEngine:
                 "lng": float(point_record["longitude"]),
             }
 
+            risk_out["loop_evidence"] = loop_evidence.to_dict()
+            risk_out["heart_rate_evidence"] = hr_evidence.to_dict()
+            dec = interpret_decision(risk_out, self.decision_cfg)
+            risk_out["decision_state"] = dec.decision_state
+            risk_out["display_state"] = dec.display_state
+            risk_out["human_readable_reason"] = dec.reason
+            risk_out["decision"] = dec.to_dict()
+            if "metadata" in risk_out:
+                risk_out["metadata"]["decision_state"] = dec.decision_state
+                risk_out["metadata"]["headline"] = dec.headline
+
             # Update histories and reset point buffer
             user_hist.append(win_features)
             self.last_risk_outputs[user_id] = risk_out
@@ -761,6 +857,8 @@ class RiskInferenceEngine:
                 "familiarity_state": geo_ctx["familiarity_state"],
                 "geospatial_context": geo_ctx,
             }
+            updated["loop_evidence"] = loop_evidence.to_dict()
+            updated["heart_rate_evidence"] = hr_evidence.to_dict()
             dec = interpret_decision(updated, self.decision_cfg)
             updated["decision_state"] = dec.decision_state
             updated["display_state"] = dec.display_state
@@ -769,6 +867,8 @@ class RiskInferenceEngine:
             return updated
 
         accum_out = {
+            "loop_evidence": loop_evidence.to_dict(),
+            "heart_rate_evidence": hr_evidence.to_dict(),
             "user_id": user_id,
             "timestamp": timestamp_str,
             "risk_tier": "QUIESCENT",
@@ -827,6 +927,12 @@ class RiskInferenceEngine:
                 "familiarity_state": geo_ctx["familiarity_state"],
             },
         }
+        if loop_evidence.is_looping:
+            dec = interpret_decision(accum_out, self.decision_cfg)
+            accum_out["decision_state"] = dec.decision_state
+            accum_out["display_state"] = dec.display_state
+            accum_out["human_readable_reason"] = dec.reason
+            accum_out["decision"] = dec.to_dict()
         return accum_out
 
     def predict_plt_trajectory(

@@ -1,0 +1,3729 @@
+{
+  "input_file": "C:\\Projects\\mobility-guardian\\ml\\data\\raw\\geolife\\000\\Trajectory\\20081113034608.plt",
+  "user_id": "000",
+  "n_evaluated_windows": 28,
+  "profile_mode": "PERSONALIZED",
+  "cold_start_status": "ML_DRIVEN",
+  "trip_count": 15,
+  "baseline_type": "PERSONALIZED",
+  "decision_state": "CRITICAL",
+  "human_readable_reason": "Severe kinematic deviation observed (score: 76.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+  "decision": {
+    "decision_state": "CRITICAL",
+    "display_state": "CRITICAL KINEMATIC EXCURSION",
+    "headline": "Critical Kinematic Excursion Detected",
+    "reason": "Severe kinematic deviation observed (score: 76.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+    "severity_level": "ALERT",
+    "profile_mode": "PERSONALIZED",
+    "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+    "familiarity_state": "INSUFFICIENT_EVIDENCE",
+    "behavioral_tier": "CRITICAL",
+    "behavioral_pattern": "NORMAL",
+    "risk_score": 76.42,
+    "calibrated_probability": 0.7642,
+    "raw_probability": 0.4922,
+    "horizon_sec": 120,
+    "binary_alert": true,
+    "top_features": [
+      {
+        "feature": "max_mad_z_score",
+        "value": 0.972
+      },
+      {
+        "feature": "p95_exceedance_count",
+        "value": 0.0
+      },
+      {
+        "feature": "mean_speed_mps",
+        "value": 1.738
+      },
+      {
+        "feature": "tortuosity_index",
+        "value": 1.598
+      }
+    ],
+    "distance_to_safe_boundary_m": null,
+    "safe_area_name": null,
+    "nearest_anchor_id": null,
+    "distance_to_nearest_anchor_m": null,
+    "is_caregiver_confirmed_anchor": false,
+    "trip_count": 15,
+    "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+  },
+  "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+  "familiarity_state": "INSUFFICIENT_EVIDENCE",
+  "evaluated_horizons": [
+    120
+  ],
+  "alerts_fired_per_horizon": {
+    "120s": 28
+  },
+  "max_risk_scores": {
+    "120s": 93.44
+  },
+  "last_geospatial_context": {
+    "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+    "is_safe_area_available": false,
+    "distance_to_safe_boundary_m": null,
+    "matched_safe_area_name": null,
+    "familiarity_state": "INSUFFICIENT_EVIDENCE",
+    "nearest_anchor_id": null,
+    "distance_to_nearest_anchor_m": null,
+    "nearest_anchor_status": null,
+    "is_caregiver_confirmed": false,
+    "trip_count": 15,
+    "notes": [
+      "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+      "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+    ],
+    "disclaimers": {
+      "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+      "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+      "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+    }
+  },
+  "window_predictions": {
+    "120s": [
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 03:48:03",
+        "risk_tier": "CRITICAL",
+        "risk_score": 85.91,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 2.73,
+          "tortuosity_index": 28.04,
+          "entropy_directional": 0.85,
+          "straight_line_displacement_m": 11.2,
+          "path_distance_m": 313.8,
+          "max_mad_z_score": 65.57,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8591,
+          "raw_probability": 0.6321,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 65.568
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.729
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 28.036
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_0",
+          "start_time": "2008-11-13 03:46:08",
+          "end_time": "2008-11-13 03:48:03",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 85.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 85.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 85.91,
+          "calibrated_probability": 0.8591,
+          "raw_probability": 0.6321,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 65.568
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.729
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 28.036
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 03:50:03",
+        "risk_tier": "CRITICAL",
+        "risk_score": 86.91,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 2.2,
+          "tortuosity_index": 2.13,
+          "entropy_directional": 0.92,
+          "straight_line_displacement_m": 107.6,
+          "path_distance_m": 228.8,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8691,
+          "raw_probability": 0.651,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.2
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.127
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_1",
+          "start_time": "2008-11-13 03:48:08",
+          "end_time": "2008-11-13 03:50:03",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 86.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 86.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 86.91,
+          "calibrated_probability": 0.8691,
+          "raw_probability": 0.651,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.2
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.127
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 03:52:03",
+        "risk_tier": "CRITICAL",
+        "risk_score": 87.5,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.4,
+          "tortuosity_index": 2.77,
+          "entropy_directional": 0.98,
+          "straight_line_displacement_m": 62.8,
+          "path_distance_m": 173.9,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.875,
+          "raw_probability": 0.6625,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.403
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.768
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_2",
+          "start_time": "2008-11-13 03:50:08",
+          "end_time": "2008-11-13 03:52:03",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 87.5/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 87.5/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 87.5,
+          "calibrated_probability": 0.875,
+          "raw_probability": 0.6625,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.403
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.768
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 03:53:28",
+        "risk_tier": "CRITICAL",
+        "risk_score": 88.39,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 2.22,
+          "tortuosity_index": 3.58,
+          "entropy_directional": 0.81,
+          "straight_line_displacement_m": 49.8,
+          "path_distance_m": 178.0,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8839,
+          "raw_probability": 0.6813,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.225
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.576
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_3",
+          "start_time": "2008-11-13 03:52:08",
+          "end_time": "2008-11-13 03:53:28",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 88.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 88.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 88.39,
+          "calibrated_probability": 0.8839,
+          "raw_probability": 0.6813,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.225
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.576
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 06:49:54",
+        "risk_tier": "CRITICAL",
+        "risk_score": 88.64,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 20.54,
+          "tortuosity_index": 1.7,
+          "entropy_directional": 0.53,
+          "straight_line_displacement_m": 181.6,
+          "path_distance_m": 308.2,
+          "max_mad_z_score": 20.91,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8864,
+          "raw_probability": 0.6866,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 20.905
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 20.544
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.697
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_91",
+          "start_time": "2008-11-13 06:49:39",
+          "end_time": "2008-11-13 06:49:54",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 88.6/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 88.6/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 88.64,
+          "calibrated_probability": 0.8864,
+          "raw_probability": 0.6866,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 20.905
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 20.544
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.697
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 06:52:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 89.1,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 18.86,
+          "tortuosity_index": 2.08,
+          "entropy_directional": 0.55,
+          "straight_line_displacement_m": 506.9,
+          "path_distance_m": 1053.8,
+          "max_mad_z_score": 19.08,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.891,
+          "raw_probability": 0.6971,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 19.076
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 18.863
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.079
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_92",
+          "start_time": "2008-11-13 06:50:26",
+          "end_time": "2008-11-13 06:52:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 89.1/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 89.1/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 89.1,
+          "calibrated_probability": 0.891,
+          "raw_probability": 0.6971,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 19.076
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 18.863
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 2.079
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:38:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 93.44,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 4.0,
+          "tortuosity_index": 1.03,
+          "entropy_directional": 0.29,
+          "straight_line_displacement_m": 461.7,
+          "path_distance_m": 477.3,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.9344,
+          "raw_probability": 0.82,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 3.997
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.034
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_115",
+          "start_time": "2008-11-13 07:36:14",
+          "end_time": "2008-11-13 07:38:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 93.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 93.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 93.44,
+          "calibrated_probability": 0.9344,
+          "raw_probability": 0.82,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 3.997
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.034
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:40:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 91.76,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 6.12,
+          "tortuosity_index": 1.02,
+          "entropy_directional": 0.36,
+          "straight_line_displacement_m": 719.4,
+          "path_distance_m": 734.0,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.9176,
+          "raw_probability": 0.7653,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 6.122
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.02
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_116",
+          "start_time": "2008-11-13 07:38:09",
+          "end_time": "2008-11-13 07:40:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 91.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 91.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 91.76,
+          "calibrated_probability": 0.9176,
+          "raw_probability": 0.7653,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 2.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 6.122
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.02
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:41:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 79.38,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 4.01,
+          "tortuosity_index": 1.04,
+          "entropy_directional": 0.56,
+          "straight_line_displacement_m": 212.6,
+          "path_distance_m": 220.7,
+          "max_mad_z_score": 2.91,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7938,
+          "raw_probability": 0.5303,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 2.906
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 4.012
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.038
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_117",
+          "start_time": "2008-11-13 07:40:09",
+          "end_time": "2008-11-13 07:41:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 79.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 79.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 79.38,
+          "calibrated_probability": 0.7938,
+          "raw_probability": 0.5303,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 2.906
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 4.012
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.038
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:44:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 86.0,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.49,
+          "tortuosity_index": 1.29,
+          "entropy_directional": 0.46,
+          "straight_line_displacement_m": 28.9,
+          "path_distance_m": 37.4,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.86,
+          "raw_probability": 0.6337,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.495
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.292
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_118",
+          "start_time": "2008-11-13 07:43:39",
+          "end_time": "2008-11-13 07:44:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 86.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 86.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 86.0,
+          "calibrated_probability": 0.86,
+          "raw_probability": 0.6337,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.495
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.292
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:46:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 82.73,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.01,
+          "tortuosity_index": 1.31,
+          "entropy_directional": 0.57,
+          "straight_line_displacement_m": 91.8,
+          "path_distance_m": 120.2,
+          "max_mad_z_score": 0.51,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8273,
+          "raw_probability": 0.5787,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.506
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.007
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.309
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_119",
+          "start_time": "2008-11-13 07:44:09",
+          "end_time": "2008-11-13 07:46:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 82.7/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 82.7/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 82.73,
+          "calibrated_probability": 0.8273,
+          "raw_probability": 0.5787,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.506
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.007
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.309
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:48:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 82.29,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.11,
+          "tortuosity_index": 1.35,
+          "entropy_directional": 0.74,
+          "straight_line_displacement_m": 95.0,
+          "path_distance_m": 127.9,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8229,
+          "raw_probability": 0.572,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.112
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.346
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_120",
+          "start_time": "2008-11-13 07:46:09",
+          "end_time": "2008-11-13 07:48:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 82.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 82.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 82.29,
+          "calibrated_probability": 0.8229,
+          "raw_probability": 0.572,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.112
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.346
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:50:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 78.36,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.88,
+          "tortuosity_index": 1.63,
+          "entropy_directional": 0.71,
+          "straight_line_displacement_m": 132.7,
+          "path_distance_m": 216.5,
+          "max_mad_z_score": 1.18,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7836,
+          "raw_probability": 0.5168,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.178
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.882
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.632
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_121",
+          "start_time": "2008-11-13 07:48:09",
+          "end_time": "2008-11-13 07:50:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 78.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 78.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 78.36,
+          "calibrated_probability": 0.7836,
+          "raw_probability": 0.5168,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.178
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.882
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.632
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:52:04",
+        "risk_tier": "SUSPICIOUS",
+        "risk_score": 67.56,
+        "polling_tier": 2,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.39,
+          "tortuosity_index": 1.27,
+          "entropy_directional": 0.65,
+          "straight_line_displacement_m": 130.2,
+          "path_distance_m": 165.9,
+          "max_mad_z_score": 0.34,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.6756,
+          "raw_probability": 0.3944,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.341
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.395
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.274
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_122",
+          "start_time": "2008-11-13 07:50:09",
+          "end_time": "2008-11-13 07:52:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "SUSPICIOUS",
+          "headline": "Elevated Kinematic Deviation Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "SUSPICIOUS",
+        "display_state": "SUSPICIOUS MOVEMENT PATTERN",
+        "human_readable_reason": "Elevated kinematic score (67.6/100) detected relative to baseline. Pattern: NORMAL.",
+        "decision": {
+          "decision_state": "SUSPICIOUS",
+          "display_state": "SUSPICIOUS MOVEMENT PATTERN",
+          "headline": "Elevated Kinematic Deviation Detected",
+          "reason": "Elevated kinematic score (67.6/100) detected relative to baseline. Pattern: NORMAL.",
+          "severity_level": "WARNING",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "SUSPICIOUS",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 67.56,
+          "calibrated_probability": 0.6756,
+          "raw_probability": 0.3944,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.341
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.395
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.274
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:54:04",
+        "risk_tier": "SUSPICIOUS",
+        "risk_score": 66.11,
+        "polling_tier": 2,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.69,
+          "tortuosity_index": 1.04,
+          "entropy_directional": 0.46,
+          "straight_line_displacement_m": 192.8,
+          "path_distance_m": 201.4,
+          "max_mad_z_score": 1.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.6611,
+          "raw_probability": 0.3799,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.003
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.686
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.045
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_123",
+          "start_time": "2008-11-13 07:52:09",
+          "end_time": "2008-11-13 07:54:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "SUSPICIOUS",
+          "headline": "Elevated Kinematic Deviation Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "SUSPICIOUS",
+        "display_state": "SUSPICIOUS MOVEMENT PATTERN",
+        "human_readable_reason": "Elevated kinematic score (66.1/100) detected relative to baseline. Pattern: NORMAL.",
+        "decision": {
+          "decision_state": "SUSPICIOUS",
+          "display_state": "SUSPICIOUS MOVEMENT PATTERN",
+          "headline": "Elevated Kinematic Deviation Detected",
+          "reason": "Elevated kinematic score (66.1/100) detected relative to baseline. Pattern: NORMAL.",
+          "severity_level": "WARNING",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "SUSPICIOUS",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 66.11,
+          "calibrated_probability": 0.6611,
+          "raw_probability": 0.3799,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.003
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.686
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.045
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:56:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 74.99,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.32,
+          "tortuosity_index": 1.41,
+          "entropy_directional": 0.53,
+          "straight_line_displacement_m": 107.9,
+          "path_distance_m": 151.8,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7499,
+          "raw_probability": 0.475,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.32
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.406
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_124",
+          "start_time": "2008-11-13 07:54:09",
+          "end_time": "2008-11-13 07:56:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 75.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 75.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 74.99,
+          "calibrated_probability": 0.7499,
+          "raw_probability": 0.475,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.32
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.406
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:58:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 71.94,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.83,
+          "tortuosity_index": 1.21,
+          "entropy_directional": 0.73,
+          "straight_line_displacement_m": 174.8,
+          "path_distance_m": 210.7,
+          "max_mad_z_score": 0.81,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7194,
+          "raw_probability": 0.4404,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.813
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.832
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.205
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_125",
+          "start_time": "2008-11-13 07:56:09",
+          "end_time": "2008-11-13 07:58:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 71.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 71.9/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 71.94,
+          "calibrated_probability": 0.7194,
+          "raw_probability": 0.4404,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.813
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.832
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.205
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 07:59:09",
+        "risk_tier": "CRITICAL",
+        "risk_score": 87.01,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 0.84,
+          "tortuosity_index": 1.49,
+          "entropy_directional": 0.9,
+          "straight_line_displacement_m": 35.6,
+          "path_distance_m": 53.2,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8701,
+          "raw_probability": 0.6529,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.841
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.492
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_126",
+          "start_time": "2008-11-13 07:58:09",
+          "end_time": "2008-11-13 07:59:09",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 87.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 87.0/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 87.01,
+          "calibrated_probability": 0.8701,
+          "raw_probability": 0.6529,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.841
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.492
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 11:04:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 84.16,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.19,
+          "tortuosity_index": 1.93,
+          "entropy_directional": 0.66,
+          "straight_line_displacement_m": 33.8,
+          "path_distance_m": 65.4,
+          "max_mad_z_score": 1.53,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8416,
+          "raw_probability": 0.6016,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.531
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.189
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.933
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_218",
+          "start_time": "2008-11-13 11:03:09",
+          "end_time": "2008-11-13 11:04:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 84.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 84.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 84.16,
+          "calibrated_probability": 0.8416,
+          "raw_probability": 0.6016,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.531
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.189
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.933
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 11:06:04",
+        "risk_tier": "CRITICAL",
+        "risk_score": 87.68,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 4.35,
+          "tortuosity_index": 1.05,
+          "entropy_directional": 0.44,
+          "straight_line_displacement_m": 474.2,
+          "path_distance_m": 500.1,
+          "max_mad_z_score": 3.98,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8768,
+          "raw_probability": 0.6664,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 3.977
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 4.349
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.055
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_219",
+          "start_time": "2008-11-13 11:04:09",
+          "end_time": "2008-11-13 11:06:04",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 87.7/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 87.7/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 87.68,
+          "calibrated_probability": 0.8768,
+          "raw_probability": 0.6664,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 3.977
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 4.349
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.055
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 13:54:06",
+        "risk_tier": "CRITICAL",
+        "risk_score": 72.22,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 2.76,
+          "tortuosity_index": 1.36,
+          "entropy_directional": 0.48,
+          "straight_line_displacement_m": 70.9,
+          "path_distance_m": 96.7,
+          "max_mad_z_score": 1.55,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7222,
+          "raw_probability": 0.4435,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.547
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.763
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.363
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_303",
+          "start_time": "2008-11-13 13:53:31",
+          "end_time": "2008-11-13 13:54:06",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 72.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 72.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 72.22,
+          "calibrated_probability": 0.7222,
+          "raw_probability": 0.4435,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.547
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.763
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.363
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 13:54:31",
+        "risk_tier": "CRITICAL",
+        "risk_score": 77.27,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 0.98,
+          "tortuosity_index": 1.13,
+          "entropy_directional": 0.33,
+          "straight_line_displacement_m": 17.4,
+          "path_distance_m": 19.7,
+          "max_mad_z_score": 1.23,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7727,
+          "raw_probability": 0.5028,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.226
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.984
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.133
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_304",
+          "start_time": "2008-11-13 13:54:11",
+          "end_time": "2008-11-13 13:54:31",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 77.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 77.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 77.27,
+          "calibrated_probability": 0.7727,
+          "raw_probability": 0.5028,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 1.226
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.984
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.133
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:01:31",
+        "risk_tier": "CRITICAL",
+        "risk_score": 84.56,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 51.1,
+          "tortuosity_index": 1.0,
+          "entropy_directional": NaN,
+          "straight_line_displacement_m": 510.9,
+          "path_distance_m": 511.0,
+          "max_mad_z_score": 54.17,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8456,
+          "raw_probability": 0.6083,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 54.171
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 51.099
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.0
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_307",
+          "start_time": "2008-11-13 14:01:21",
+          "end_time": "2008-11-13 14:01:31",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 84.6/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 84.6/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 84.56,
+          "calibrated_probability": 0.8456,
+          "raw_probability": 0.6083,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 54.171
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 51.099
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.0
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:04:06",
+        "risk_tier": "CRITICAL",
+        "risk_score": 90.78,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 6.93,
+          "tortuosity_index": 1.66,
+          "entropy_directional": 0.46,
+          "straight_line_displacement_m": 255.5,
+          "path_distance_m": 423.4,
+          "max_mad_z_score": 6.09,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.9078,
+          "raw_probability": 0.7382,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 6.086
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 6.932
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.657
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_308",
+          "start_time": "2008-11-13 14:02:46",
+          "end_time": "2008-11-13 14:04:06",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 90.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 90.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 90.78,
+          "calibrated_probability": 0.9078,
+          "raw_probability": 0.7382,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 6.086
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 6.932
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.657
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:06:06",
+        "risk_tier": "CRITICAL",
+        "risk_score": 85.31,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 5.05,
+          "tortuosity_index": 3.22,
+          "entropy_directional": 0.94,
+          "straight_line_displacement_m": 195.7,
+          "path_distance_m": 630.7,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8531,
+          "raw_probability": 0.6213,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 5.052
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.222
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_309",
+          "start_time": "2008-11-13 14:04:11",
+          "end_time": "2008-11-13 14:06:06",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 85.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 85.3/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 85.31,
+          "calibrated_probability": 0.8531,
+          "raw_probability": 0.6213,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 3.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 5.052
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.222
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:08:06",
+        "risk_tier": "CRITICAL",
+        "risk_score": 91.77,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 0.64,
+          "tortuosity_index": 3.47,
+          "entropy_directional": 0.75,
+          "straight_line_displacement_m": 11.1,
+          "path_distance_m": 38.3,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.9177,
+          "raw_probability": 0.7657,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.64
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.466
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_310",
+          "start_time": "2008-11-13 14:06:11",
+          "end_time": "2008-11-13 14:08:06",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 91.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 91.8/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 91.77,
+          "calibrated_probability": 0.9177,
+          "raw_probability": 0.7657,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 1.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 0.64
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 3.466
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:10:06",
+        "risk_tier": "CRITICAL",
+        "risk_score": 87.17,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 2.41,
+          "tortuosity_index": 1.59,
+          "entropy_directional": 0.77,
+          "straight_line_displacement_m": 170.5,
+          "path_distance_m": 270.5,
+          "max_mad_z_score": 10.0,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.8717,
+          "raw_probability": 0.656,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.406
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.586
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_311",
+          "start_time": "2008-11-13 14:08:11",
+          "end_time": "2008-11-13 14:10:06",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 87.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 87.2/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 87.17,
+          "calibrated_probability": 0.8717,
+          "raw_probability": 0.656,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 10.0
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 2.406
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.586
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      },
+      {
+        "user_id": "000",
+        "timestamp": "2008-11-13 14:11:31",
+        "risk_tier": "CRITICAL",
+        "risk_score": 76.42,
+        "polling_tier": 3,
+        "predicted_lead_time_sec": 120.0,
+        "battery_override_active": false,
+        "kinematic_features": {
+          "mean_speed_mps": 1.74,
+          "tortuosity_index": 1.6,
+          "entropy_directional": 0.82,
+          "straight_line_displacement_m": 87.0,
+          "path_distance_m": 139.1,
+          "max_mad_z_score": 0.97,
+          "behavioral_indicator": "NORMAL",
+          "behavioral_confidence": 1.0
+        },
+        "trigger_state": {
+          "window_seconds": 120,
+          "horizon_sec": 120,
+          "decision_threshold": 0.38,
+          "calibrated_probability": 0.7642,
+          "raw_probability": 0.4922,
+          "binary_alert": true
+        },
+        "explainability": {
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.972
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.738
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.598
+            }
+          ],
+          "behavior_classification": "NORMAL",
+          "disclaimer": "Associational kinematic excursion prediction relative to learned baseline. Reflects mathematical outlier trajectory probability, NOT clinical dementia or wandering."
+        },
+        "metadata": {
+          "window_id": "000_w_312",
+          "start_time": "2008-11-13 14:10:11",
+          "end_time": "2008-11-13 14:11:31",
+          "profile_mode": "PERSONALIZED",
+          "cold_start_status": "ML_DRIVEN",
+          "trip_count": 15,
+          "baseline_type": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "decision_state": "CRITICAL",
+          "headline": "Critical Kinematic Excursion Detected"
+        },
+        "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+        "familiarity_state": "INSUFFICIENT_EVIDENCE",
+        "geospatial_context": {
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "is_safe_area_available": false,
+          "distance_to_safe_boundary_m": null,
+          "matched_safe_area_name": null,
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "nearest_anchor_status": null,
+          "is_caregiver_confirmed": false,
+          "trip_count": 15,
+          "notes": [
+            "No safe area boundary configured for this evaluation (SAFE_AREA_UNAVAILABLE).",
+            "User has completed trips but no spatial anchor clusters were detected by DBSCAN."
+          ],
+          "disclaimers": {
+            "safe_area": "Safe area boundaries are externally configured geographic boundaries. The GeoLife dataset does not provide ground-truth safe-zone labels. Leaving a safe area does not inherently indicate danger or elevated risk.",
+            "familiarity": "Familiarity is evaluated against algorithmic spatial anchors derived from DBSCAN endpoint clustering. Algorithmic anchors are NOT caregiver-confirmed. An unfamiliar location indicates an unobserved spatial area, not necessarily danger.",
+            "orthogonality": "Geospatial context is strictly decoupled from kinematic XGBoost excursion predictions and does not modify risk scores, features, or alert thresholds."
+          }
+        },
+        "decision_state": "CRITICAL",
+        "display_state": "CRITICAL KINEMATIC EXCURSION",
+        "human_readable_reason": "Severe kinematic deviation observed (score: 76.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+        "decision": {
+          "decision_state": "CRITICAL",
+          "display_state": "CRITICAL KINEMATIC EXCURSION",
+          "headline": "Critical Kinematic Excursion Detected",
+          "reason": "Severe kinematic deviation observed (score: 76.4/100, horizon: 120s). Kinematic pattern indicates anomalous excursion (NORMAL).",
+          "severity_level": "ALERT",
+          "profile_mode": "PERSONALIZED",
+          "safe_area_state": "SAFE_AREA_UNAVAILABLE",
+          "familiarity_state": "INSUFFICIENT_EVIDENCE",
+          "behavioral_tier": "CRITICAL",
+          "behavioral_pattern": "NORMAL",
+          "risk_score": 76.42,
+          "calibrated_probability": 0.7642,
+          "raw_probability": 0.4922,
+          "horizon_sec": 120,
+          "binary_alert": true,
+          "top_features": [
+            {
+              "feature": "max_mad_z_score",
+              "value": 0.972
+            },
+            {
+              "feature": "p95_exceedance_count",
+              "value": 0.0
+            },
+            {
+              "feature": "mean_speed_mps",
+              "value": 1.738
+            },
+            {
+              "feature": "tortuosity_index",
+              "value": 1.598
+            }
+          ],
+          "distance_to_safe_boundary_m": null,
+          "safe_area_name": null,
+          "nearest_anchor_id": null,
+          "distance_to_nearest_anchor_m": null,
+          "is_caregiver_confirmed_anchor": false,
+          "trip_count": 15,
+          "disclaimer": "Associational kinematic and geospatial decision output. Reflects mathematical outlier probabilities and configured geographic boundaries. Does NOT constitute clinical diagnosis, dementia evaluation, wandering detection, or ground-truth safety guarantees."
+        }
+      }
+    ]
+  }
+}

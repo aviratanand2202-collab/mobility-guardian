@@ -22,6 +22,7 @@ router = APIRouter()
 async def get_user_alerts(
     user_id: str,
     status: Optional[str] = Query(None, description="Optional status filter (e.g. PENDING, DISMISSED_SAFE)"),
+    zone_id: Optional[str] = Query(None, description="Optional safe zone ID filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default 50, capped at 200)"),
 ) -> List[AlertRecord]:
     """
@@ -37,6 +38,8 @@ async def get_user_alerts(
         )
         if status is not None and status.strip():
             query = query.where(AlertRecordRow.status == status.strip())
+        if zone_id is not None and zone_id.strip():
+            query = query.where(AlertRecordRow.zone_id == zone_id.strip())
         result = await session.execute(query)
         rows = result.scalars().all()
 
@@ -47,6 +50,7 @@ async def get_user_alerts(
 async def list_alerts(
     user_id: Optional[str] = Query(None, description="User ID to filter alerts (required)"),
     status: Optional[str] = Query(None, description="Optional status filter"),
+    zone_id: Optional[str] = Query(None, description="Optional safe zone ID filter"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default 50, capped at 200)"),
 ) -> List[AlertRecord]:
     """
@@ -58,7 +62,7 @@ async def list_alerts(
             status_code=400,
             detail="user_id query parameter is required to retrieve alerts.",
         )
-    return await get_user_alerts(user_id=user_id.strip(), status=status, limit=limit)
+    return await get_user_alerts(user_id=user_id.strip(), status=status, zone_id=zone_id, limit=limit)
 
 
 @router.get("/{alert_id}")
@@ -139,4 +143,5 @@ def _row_to_alert_record(row: AlertRecordRow) -> AlertRecord:
         alert_tier=row.alert_tier,
         status=AlertStatus(row.status),
         dismissal=dismissal,
+        zone_id=getattr(row, "zone_id", None),
     )

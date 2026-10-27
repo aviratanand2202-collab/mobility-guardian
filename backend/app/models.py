@@ -58,6 +58,19 @@ class SignalStatus(BaseModel):
     degraded_since: Optional[datetime] = None
 
 
+class WearState(str, Enum):
+    ON_WRIST = "ON_WRIST"
+    OFF_WRIST = "OFF_WRIST"
+    UNKNOWN = "UNKNOWN"
+
+
+class WearableMetrics(BaseModel):
+    heart_rate_bpm: int = Field(..., ge=30, le=250, description="Heart rate reading in beats per minute (30-250)")
+    timestamp: datetime
+    wear_state: WearState = WearState.UNKNOWN
+    sensor_status: Optional[str] = None
+
+
 class TelemetryPayload(BaseModel):
     user_id: str
     timestamp: datetime
@@ -65,6 +78,7 @@ class TelemetryPayload(BaseModel):
     sensor_metrics: SensorMetrics
     imu_metrics: Optional[IMUMetrics] = None
     signal_status: SignalStatus
+    wearable_metrics: Optional[WearableMetrics] = None
 
 
 # ---------- Risk output (consumed from ML side) ----------
@@ -103,6 +117,8 @@ class RiskScoreOutput(BaseModel):
     kinematic_features: Optional[dict[str, Any]] = None
     trigger_state: Optional[dict[str, Any]] = None
     explainability: Optional[dict[str, Any]] = None
+    wearable_metrics: Optional[WearableMetrics] = None
+    sensor_metrics: Optional[SensorMetrics] = None
 
 
 # ---------- Alerts ----------
@@ -129,6 +145,7 @@ class AlertRecord(BaseModel):
     alert_tier: int = Field(..., ge=2, le=3)
     status: AlertStatus
     dismissal: Optional[Dismissal] = None
+    zone_id: Optional[str] = None
 
 
 # ---------- Consent ----------
@@ -164,7 +181,10 @@ class CompanionSessionStatus(str, Enum):
 
 class AccompanimentStatus(str, Enum):
     WITH_COMPANION = "With Companion"
+    SEPARATION_PENDING = "Separation Pending"
     SEPARATED = "Separated"
+    REJOINING = "Rejoining"
+    LOCATION_UNAVAILABLE = "Location Unavailable"
     ACCOMPANIMENT_UNVERIFIED = "Accompaniment Unverified"
 
 
@@ -212,3 +232,66 @@ class CompanionSessionSummary(BaseModel):
     safe_zone_departure_accompanied: Optional[bool] = False
     safe_zone: Optional[dict[str, Any]] = None
 
+# ---------- Geofence Boundary Transitions ----------
+
+class BoundaryState(str, Enum):
+    INSIDE = "INSIDE"
+    EXIT_PENDING = "EXIT_PENDING"
+    BREACHED = "BREACHED"
+    REENTRY_PENDING = "REENTRY_PENDING"
+    RESOLVED = "RESOLVED"
+    OUTSIDE = "OUTSIDE"
+
+
+class GeofenceEvaluationStatus(str, Enum):
+    NORMAL = "NORMAL"
+    BREACH_ACTIVE = "BREACH_ACTIVE"
+    NO_ZONES_CONFIGURED = "NO_ZONES_CONFIGURED"
+    INSUFFICIENT_GPS = "INSUFFICIENT_GPS"
+
+
+# ---------- Safe Zones ----------
+
+class SafeZoneGeometryType(str, Enum):
+    CIRCLE = "circle"
+    POLYGON = "polygon"
+
+
+class SafeZoneCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, description="Human-readable zone label e.g. Home, Company")
+    description: Optional[str] = Field(None, max_length=500)
+    geometry_type: SafeZoneGeometryType = SafeZoneGeometryType.CIRCLE
+    center_lat: Optional[float] = Field(None, ge=-90, le=90)
+    center_lng: Optional[float] = Field(None, ge=-180, le=180)
+    radius_m: Optional[float] = Field(None, gt=0, le=50000)
+    polygon_vertices: Optional[list[list[float]]] = Field(
+        None,
+        description="List of [latitude, longitude] pairs defining polygon vertices. Minimum 3 points."
+    )
+    is_enabled: bool = True
+
+
+class SafeZoneUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    geometry_type: Optional[SafeZoneGeometryType] = None
+    center_lat: Optional[float] = Field(None, ge=-90, le=90)
+    center_lng: Optional[float] = Field(None, ge=-180, le=180)
+    radius_m: Optional[float] = Field(None, gt=0, le=50000)
+    polygon_vertices: Optional[list[list[float]]] = None
+    is_enabled: Optional[bool] = None
+
+
+class SafeZoneResponse(BaseModel):
+    zone_id: str
+    user_id: str
+    name: str
+    description: Optional[str] = None
+    geometry_type: SafeZoneGeometryType
+    center_lat: Optional[float] = None
+    center_lng: Optional[float] = None
+    radius_m: Optional[float] = None
+    polygon_vertices: Optional[list[list[float]]] = None
+    is_enabled: bool
+    created_at: datetime
+    updated_at: datetime
