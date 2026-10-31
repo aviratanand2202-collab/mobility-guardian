@@ -30,7 +30,10 @@ from app.services.geospatial import location_to_h3_cell
 from app.services.inference_service import evaluate_shadow_inference
 from app.services.mock_risk_engine import compute_risk, TopFeature
 from app.state_machines.battery_pulse import compute_polling_instruction
-from app.state_machines.behavioral_escalation import evaluate_behavioral_escalation
+from app.state_machines.behavioral_escalation import (
+    evaluate_behavioral_escalation,
+    get_or_create_behavioral_state,
+)
 from app.state_machines.dismissal_quarantine import get_or_create_cell_state
 from app.state_machines.pdr_hysteresis import get_or_create_state, save_state
 
@@ -103,15 +106,23 @@ async def ingest_telemetry(payload: TelemetryPayload):
     if is_behavioral_risk_escalation_enabled():
         escalated, reason = evaluate_behavioral_escalation(payload, ml_eval)
         if escalated:
-            # Additive escalation: clamp operational score to at least SUSPICIOUS (65.0)
-            if risk_output.risk_tier in (RiskTier.QUIESCENT, RiskTier.NORMAL_TRANSIT):
+            b_state = get_or_create_behavioral_state(payload.user_id)
+            target_tier = getattr(b_state, "target_tier", RiskTier.SUSPICIOUS) or RiskTier.SUSPICIOUS
+            target_score = getattr(b_state, "target_score", 65.0) or 65.0
+
+            if target_tier == RiskTier.CRITICAL:
+                risk_output.risk_tier = RiskTier.CRITICAL
+                risk_output.risk_score = max(risk_output.risk_score, target_score)
+                risk_output.polling_tier = max(risk_output.polling_tier, 3)
+            elif risk_output.risk_tier in (RiskTier.QUIESCENT, RiskTier.NORMAL_TRANSIT):
                 risk_output.risk_tier = RiskTier.SUSPICIOUS
-                risk_output.risk_score = max(risk_output.risk_score, 65.0)
+                risk_output.risk_score = max(risk_output.risk_score, target_score)
                 risk_output.polling_tier = max(risk_output.polling_tier, 2)
-                if risk_output.predicted_lead_time_sec is None:
-                    risk_output.predicted_lead_time_sec = round(
-                        max(240.0, 900.0 - (risk_output.risk_score - 65.0) * 15.0), 1
-                    )
+
+            if risk_output.predicted_lead_time_sec is None:
+                risk_output.predicted_lead_time_sec = round(
+                    max(240.0, 900.0 - (risk_output.risk_score - 65.0) * 15.0), 1
+                )
 
             # Recompute polling instruction to ensure consistency with final operational tier and battery state
             battery_pct = payload.sensor_metrics.battery_pct
@@ -124,18 +135,29 @@ async def ingest_telemetry(payload: TelemetryPayload):
                 sleep_seconds=polling_inst_dc.sleep_seconds,
             )
 
-            # Prepend behavioral top feature for explainability if present
+            # Prepend behavioral and physiological top features for explainability if present
             if hasattr(risk_output, "explainability") and risk_output.explainability:
                 top_feats = getattr(risk_output.explainability, "top_features", None)
                 if isinstance(top_feats, list):
-                    top_feats.insert(
-                        0,
-                        TopFeature(
-                            feature="behavioral_trajectory_anomaly",
-                            shap_value=0.45,
-                            human_readable=reason or "Sustained anomalous movement pattern detected.",
-                        ),
-                    )
+                    if not any(f.feature == "behavioral_trajectory_anomaly" for f in top_feats):
+                        top_feats.insert(
+                            0,
+                            TopFeature(
+                                feature="behavioral_trajectory_anomaly",
+                                shap_value=0.45,
+                                human_readable=reason or "Sustained anomalous movement pattern detected.",
+                            ),
+                        )
+                    if getattr(b_state, "is_hr_corroborated", False) and not any(f.feature == "physiological_arousal_corroboration" for f in top_feats):
+                        hr_detail = getattr(b_state, "hr_corroboration_detail", "")
+                        top_feats.insert(
+                            1,
+                            TopFeature(
+                                feature="physiological_arousal_corroboration",
+                                shap_value=0.35,
+                                human_readable=hr_detail or "Concomitant physiological arousal relative to baseline.",
+                            ),
+                        )
 
     # Phase 2: Evaluate safe-zone boundary transition state machine
     geofence_eval = None
@@ -205,6 +227,12 @@ async def ingest_telemetry(payload: TelemetryPayload):
                 await session.commit()
                 alert_row = existing_alert
             else:
+                alert_zone_id = None
+                if is_behavioral_risk_escalation_enabled():
+                    b_state = get_or_create_behavioral_state(payload.user_id)
+                    if getattr(b_state, "is_escalated", False):
+                        alert_zone_id = "behavioral_escalation"
+
                 new_alert = AlertRecordRow(
                     alert_id=uuid4().hex,
                     user_id=payload.user_id,
@@ -212,6 +240,7 @@ async def ingest_telemetry(payload: TelemetryPayload):
                     timestamp=payload.timestamp,
                     alert_tier=alert_tier_num,
                     status=AlertStatus.PENDING.value,
+                    zone_id=alert_zone_id,
                 )
                 session.add(new_alert)
                 await session.commit()
@@ -225,6 +254,7 @@ async def ingest_telemetry(payload: TelemetryPayload):
             alert_tier=alert_row.alert_tier,
             status=AlertStatus(alert_row.status),
             dismissal=None,
+            zone_id=getattr(alert_row, "zone_id", None),
         )
         await push_alert_update(payload.user_id, alert_record.model_dump(mode="json"))
 

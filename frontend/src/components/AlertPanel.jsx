@@ -21,6 +21,7 @@ export default function AlertPanel({
   userId = '',
   isLoading = false,
   error = null,
+  safeZones = [],
 }) {
   const [now, setNow] = useState(Date.now())
   const [dismissingIds, setDismissingIds] = useState(new Set())
@@ -204,11 +205,22 @@ export default function AlertPanel({
             const isDismissed = alert.status === 'DISMISSED_SAFE'
             const isAutoResolved = alert.status === 'AUTO_RESOLVED'
             const isGroupSeparation = alert.zone_id === 'group_separation'
+            const isLoop = alert.zone_id === 'loop_detection'
+            const isBehavioral = alert.zone_id === 'behavioral_escalation'
+            const isSafeZoneDeparture = Boolean(alert.zone_id && alert.zone_id.startsWith('zone_'))
+            const matchedZone = isSafeZoneDeparture
+              ? safeZones.find((z) => z.zone_id === alert.zone_id)
+              : null
+            const zoneName = matchedZone?.name || 'Home Safe Zone'
 
             const alertTitle = isGroupSeparation
               ? '👥 Group Separation Alert'
-              : alert.zone_id === 'loop_detection'
+              : isLoop
               ? '🔄 Repetitive Looping Outlier'
+              : isBehavioral
+              ? '⚠️ Behavioral Trajectory Escalation'
+              : isSafeZoneDeparture
+              ? `🛡️ Safe Zone Departure (${zoneName})`
               : '📍 Spatial Boundary Deviation'
 
             return (
@@ -242,6 +254,22 @@ export default function AlertPanel({
                     <span className="alert-label">Patient ID:</span>
                     <span className="mono alert-val">{alert.user_id || userId}</span>
                   </div>
+                  {isSafeZoneDeparture && (
+                    <div className="alert-info-row">
+                      <span className="alert-label">Boundary Event:</span>
+                      <span className="alert-val" style={{ color: '#b91c1c', fontWeight: 600 }}>
+                        Home geofence exit confirmed ({zoneName})
+                      </span>
+                    </div>
+                  )}
+                  {isBehavioral && (
+                    <div className="alert-info-row">
+                      <span className="alert-label">Escalation Evidence:</span>
+                      <span className="alert-val" style={{ color: '#b45309', fontWeight: 600 }}>
+                        Sustained anomalous movement pattern outside safe context
+                      </span>
+                    </div>
+                  )}
                   {isGroupSeparation && (
                     <div className="alert-info-row">
                       <span className="alert-label">Companion Association:</span>

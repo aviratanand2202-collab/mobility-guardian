@@ -1313,9 +1313,21 @@ export default function CaregiverDashboard({
 
                       {/* Primary Description */}
                       <p className="alert-message-text">
-                        {alert.alert_tier === 3
-                          ? 'High-risk movement pattern or rapid displacement detected. Prompt check recommended.'
-                          : 'Unusual movement pattern, pacing, or elevated velocity variance detected.'}
+                        {(() => {
+                          if (alert.zone_id && alert.zone_id.startsWith('zone_')) {
+                            const matchedZone = safeZones.find((z) => z.zone_id === alert.zone_id)
+                            return `Home geofence exit confirmed. Monitored person departed ${matchedZone?.name || 'safe zone'}. Prompt check recommended.`
+                          }
+                          if (alert.zone_id === 'behavioral_escalation') {
+                            return 'Sustained anomalous pacing pattern detected outside safe area. Caregiver verification recommended.'
+                          }
+                          if (alert.zone_id === 'loop_detection') {
+                            return 'Repetitive trajectory looping detected outside designated safe area. Check status.'
+                          }
+                          return alert.alert_tier === 3
+                            ? 'High-risk movement pattern or rapid displacement detected. Prompt check recommended.'
+                            : 'Unusual movement pattern, pacing, or elevated velocity variance detected.'
+                        })()}
                       </p>
 
                       {/* Recommended Action Prompt */}

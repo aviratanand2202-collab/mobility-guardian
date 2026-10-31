@@ -448,6 +448,68 @@ export default function MapPanel({
       ? locationHistory[locationHistory.length - 1]
       : null
 
+  // Identify valid enabled safe zones with usable coordinates
+  const validSafeZones = useMemo(() => {
+    if (!Array.isArray(patientSafeZones)) return []
+    return patientSafeZones.filter((zone) => {
+      if (!zone || zone.is_enabled === false) return false
+      if (zone.geometry_type === 'polygon') {
+        return (
+          Array.isArray(zone.polygon_vertices) &&
+          zone.polygon_vertices.length >= 3 &&
+          zone.polygon_vertices.every(
+            (v) =>
+              Array.isArray(v) &&
+              v.length >= 2 &&
+              typeof v[0] === 'number' &&
+              !isNaN(v[0]) &&
+              typeof v[1] === 'number' &&
+              !isNaN(v[1])
+          )
+        )
+      }
+      return (
+        typeof zone.center_lat === 'number' &&
+        !isNaN(zone.center_lat) &&
+        typeof zone.center_lng === 'number' &&
+        !isNaN(zone.center_lng)
+      )
+    })
+  }, [patientSafeZones])
+
+  // Determine fallback safe-zone center if any valid enabled safe zone exists
+  const safeZoneCenter = useMemo(() => {
+    if (validSafeZones.length > 0) {
+      const first = validSafeZones[0]
+      if (typeof first.center_lat === 'number' && !isNaN(first.center_lat) && typeof first.center_lng === 'number' && !isNaN(first.center_lng)) {
+        return [first.center_lat, first.center_lng]
+      }
+      if (first.geometry_type === 'polygon' && first.polygon_vertices && first.polygon_vertices.length >= 3) {
+        const lats = first.polygon_vertices.map((v) => v[0])
+        const lngs = first.polygon_vertices.map((v) => v[1])
+        const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length
+        const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length
+        return [avgLat, avgLng]
+      }
+    }
+    if (
+      configuredSafeZone &&
+      configuredSafeZone.configured &&
+      Array.isArray(configuredSafeZone.center) &&
+      configuredSafeZone.center.length >= 2 &&
+      typeof configuredSafeZone.center[0] === 'number' &&
+      !isNaN(configuredSafeZone.center[0]) &&
+      typeof configuredSafeZone.center[1] === 'number' &&
+      !isNaN(configuredSafeZone.center[1])
+    ) {
+      return configuredSafeZone.center
+    }
+    return null
+  }, [validSafeZones, configuredSafeZone])
+
+  const hasUsableLocation = Boolean(activePosition || (locationHistory && locationHistory.length > 0))
+  const isSafeZoneOnly = !isMultiPatientView && !hasUsableLocation && Boolean(safeZoneCenter)
+
   // Explicit toggle handler to switch between Single Patient and Multi-Patient Tracking
   const handleToggleMultiPatientView = (enabled) => {
     setIsMultiPatientView(enabled)
@@ -462,6 +524,8 @@ export default function MapPanel({
         setViewTarget({ bounds, mode: 'fitBounds', key: Date.now() })
       } else if (activePosition) {
         setViewTarget({ coords: activePosition, mode: 'fly', key: Date.now() })
+      } else if (safeZoneCenter) {
+        setViewTarget({ coords: safeZoneCenter, mode: 'fly', key: Date.now() })
       }
     }
   }
@@ -493,8 +557,10 @@ export default function MapPanel({
       setViewTarget({ bounds, mode: 'fitBounds', key: Date.now() })
     } else if (activePosition) {
       setViewTarget({ coords: activePosition, mode: 'fly', key: Date.now() })
+    } else if (safeZoneCenter) {
+      setViewTarget({ coords: safeZoneCenter, mode: 'fly', key: Date.now() })
     }
-  }, [userId, activePosition?.[0], activePosition?.[1], isMultiPatientView, locationHistory.length])
+  }, [userId, activePosition?.[0], activePosition?.[1], isMultiPatientView, locationHistory.length, safeZoneCenter?.[0], safeZoneCenter?.[1]])
 
   // Refresh relative time every 5 seconds
   useEffect(() => {
@@ -520,7 +586,7 @@ export default function MapPanel({
   // Center coordinate determination (purely derived from actual coordinates)
   const center = isMultiPatientView
     ? (allMultiPatientCoords.length > 0 ? allMultiPatientCoords[0] : null)
-    : (activePosition || (locationHistory.length > 0 ? locationHistory[0] : null))
+    : (activePosition || (locationHistory.length > 0 ? locationHistory[0] : safeZoneCenter))
 
   const riskTier = currentRiskTier || 'QUIESCENT'
   const markerIcon = createRiskMarkerIcon(riskTier, isCaregiverMode)
@@ -547,6 +613,9 @@ export default function MapPanel({
     if (activePosition) {
       setSelectedPointIndex(null)
       setViewTarget({ coords: activePosition, mode: 'fly', key: Date.now() })
+    } else if (safeZoneCenter) {
+      setSelectedPointIndex(null)
+      setViewTarget({ coords: safeZoneCenter, mode: 'fly', key: Date.now() })
     }
   }
 
@@ -623,7 +692,9 @@ export default function MapPanel({
             {isMultiPatientView
               ? 'Multi-Patient Tracking · Trajectory Comparison'
               : isCaregiverMode
-              ? !activePosition
+              ? isSafeZoneOnly
+                ? 'Spatial Tracking (Awaiting GPS)'
+                : !activePosition
                 ? riskTier === 'CRITICAL'
                   ? 'Spatial Tracking (GPS Unavailable · Critical Risk)'
                   : riskTier === 'SUSPICIOUS'
@@ -644,7 +715,9 @@ export default function MapPanel({
             </span>
           ) : isCaregiverMode ? (
             <span className="map-header-sector-badge">
-              {personLabel} · {!activePosition
+              {personLabel} · {isSafeZoneOnly
+                ? 'Awaiting GPS — safe zones shown; patient location unknown.'
+                : !activePosition
                 ? riskTier === 'CRITICAL'
                   ? '🚨 Critical Risk (No Fix)'
                 : riskTier === 'SUSPICIOUS'
@@ -668,6 +741,10 @@ export default function MapPanel({
             activePosition ? (
               <span className="mono" style={{ fontSize: '11px', color: '#6b7280' }}>
                 ({activePosition[0].toFixed(5)}, {activePosition[1].toFixed(5)})
+              </span>
+            ) : isSafeZoneOnly ? (
+              <span className="map-header-sector-badge" style={{ color: '#d97706', borderColor: '#f59e0b' }}>
+                Awaiting GPS — safe zones shown; patient location unknown.
               </span>
             ) : (
               <span className="map-header-sector-badge" style={{ color: '#94a3b8', borderColor: '#475569' }}>
@@ -716,15 +793,17 @@ export default function MapPanel({
                 type="button"
                 className="map-header-btn map-header-recenter-btn"
                 onClick={handleRecenter}
-                disabled={!activePosition}
+                disabled={!activePosition && !safeZoneCenter}
                 title={
-                  !activePosition
+                  isSafeZoneOnly
+                    ? 'Recenter map on configured safe zone'
+                    : !activePosition
                     ? 'No coordinates available'
                     : isLive
                     ? 'Recenter map on active live position'
                     : 'Recenter map on last known position'
                 }
-                aria-label={isLive ? 'Recenter on live person' : 'Recenter on last known location'}
+                aria-label={isSafeZoneOnly ? 'Recenter safe zone' : isLive ? 'Recenter on live person' : 'Recenter on last known location'}
               >
                 <span>🎯</span>
                 <span>Recenter</span>
@@ -873,7 +952,7 @@ export default function MapPanel({
               </div>
             </div>
           </div>
-        ) : !isMultiPatientView && isCaregiverMode && !activePosition ? (
+        ) : !isMultiPatientView && isCaregiverMode && !activePosition && !safeZoneCenter ? (
           <div className={`map-empty-telemetry-container ${
             riskTier === 'CRITICAL' && isCaregiverMode
               ? 'map-empty-critical'
@@ -940,7 +1019,7 @@ export default function MapPanel({
               )}
             </div>
           </div>
-        ) : !isMultiPatientView && !activePosition ? (
+        ) : !isMultiPatientView && !activePosition && !safeZoneCenter ? (
           <div className="map-empty-telemetry-container" role="status" aria-label="No recorded location data">
             <div className="map-radar-graphic">
               <div className="radar-circle radar-circle-outer"></div>
@@ -1351,6 +1430,15 @@ export default function MapPanel({
               </span>
             </div>
           </div>
+        ) : isSafeZoneOnly ? (
+          <div className="map-corner-badge map-corner-badge-safezone-only" role="status" aria-label="Awaiting GPS — safe zones shown; patient location unknown.">
+            <div className="map-corner-badge-item">
+              <span className="map-corner-dot dot-stale" style={{ backgroundColor: '#f59e0b' }}></span>
+              <span className="map-corner-text" style={{ fontWeight: 600 }}>
+                Awaiting GPS — safe zones shown; patient location unknown.
+              </span>
+            </div>
+          </div>
         ) : isCaregiverMode && activePosition && (
           <div className="map-corner-badge">
             <div className="map-corner-badge-item">
@@ -1431,20 +1519,24 @@ export default function MapPanel({
               </button>
             </div>
           )
-        ) : isCaregiverMode && activePosition && (
+        ) : (isCaregiverMode || isSafeZoneOnly) && (activePosition || safeZoneCenter) && (
           <div className="map-floating-controls">
             <button
               type="button"
               className="map-floating-recenter-btn"
               onClick={handleRecenter}
-              disabled={!activePosition}
+              disabled={!activePosition && !safeZoneCenter}
               aria-label={
-                isLive
+                isSafeZoneOnly
+                  ? 'Recenter map on configured safe zone'
+                  : isLive
                   ? 'Recenter map on live person location'
                   : 'Recenter map on last known person location'
               }
               title={
-                !activePosition
+                isSafeZoneOnly
+                  ? 'Recenter map on configured safe zone'
+                  : !activePosition
                   ? 'No coordinates available'
                   : isLive
                   ? 'Recenter map on active live position'
@@ -1453,7 +1545,9 @@ export default function MapPanel({
             >
               <span className="recenter-icon">🎯</span>
               <span className="recenter-text">
-                <span className="recenter-text-full">Recenter ({isLive ? 'Live' : 'Last Known'})</span>
+                <span className="recenter-text-full">
+                  {isSafeZoneOnly ? 'Recenter Safe Zone' : `Recenter (${isLive ? 'Live' : 'Last Known'})`}
+                </span>
                 <span className="recenter-text-mobile">Recenter</span>
               </span>
             </button>
@@ -1578,7 +1672,9 @@ export default function MapPanel({
 
       {!activePosition && !isCaregiverMode && !isMultiPatientView && (
         <div className="map-overlay-notice">
-          No recorded location data for this patient
+          {safeZoneCenter
+            ? 'Awaiting GPS — safe zones shown; patient location unknown.'
+            : 'No recorded location data for this patient'}
         </div>
       )}
 

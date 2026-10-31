@@ -258,6 +258,7 @@ def build_telemetry_payload(
     degraded_since_iso: Optional[str] = None,
     net_displacement_m: float = 0.0,
     step_count: int = 0,
+    wearable_metrics: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Construct a TelemetryPayload conforming strictly to /shared/schema.json.
@@ -292,6 +293,9 @@ def build_telemetry_payload(
         }
     else:
         payload["imu_metrics"] = None
+
+    if wearable_metrics is not None:
+        payload["wearable_metrics"] = wearable_metrics
 
     return payload
 
@@ -501,6 +505,11 @@ def main() -> None:
         action="store_true",
         help="Disable automatic CSV export",
     )
+    parser.add_argument(
+        "--skip-consent",
+        action="store_true",
+        help="Skip registering consent (use when consent is already recorded)",
+    )
 
     args = parser.parse_args()
 
@@ -520,8 +529,11 @@ def main() -> None:
         print(f"Degraded Win:   Points {degraded_range[0]} to {degraded_range[1]}")
     print(f"Backend URL:    {args.backend_url}")
 
-    # 1. Register consent
-    register_consent(args.backend_url, args.user_id)
+    # 1. Register consent (unless explicitly skipped)
+    if not args.skip_consent:
+        register_consent(args.backend_url, args.user_id)
+    else:
+        print(f"[Consent] Skipping consent registration for user '{args.user_id}' per flag.")
 
     # 2. Generate trajectory points
     gen = MovementGenerator(
